@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1700.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.UI.macOS", "Player.UI.macOS.csproj", "{5886F24E-7A6A-4861-BCF3-0C237207E156}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5CA2D02C-D3F0-48A0-9E7C-414491457533}
+	EndGlobalSection
+EndGlobal
