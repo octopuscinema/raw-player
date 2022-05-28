@@ -34,3 +34,4 @@
 .vs
 obj
 bin
+*.user
