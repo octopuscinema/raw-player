@@ -4,11 +4,11 @@ using Foundation;
 using AppKit;
 using ObjCRuntime;
 
-namespace Octopus
+namespace Octopus.Player.UI.macOS
 {
 	public partial class AppDelegate : NSApplicationDelegate
 	{
-		MainWindowController mainWindowController;
+		PlayerWindowController windowController;
 
 		public AppDelegate ()
 		{
@@ -16,8 +16,8 @@ namespace Octopus
 
 		public override void DidFinishLaunching (NSNotification notification)
 		{
-			mainWindowController = new MainWindowController ();
-			mainWindowController.Window.MakeKeyAndOrderFront (this);
+			windowController = new PlayerWindowController ();
+			windowController.Window.MakeKeyAndOrderFront (this);
 		}
 		
 		public override bool ApplicationShouldTerminateAfterLastWindowClosed (NSApplication sender)

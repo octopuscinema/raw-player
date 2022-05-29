@@ -8,21 +8,21 @@ using AppKit;
 using CoreAnimation;
 using OpenGL;
 
-namespace Octopus
+namespace Octopus.Player.UI.macOS
 {
-    public partial class MyView : AppKit.NSView
+    public partial class PlayerView : AppKit.NSView
     {
 
         static OpenGLLayer movingLayer;
 
         // Called when created from unmanaged code
-        public MyView(IntPtr handle) : base(handle)
+        public PlayerView(IntPtr handle) : base(handle)
         {
         }
 
         // Called when created directly from a XIB file
         [Export("initWithCoder:")]
-        public MyView(NSCoder coder) : base(coder)
+        public PlayerView(NSCoder coder) : base(coder)
         {
         }
 

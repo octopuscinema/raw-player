@@ -4,7 +4,7 @@ using Foundation;
 using AppKit;
 using ObjCRuntime;
 
-namespace Octopus
+namespace Octopus.Player.UI.macOS
 {
 	class MainClass
 	{

@@ -12,8 +12,7 @@ using OpenGL;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
 
-
-namespace Octopus
+namespace Octopus.Player.UI.macOS
 {
         public partial class OpenGLLayer : CoreAnimation.CAOpenGLLayer
         {

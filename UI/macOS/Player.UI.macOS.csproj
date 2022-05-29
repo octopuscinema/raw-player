@@ -76,22 +76,22 @@
     <None Include="Info.plist" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
-    <Compile Include="MainMenu.xib.designer.cs">
-      <DependentUpon>MainMenu.xib</DependentUpon>
+    <Compile Include="App.cs" />
+    <Compile Include="PlayerMenu.xib.designer.cs">
+      <DependentUpon>PlayerMenu.xib</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.cs" />
-    <Compile Include="MainWindow.xib.designer.cs">
-      <DependentUpon>MainWindow.xib</DependentUpon>
+    <Compile Include="PlayerWindow.cs" />
+    <Compile Include="PlayerWindow.xib.designer.cs">
+      <DependentUpon>PlayerWindow.xib</DependentUpon>
     </Compile>
-    <Compile Include="MainWindowController.cs" />
-    <Compile Include="MyView.cs" />
+    <Compile Include="PlayerWindowController.cs" />
+    <Compile Include="PlayerView.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="OpenGLLayer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <InterfaceDefinition Include="MainMenu.xib" />
-    <InterfaceDefinition Include="MainWindow.xib" />
+    <InterfaceDefinition Include="PlayerMenu.xib" />
+    <InterfaceDefinition Include="PlayerWindow.xib" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>
