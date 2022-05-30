@@ -31,6 +31,9 @@ namespace Octopus.Player.UI.Windows
         public PlayerWindow()
         {
             InitializeComponent();
+            // Code to get App
+            // INativeApp nativeApp = ((INativeApp)Application.Current);
+            // AppLogic = new AppLogic(nativeApp);
             WindowLogic = new WindowLogic(this);
 
             // Save the startup window state
