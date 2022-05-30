@@ -17,7 +17,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
-                        <Border  BorderThickness="0" Background="White" Opacity="0.5" Height="6" CornerRadius="0,2,2,0"/>
+                        <Border  BorderThickness="0" Background="White" Opacity="0.5" Height="4" CornerRadius="0,1,1,0"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -29,7 +29,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
-                        <Border SnapsToDevicePixels="True" Background="White"  BorderThickness="0" BorderBrush="White" Height="8" CornerRadius="2,0,0,2"/>
+                        <Border SnapsToDevicePixels="True" Background="White"  BorderThickness="0" BorderBrush="White" Height="6" CornerRadius="2,0,0,2"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -41,12 +41,11 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <!--<Ellipse x:Name="Ellipse" Height="15" Width="15" Fill="White"></Ellipse>-->
-                        <Border x:Name="ThumbSquare" Background="White"  BorderThickness="0" Width="15" Height="15" CornerRadius="4"/>
+                        <Border x:Name="ThumbSquare" Background="White"  BorderThickness="0" Width="12" Height="12" CornerRadius="3"/>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="true">
-                                <Setter TargetName="ThumbSquare" Property="Width" Value="16"></Setter>
-                                <Setter TargetName="ThumbSquare" Property="Height" Value="16"></Setter>
+                                <Setter TargetName="ThumbSquare" Property="Width" Value="13"></Setter>
+                                <Setter TargetName="ThumbSquare" Property="Height" Value="13"></Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -126,15 +125,16 @@
 
     <Grid>
         <glWpfControl:GLWpfControl
-            x:Name="OpenTkControl"
-            Render="OpenTkControl_OnRender" />
-        <Rectangle HorizontalAlignment="Center" Height="120" VerticalAlignment="Bottom" Width="{Binding ActualWidth, ElementName=playerWindow, Mode=OneWay}" Fill="Black" Opacity="0.5" StrokeThickness="0"/>
+            x:Name="GLControl"
+            Render="GLControl_OnRender" 
+            MouseDown="GLControl_MouseDown"/>
+        <Rectangle HorizontalAlignment="Center" Height="80" VerticalAlignment="Bottom" Width="{Binding ActualWidth, ElementName=playerWindow, Mode=OneWay}" Fill="Black" Opacity="0.5" StrokeThickness="0"/>
 
         <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
-        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="playButton" Content="&#xE768;" Height="68" Width="78" FontSize="48" Margin="0,0,0,40" IsTabStop="False"/>
-        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="skipBackButton" Content="&#xED3C;" Height="68" Width="50" FontSize="28" Margin="-100,0,0,40" IsTabStop="False"/>
-        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="skipAheadButton" Content="&#xED3D;" Height="68" Width="50" FontSize="28" Margin="100,0,0,40" IsTabStop="False"/>
+        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False"/>
+        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="skipBackButton" Content="&#xED3C;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,35" IsTabStop="False"/>
+        <Button Style="{StaticResource InterfaceButtonStyle}" x:Name="skipAheadButton" Content="&#xED3D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,35" IsTabStop="False"/>
 
-        <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="548" TickPlacement="None" Height="19" Margin="0,0,0,20" IsTabStop="False" Background="{x:Null}"/>
+        <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}"/>
     </Grid>
 </Window>

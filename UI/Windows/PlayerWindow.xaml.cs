@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,9 +24,15 @@ namespace Octopus.Player.UI.Windows
     /// </summary>
     public partial class PlayerWindow : Window
     {
+        public bool IsFullscreen { get; private set; }
+        private WindowState NonFullscreenWindowState { get; set; }
+
         public PlayerWindow()
         {
             InitializeComponent();
+
+            // Save the startup window state
+            NonFullscreenWindowState = WindowState;
 
             var mainSettings = new GLWpfControlSettings 
             { 
@@ -33,13 +40,46 @@ namespace Octopus.Player.UI.Windows
                 MinorVersion = 2,
                 RenderContinuously = false 
             };
-            OpenTkControl.Start(mainSettings);
+            GLControl.Start(mainSettings);
         }
 
-        private void OpenTkControl_OnRender(TimeSpan delta)
+        private void GLControl_OnRender(TimeSpan delta)
         {
             GL.ClearColor(Color4.Blue);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        }
+
+        private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
+                GLControl_MouseLeftDoubleClick();
+        }
+
+        private void GLControl_MouseLeftDoubleClick()
+        {
+            if (IsFullscreen)
+                GoWindowed();
+            else
+                GoFullscreen();
+        }
+
+        private void GoFullscreen()
+        {
+            Debug.Assert(!IsFullscreen);
+            NonFullscreenWindowState = WindowState;
+            WindowStyle = WindowStyle.None;
+            if (WindowState == WindowState.Maximized)
+                WindowState = WindowState.Normal;
+            WindowState = WindowState.Maximized;
+            IsFullscreen = true;
+        }
+
+        private void GoWindowed()
+        {
+            Debug.Assert(IsFullscreen);
+            WindowStyle = WindowStyle.SingleBorderWindow;
+            WindowState = NonFullscreenWindowState;
+            IsFullscreen = false;
         }
     }
 }
