@@ -30,6 +30,25 @@ namespace Octopus.Player.UI.macOS
         {
 			base.ToggleFullScreen(null);
         }
-    }
+
+		public string? OpenFolderDialogue(string title, string defaultDirectory)
+        {
+			var dlg = NSOpenPanel.OpenPanel;
+			dlg.CanChooseFiles = false;
+			dlg.CanChooseDirectories = true;
+			//dlg.AllowedFileTypes = new string[] { "txt", "html", "md", "css" };
+
+			if (dlg.RunModal() == 1)
+			{
+				// Nab the first file
+				var url = dlg.Urls[0];
+
+				if (url != null)
+					return url.Path;
+			}
+			
+			return null;
+		}
+	}
 }
 

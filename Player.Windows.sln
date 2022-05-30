@@ -5,6 +5,10 @@ VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.UI.Windows", "UI\Windows\Player.UI.Windows.csproj", "{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Core", "Core\Player.Core.csproj", "{B0011DAE-21A6-45D9-889D-3C51B06B47EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.UI", "UI\Common\Player.UI.csproj", "{72A3E507-3E4D-448A-A61D-52EDEE655F68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0011DAE-21A6-45D9-889D-3C51B06B47EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0011DAE-21A6-45D9-889D-3C51B06B47EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0011DAE-21A6-45D9-889D-3C51B06B47EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0011DAE-21A6-45D9-889D-3C51B06B47EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72A3E507-3E4D-448A-A61D-52EDEE655F68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72A3E507-3E4D-448A-A61D-52EDEE655F68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72A3E507-3E4D-448A-A61D-52EDEE655F68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72A3E507-3E4D-448A-A61D-52EDEE655F68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

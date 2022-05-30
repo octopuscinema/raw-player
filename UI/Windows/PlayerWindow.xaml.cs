@@ -22,18 +22,21 @@ namespace Octopus.Player.UI.Windows
     /// <summary>
     /// Interaction logic for PlayerWindow.xaml
     /// </summary>
-    public partial class PlayerWindow : Window
+    public partial class PlayerWindow : Window, INativeWindow
     {
         public bool IsFullscreen { get; private set; }
         private WindowState NonFullscreenWindowState { get; set; }
+        private WindowLogic WindowLogic { get; set; }
 
         public PlayerWindow()
         {
             InitializeComponent();
+            WindowLogic = new WindowLogic(this);
 
             // Save the startup window state
             NonFullscreenWindowState = WindowState;
 
+            // Start the OpenGL control
             var mainSettings = new GLWpfControlSettings 
             { 
                 MajorVersion = 3, 
@@ -51,35 +54,67 @@ namespace Octopus.Player.UI.Windows
 
         private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
-                GLControl_MouseLeftDoubleClick();
+            switch(e.ChangedButton)
+            {
+                case MouseButton.Left:
+                    WindowLogic.LeftMouseDown((uint)e.ClickCount);
+                    break;
+                case MouseButton.Right:
+                    WindowLogic.RightMouseDown((uint)e.ClickCount);
+                    break;
+                default:
+                    break;
+            }
         }
 
-        private void GLControl_MouseLeftDoubleClick()
+        public void SetWindowTitle(string text)
         {
-            if (IsFullscreen)
-                GoWindowed();
+            Title = text;
+        }
+
+        public void ToggleFullscreen()
+        {
+            if ( !IsFullscreen )
+            {
+                NonFullscreenWindowState = WindowState;
+                WindowStyle = WindowStyle.None;
+                if (WindowState == WindowState.Maximized)
+                    WindowState = WindowState.Normal;
+                WindowState = WindowState.Maximized;
+                PlayerMenu.Visibility = Visibility.Collapsed;
+                IsFullscreen = true;
+            }
             else
-                GoFullscreen();
+            {
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                WindowState = NonFullscreenWindowState;
+                PlayerMenu.Visibility = Visibility.Visible;
+                IsFullscreen = false;
+            }
         }
 
-        private void GoFullscreen()
+        public string? OpenFolderDialogue(string title, string defaultDirectory)
         {
-            Debug.Assert(!IsFullscreen);
-            NonFullscreenWindowState = WindowState;
-            WindowStyle = WindowStyle.None;
-            if (WindowState == WindowState.Maximized)
-                WindowState = WindowState.Normal;
-            WindowState = WindowState.Maximized;
-            IsFullscreen = true;
+            using var dialog = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
+            dialog.InitialDirectory = defaultDirectory;
+            dialog.IsFolderPicker = true;
+            dialog.EnsurePathExists = true;
+            dialog.Multiselect = false;
+            dialog.DefaultDirectory = defaultDirectory;
+
+            return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
+        }
+        public void Exit()
+        {
+            Application.Current.Shutdown();
         }
 
-        private void GoWindowed()
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Assert(IsFullscreen);
-            WindowStyle = WindowStyle.SingleBorderWindow;
-            WindowState = NonFullscreenWindowState;
-            IsFullscreen = false;
+            Debug.Assert(sender.GetType() == typeof(MenuItem));
+            var menuItem = (MenuItem)sender;
+            if (menuItem != null)
+                WindowLogic.MenuItemClick(menuItem.Name);
         }
     }
 }

@@ -4,6 +4,10 @@
 	{
 		void SetWindowTitle(string text);
 		void ToggleFullscreen();
+#nullable enable
+		string? OpenFolderDialogue(string title, string defaultDirectory);
+#nullable disable
+		void Exit();
 	}
 }
 
