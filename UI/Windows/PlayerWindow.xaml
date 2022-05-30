@@ -155,7 +155,7 @@
                 <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_Visit RAW Player Website" />
+                <MenuItem Header="_Visit OCTOPUS RAW Player Website" />
                 <MenuItem Header="_Join Us on Social Media">
                     <MenuItem Header="_Instagram"/>
                     <MenuItem Header="_YouTube"/>
