@@ -13,7 +13,7 @@ namespace Octopus.Player.UI.macOS
     public partial class PlayerView : AppKit.NSView
     {
 
-        static OpenGLLayer movingLayer;
+        private OpenGLLayer GLLayer { get; set; }
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
@@ -28,48 +28,65 @@ namespace Octopus.Player.UI.macOS
 
         public override void AwakeFromNib()
         {
-            Layer = new CALayer();
-            Layer.AddSublayer(MovingLayer);
-            WantsLayer = true;
+            // Create OpenGL layer
+            GLLayer = new OpenGLLayer();
+            GLLayer.ContentsScale = Window.BackingScaleFactor;
+            GLLayer.Frame = Frame;
+            GLLayer.Position = new CGPoint(0, 0);
+            GLLayer.AnchorPoint = new CGPoint(0, 0);
 
-            Window.Title = "OCTOPUS RAW Player";
+            // Add OpenGL layer
+            Layer = new CALayer();
+            Layer.AddSublayer(GLLayer);
+            WantsLayer = true;
         }
 
-        private OpenGLLayer MovingLayer
+        public override void ResizeSubviewsWithOldSize(CGSize oldSize)
         {
-            get
-            {
-                if (movingLayer == null)
-                {
-                    movingLayer = new OpenGLLayer();
-                    //movingLayer.RasterizationScale = 1.0f;
-                    movingLayer.ContentsScale = Window.BackingScaleFactor;
-                    movingLayer.Frame = Window.Frame; // new CGRect(0, 0, 150, 150);
+            base.ResizeSubviewsWithOldSize(oldSize);
+            ResizeGLLayer();
+        }
 
-                    movingLayer.Position = new CGPoint(0, 0);
-                    movingLayer.AnchorPoint = new CGPoint(0, 0);
-                }
-                return movingLayer;
+        public override void ResizeWithOldSuperviewSize(CGSize oldSize)
+        {
+            base.ResizeWithOldSuperviewSize(oldSize);
+            ResizeGLLayer();
+        }
+
+        private void ResizeGLLayer()
+        {
+            if (GLLayer != null)
+            {
+                GLLayer.Frame = Frame;
+                GLLayer.RemoveAllAnimations();
             }
         }
 
         public override void MouseDown(NSEvent theEvent)
         {
-            CGPoint location = ConvertPointFromView(theEvent.LocationInWindow, null);
+            if (theEvent.ClickCount == 2)
+                ToggleFullscreen();
+
+//            CGPoint location = ConvertPointFromView(theEvent.LocationInWindow, null);
             //movingLayer.Position = new CGPoint(location.X, location.Y);
         }
 
+        public void ToggleFullscreen()
+        {
+            Window.ToggleFullScreen(null);
+        }
+        
         public override void DidChangeBackingProperties()
         {
             base.DidChangeBackingProperties();
 
-            if (movingLayer != null)
-                movingLayer.ContentsScale = Window.BackingScaleFactor;
+            if (GLLayer != null)
+                GLLayer.ContentsScale = Window.BackingScaleFactor;
         }
 
         partial void toggle(NSButton sender)
         {
-            movingLayer.Animate = !movingLayer.Animate;
+            GLLayer.Animate = !GLLayer.Animate;
         }
     }
 }
