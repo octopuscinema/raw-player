@@ -32,6 +32,7 @@
     <LinkMode>None</LinkMode>
     <AOTMode>None</AOTMode>
     <XamMacArch>x86_64</XamMacArch>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,6 +49,7 @@
     <CodeSignEntitlements>Entitlements.plist</CodeSignEntitlements>
     <LinkMode>SdkOnly</LinkMode>
     <AOTMode>None</AOTMode>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -76,7 +78,6 @@
     <None Include="Info.plist" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
     <Compile Include="PlayerMenu.xib.designer.cs">
       <DependentUpon>PlayerMenu.xib</DependentUpon>
     </Compile>

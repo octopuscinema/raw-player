@@ -14,8 +14,8 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <menu title="AMainMenu" systemMenu="main" id="29">
             <items>
-                <menuItem title="OpenGLLayer" id="56">
-                    <menu key="submenu" title="MacCocoaApp" systemMenu="apple" id="57">
+                <menuItem title="OCTOPUS RAW Player" id="56">
+                    <menu key="submenu" title="OCTOPUS RAW Player" systemMenu="apple" id="57">
                         <items>
                             <menuItem title="About OCTOPUS RAW Player" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -66,10 +66,17 @@
                 <menuItem title="File" id="83">
                     <menu key="submenu" title="File" id="81">
                         <items>
-                            <menuItem title="Open…" keyEquivalent="o" id="72">
-                                <connections>
-                                    <action selector="openDocument:" target="-1" id="374"/>
-                                </connections>
+                            <menuItem title="Open" id="72">
+                                <menu key="submenu" id="Uxe-Eb-rDP">
+                                    <items>
+                                        <menuItem title="CinemaDNG Sequence..." identifier="openCinemaDNG" id="4Ld-fG-0SO">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
                             </menuItem>
                             <menuItem title="Open Recent" id="124">
                                 <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="125">
@@ -86,21 +93,7 @@
                     </menu>
                 </menuItem>
                 <menuItem title="View" id="295">
-                    <menu key="submenu" title="View" id="296">
-                        <items>
-                            <menuItem title="Show Toolbar" keyEquivalent="t" id="297">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                <connections>
-                                    <action selector="toggleToolbarShown:" target="-1" id="366"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Customize Toolbar…" id="298">
-                                <connections>
-                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="365"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
+                    <menu key="submenu" title="View" id="296"/>
                 </menuItem>
                 <menuItem title="Window" id="19">
                     <menu key="submenu" title="Window" systemMenu="window" id="24">
@@ -122,10 +115,23 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="491">
                         <items>
-                            <menuItem title="OCTOPUSCINEMA Website" keyEquivalent="?" id="492">
-                                <connections>
-                                    <action selector="showHelp:" target="-1" id="493"/>
-                                </connections>
+                            <menuItem title="Visit OCTOPUS RAW Player Website" keyEquivalent="?" id="492"/>
+                            <menuItem title="Join Us on Social Media" id="0aO-Tq-r9a">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" id="tuu-Gv-cqa">
+                                    <items>
+                                        <menuItem title="Instagram" id="Od0-UG-mf6">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                        <menuItem title="YouTube" id="7HZ-lk-17m">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="wvb-nc-IvL"/>
+                            <menuItem title="OCTOPUSCINEMA GitHub" id="Jbe-n4-Osj">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
                         </items>
                     </menu>

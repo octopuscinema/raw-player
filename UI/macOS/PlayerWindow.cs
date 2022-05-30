@@ -2,22 +2,27 @@
 using System;
 using Foundation;
 using AppKit;
+using System.Diagnostics;
 
 namespace Octopus.Player.UI.macOS
 {
 	public partial class PlayerWindow : AppKit.NSWindow, INativeWindow
 	{
+		public WindowLogic WindowLogic { get; private set; }
+
 		// Called when created from unmanaged code
 		public PlayerWindow (IntPtr handle) : base(handle)
 		{
-			
+			// Create platform independant window logic
+			WindowLogic = new WindowLogic(this);
 		}
 
 		// Called when created directly from a XIB file
 		[Export("initWithCoder:")]
 		public PlayerWindow (NSCoder coder) : base(coder)
 		{
-			
+			// Create platform independant window logic
+			WindowLogic = new WindowLogic(this);
 		}
 
 		// Native window implementations
@@ -31,24 +36,55 @@ namespace Octopus.Player.UI.macOS
 			base.ToggleFullScreen(null);
         }
 
+#nullable enable
 		public string? OpenFolderDialogue(string title, string defaultDirectory)
-        {
-			var dlg = NSOpenPanel.OpenPanel;
-			dlg.CanChooseFiles = false;
-			dlg.CanChooseDirectories = true;
-			//dlg.AllowedFileTypes = new string[] { "txt", "html", "md", "css" };
+#nullable disable
+		{
+			var dialog = NSOpenPanel.OpenPanel;
+			dialog.CanChooseFiles = false;
+			dialog.CanChooseDirectories = true;
+			dialog.CanCreateDirectories = false;
+			dialog.Message = title;
 
-			if (dlg.RunModal() == 1)
+			if (dialog.RunModal() == 1)
 			{
-				// Nab the first file
-				var url = dlg.Urls[0];
+				Debug.Assert(dialog.Urls.Length > 0);
+				if (dialog.Urls.Length == 0)
+					return null;
 
+				/*
+				var alert = new NSAlert()
+				{
+					AlertStyle = NSAlertStyle.Informational,
+					InformativeText = "Selected: " + url.Path,
+					MessageText = "Folder Selected"
+				};
+				alert.RunModal();
+				*/
+
+				var url = dialog.Urls[0];
 				if (url != null)
 					return url.Path;
 			}
-			
+
 			return null;
 		}
-	}
+
+		public void InformationAlert(string message, string title)
+        {
+			var alert = new NSAlert()
+			{
+				AlertStyle = NSAlertStyle.Informational,
+				InformativeText = message,
+				MessageText = title
+			};
+			alert.RunModal();
+		}
+
+        public void Exit()
+        {
+			NSApplication.SharedApplication.Terminate(this);
+        }
+    }
 }
 

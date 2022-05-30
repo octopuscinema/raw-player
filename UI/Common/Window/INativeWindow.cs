@@ -7,6 +7,7 @@
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
 #nullable disable
+		void InformationAlert(string message, string title);
 		void Exit();
 	}
 }
