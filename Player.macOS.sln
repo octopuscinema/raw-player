@@ -5,6 +5,10 @@ VisualStudioVersion = 25.0.1700.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.UI.macOS", "UI\macOS\Player.UI.macOS.csproj", "{5886F24E-7A6A-4861-BCF3-0C237207E156}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.UI", "UI\Common\Player.UI.csproj", "{292E0AB5-280A-46B0-97C4-7A9ABD794413}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Core", "Core\Player.Core.csproj", "{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5886F24E-7A6A-4861-BCF3-0C237207E156}.Release|Any CPU.Build.0 = Release|Any CPU
+		{292E0AB5-280A-46B0-97C4-7A9ABD794413}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{292E0AB5-280A-46B0-97C4-7A9ABD794413}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{292E0AB5-280A-46B0-97C4-7A9ABD794413}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{292E0AB5-280A-46B0-97C4-7A9ABD794413}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

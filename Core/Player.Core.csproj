@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="TiffLibrary" />
+    <None Remove="IO\" />
+    <None Remove="Playback\" />
+    <None Remove="Decode\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TiffLibrary" Version="0.6.65" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IO\" />
+    <Folder Include="Playback\" />
+    <Folder Include="Decode\" />
+  </ItemGroup>
+</Project>

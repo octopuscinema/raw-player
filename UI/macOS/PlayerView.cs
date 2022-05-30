@@ -12,8 +12,8 @@ namespace Octopus.Player.UI.macOS
 {
     public partial class PlayerView : AppKit.NSView
     {
-
         private OpenGLLayer GLLayer { get; set; }
+        private WindowLogic WindowLogic { get; set; }
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
@@ -39,6 +39,9 @@ namespace Octopus.Player.UI.macOS
             Layer = new CALayer();
             Layer.AddSublayer(GLLayer);
             WantsLayer = true;
+
+            // Create platform independant window logic
+            WindowLogic = new WindowLogic((INativeWindow)Window);
         }
 
         public override void ResizeSubviewsWithOldSize(CGSize oldSize)
@@ -64,18 +67,16 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDown(NSEvent theEvent)
         {
-            if (theEvent.ClickCount == 2)
-                ToggleFullscreen();
-
-//            CGPoint location = ConvertPointFromView(theEvent.LocationInWindow, null);
-            //movingLayer.Position = new CGPoint(location.X, location.Y);
+            if ( WindowLogic != null )
+                WindowLogic.LeftMouseDown((uint)theEvent.ClickCount);
         }
 
-        public void ToggleFullscreen()
+        public override void RightMouseDown(NSEvent theEvent)
         {
-            Window.ToggleFullScreen(null);
+            if (WindowLogic != null)
+                WindowLogic.RightMouseDown((uint)theEvent.ClickCount);
         }
-        
+
         public override void DidChangeBackingProperties()
         {
             base.DidChangeBackingProperties();

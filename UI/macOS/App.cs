@@ -6,7 +6,7 @@ using ObjCRuntime;
 
 namespace Octopus.Player.UI.macOS
 {
-	class MainClass
+	class App
 	{
 		static void Main (string[] args)
 		{

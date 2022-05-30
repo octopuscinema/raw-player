@@ -93,5 +93,11 @@
     <InterfaceDefinition Include="PlayerMenu.xib" />
     <InterfaceDefinition Include="PlayerWindow.xib" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Player.UI.csproj">
+      <Project>{292E0AB5-280A-46B0-97C4-7A9ABD794413}</Project>
+      <Name>Player.UI</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

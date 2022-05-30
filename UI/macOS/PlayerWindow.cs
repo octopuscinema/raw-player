@@ -5,7 +5,7 @@ using AppKit;
 
 namespace Octopus.Player.UI.macOS
 {
-	public partial class PlayerWindow : AppKit.NSWindow
+	public partial class PlayerWindow : AppKit.NSWindow, INativeWindow
 	{
 		// Called when created from unmanaged code
 		public PlayerWindow (IntPtr handle) : base(handle)
@@ -19,6 +19,17 @@ namespace Octopus.Player.UI.macOS
 		{
 			
 		}
-	}
+
+		// Native window implementations
+        public void SetWindowTitle(string text)
+        {
+			Title = text;
+        }
+
+        public void ToggleFullscreen()
+        {
+			base.ToggleFullScreen(null);
+        }
+    }
 }
 
