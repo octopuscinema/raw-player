@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Decode\**" />
+    <EmbeddedResource Remove="Decode\**" />
+    <None Remove="Decode\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="TiffLibrary" />
     <None Remove="IO\" />
     <None Remove="Playback\" />
@@ -15,7 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="IO\" />
+    <Folder Include="Decoders\" />
     <Folder Include="Playback\" />
-    <Folder Include="Decode\" />
   </ItemGroup>
 </Project>

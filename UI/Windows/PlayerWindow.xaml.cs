@@ -119,5 +119,10 @@ namespace Octopus.Player.UI.Windows
             if (menuItem != null)
                 WindowLogic.MenuItemClick(menuItem.Name);
         }
+
+        public void InformationAlert(string message, string title)
+        {
+            //throw new NotImplementedException();
+        }
     }
 }
