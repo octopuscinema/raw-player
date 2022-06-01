@@ -13,8 +13,8 @@ namespace Octopus.Player.UI.macOS
 	
 	
 	// Should subclass MonoMac.AppKit.NSWindow
-	[Foundation.Register("PlayerWindow")]
-	public partial class PlayerWindow {
+	[Foundation.Register("NativePlayerWindow")]
+	public partial class NativePlayerWindow {
 	}
 	
 	// Should subclass MonoMac.AppKit.NSWindowController

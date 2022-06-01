@@ -56,6 +56,18 @@
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
     <Reference Include="OpenTK" />
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces">
+      <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\netstandard2.1\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="JpegLibrary">
+      <HintPath>..\..\packages\JpegLibrary.0.4.32\lib\netstandard2.1\JpegLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="TiffLibrary">
+      <HintPath>..\..\packages\TiffLibrary.0.6.65\lib\netstandard2.1\TiffLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -76,14 +88,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PlayerMenu.xib.designer.cs">
       <DependentUpon>PlayerMenu.xib</DependentUpon>
     </Compile>
-    <Compile Include="PlayerWindow.cs" />
-    <Compile Include="PlayerWindow.xib.designer.cs">
-      <DependentUpon>PlayerWindow.xib</DependentUpon>
+    <Compile Include="NativePlayerWindow.cs" />
+    <Compile Include="NativePlayerWindow.xib.designer.cs">
+      <DependentUpon>NativePlayerWindow.xib</DependentUpon>
     </Compile>
     <Compile Include="PlayerWindowController.cs" />
     <Compile Include="PlayerView.cs" />
@@ -92,7 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="PlayerMenu.xib" />
-    <InterfaceDefinition Include="PlayerWindow.xib" />
+    <InterfaceDefinition Include="NativePlayerWindow.xib" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Player.UI.csproj">

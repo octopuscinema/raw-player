@@ -6,23 +6,23 @@ using System.Diagnostics;
 
 namespace Octopus.Player.UI.macOS
 {
-	public partial class PlayerWindow : AppKit.NSWindow, INativeWindow
+	public partial class NativePlayerWindow : AppKit.NSWindow, INativeWindow
 	{
-		public WindowLogic WindowLogic { get; private set; }
+		public PlayerWindow WindowLogic { get; private set; }
 
 		// Called when created from unmanaged code
-		public PlayerWindow (IntPtr handle) : base(handle)
+		public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
 			// Create platform independant window logic
-			WindowLogic = new WindowLogic(this);
+			WindowLogic = new PlayerWindow(this);
 		}
 
 		// Called when created directly from a XIB file
 		[Export("initWithCoder:")]
-		public PlayerWindow (NSCoder coder) : base(coder)
+		public NativePlayerWindow (NSCoder coder) : base(coder)
 		{
 			// Create platform independant window logic
-			WindowLogic = new WindowLogic(this);
+			WindowLogic = new PlayerWindow(this);
 		}
 
 		// Native window implementations

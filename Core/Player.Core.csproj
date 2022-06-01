@@ -2,12 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Octopus.Player.Core</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Decode\**" />
     <EmbeddedResource Remove="Decode\**" />
     <None Remove="Decode\**" />
+    <None Remove="Maths\" />
+    <None Remove="Maths\Colour\" />
+    <None Remove="IO\DNG\" />
+    <None Remove="Playback\Item\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,5 +28,9 @@
     <Folder Include="IO\" />
     <Folder Include="Decoders\" />
     <Folder Include="Playback\" />
+    <Folder Include="Maths\" />
+    <Folder Include="Maths\Colour\" />
+    <Folder Include="IO\DNG\" />
+    <Folder Include="Playback\Clip\" />
   </ItemGroup>
 </Project>

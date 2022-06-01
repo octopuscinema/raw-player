@@ -2,16 +2,17 @@
 using System.IO;
 using TiffLibrary;
 
-namespace Octopus.Player.Core
+namespace Octopus.Player.Core.IO.DNG
 {
-    public class DNGReader : IDisposable
+    public class Reader : IDisposable
     {
         public string FilePath { get; private set; }
-
+        
         private TiffFileReader TiffReader { get; set; }
-
-        public DNGReader(string filePath)
+        
+        public Reader(string filePath)
         {
+            /*
             FilePath = filePath;
 
             // Open TIFF file
@@ -61,13 +62,14 @@ namespace Octopus.Player.Core
                     System.Buffers.ArrayPool<byte>.Shared.Return(data);
                 }
             }
+            */
         }
 
         public void Dispose()
         {
 
-            if (TiffReader != null)
-                TiffReader.Dispose();
+            //if (TiffReader != null)
+              //  TiffReader.Dispose();
         }
 
         public void Sandbox()

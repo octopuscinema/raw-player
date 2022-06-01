@@ -10,4 +10,7 @@
   <ItemGroup>
     <Folder Include="Window\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Player.Core.csproj" />
+  </ItemGroup>
 </Project>

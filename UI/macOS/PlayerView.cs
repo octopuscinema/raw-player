@@ -14,7 +14,7 @@ namespace Octopus.Player.UI.macOS
     {
         private OpenGLLayer GLLayer { get; set; }
 
-        private PlayerWindow PlayerWindow { get { return (PlayerWindow)Window; } }
+        private NativePlayerWindow PlayerWindow { get { return (NativePlayerWindow)Window; } }
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
