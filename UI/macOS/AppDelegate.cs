@@ -30,7 +30,7 @@ namespace Octopus.Player.UI.macOS
 		{
 			var menuItem = (NSMenuItem)sender;
 			if (menuItem != null)
-				PlayerWindowController.PlayerWindow.WindowLogic.MenuItemClick(menuItem.Identifier);
+				PlayerWindowController.PlayerWindow.PlayerWindow.MenuItemClick(menuItem.Identifier);
 			/*
 			var dlg = NSOpenPanel.OpenPanel;
 			dlg.CanChooseFiles = false;

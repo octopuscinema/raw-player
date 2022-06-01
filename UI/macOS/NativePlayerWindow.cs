@@ -8,13 +8,13 @@ namespace Octopus.Player.UI.macOS
 {
 	public partial class NativePlayerWindow : AppKit.NSWindow, INativeWindow
 	{
-		public PlayerWindow WindowLogic { get; private set; }
+		public PlayerWindow PlayerWindow { get; private set; }
 
 		// Called when created from unmanaged code
 		public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
 			// Create platform independant window logic
-			WindowLogic = new PlayerWindow(this);
+			PlayerWindow = new PlayerWindow(this);
 		}
 
 		// Called when created directly from a XIB file
@@ -22,7 +22,7 @@ namespace Octopus.Player.UI.macOS
 		public NativePlayerWindow (NSCoder coder) : base(coder)
 		{
 			// Create platform independant window logic
-			WindowLogic = new PlayerWindow(this);
+			PlayerWindow = new PlayerWindow(this);
 		}
 
 		// Native window implementations

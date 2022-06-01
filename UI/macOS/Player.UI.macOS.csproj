@@ -88,7 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PlayerMenu.xib.designer.cs">
@@ -107,6 +106,14 @@
     <InterfaceDefinition Include="PlayerMenu.xib" />
     <InterfaceDefinition Include="NativePlayerWindow.xib" />
   </ItemGroup>
+
+  <ItemGroup>
+      <PackageReference Include="JpegLibrary" version="0.4.32" />
+      <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" version="6.0.0" />
+      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
+      <PackageReference Include="TiffLibrary" version="0.6.65" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Common\Player.UI.csproj">
       <Project>{292E0AB5-280A-46B0-97C4-7A9ABD794413}</Project>

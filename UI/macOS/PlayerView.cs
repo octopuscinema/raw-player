@@ -66,13 +66,13 @@ namespace Octopus.Player.UI.macOS
         public override void MouseDown(NSEvent theEvent)
         {
             if (PlayerWindow != null)
-                PlayerWindow.WindowLogic.LeftMouseDown((uint)theEvent.ClickCount);
+                PlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount);
         }
 
         public override void RightMouseDown(NSEvent theEvent)
         {
             if (PlayerWindow != null)
-                PlayerWindow.WindowLogic.RightMouseDown((uint)theEvent.ClickCount);
+                PlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
         }
 
         public override void DidChangeBackingProperties()
