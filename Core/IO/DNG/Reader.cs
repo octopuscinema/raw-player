@@ -8,20 +8,23 @@ namespace Octopus.Player.Core.IO.DNG
     {
         public string FilePath { get; private set; }
         
-        private TiffFileReader TiffReader { get; set; }
+        private TiffFileReader Tiff { get; set; }
+        private TiffFieldReader FieldReader { get; set; }
         
         public Reader(string filePath)
         {
-            /*
-            FilePath = filePath;
-
             // Open TIFF file
-            using var tiff = TiffFileReader.Open(filePath);// OpenAsync(@"C:\Test\1.tif");
-           
-            using var fieldReader = tiff.CreateFieldReader();
-            var ifd = tiff.ReadImageFileDirectory();
-            var tagReader = new TiffTagReader(fieldReader, ifd);
+            Tiff = TiffFileReader.Open(filePath);
+            if (Tiff != null)
+                FilePath = filePath;
 
+
+//            FieldReader = Tiff.CreateFieldReader();
+            //            var ifd = Tiff.ReadImageFileDirectory();
+    //        var tagReader = new TiffTagReader(fieldReader, ifd);
+
+            
+            /*
             // Get offsets to the strip/tile data
             TiffValueCollection<ulong> offsets, byteCounts;
             if (ifd.Contains(TiffTag.TileOffsets))
@@ -67,9 +70,10 @@ namespace Octopus.Player.Core.IO.DNG
 
         public void Dispose()
         {
-
-            //if (TiffReader != null)
-              //  TiffReader.Dispose();
+            Tiff?.Dispose();
+            FieldReader?.Dispose();
+            Tiff = null;
+            FieldReader = null;
         }
 
         public void Sandbox()

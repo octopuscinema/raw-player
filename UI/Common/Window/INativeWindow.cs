@@ -1,5 +1,13 @@
 ﻿namespace Octopus.Player.UI
 {
+	public enum AlertType
+    {
+		Blank,
+		Information,
+		Error,
+		Warning
+    }
+
 	public interface INativeWindow
 	{
 		void SetWindowTitle(string text);
@@ -7,7 +15,8 @@
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
 #nullable disable
-		void InformationAlert(string message, string title);
+		void Alert(AlertType alertType, string message, string title);
+		void OpenUrl(string url);
 		void Exit();
 	}
 }

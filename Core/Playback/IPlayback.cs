@@ -14,15 +14,16 @@ namespace Octopus.Player.Core.Playback
 		End
 	};
 
-	public interface IPlayback : IDisposable
+	public interface IPlayback
 	{
 		List<Essence> SupportedEssence { get; }
 		State State { get; }
 		IClip Clip { get; }
 
-//#error TODO: change string to IClip and add a Clip.LocateClip static function
 		Error Open(IClip clip);
+		bool IsOpen();
 		void Close();
+		bool SupportsClip(IClip clip);
 	}
 }
 

@@ -22,19 +22,18 @@ namespace Octopus.Player.UI.Windows
     /// <summary>
     /// Interaction logic for PlayerWindow.xaml
     /// </summary>
-    public partial class PlayerWindow : Window, INativeWindow
+    public partial class NativePlayerWindow : Window, INativeWindow
     {
         public bool IsFullscreen { get; private set; }
         private WindowState NonFullscreenWindowState { get; set; }
-        private WindowLogic WindowLogic { get; set; }
+        private PlayerWindow PlayerWindow { get; set; }
 
-        public PlayerWindow()
+        public NativePlayerWindow()
         {
             InitializeComponent();
-            // Code to get App
-            // INativeApp nativeApp = ((INativeApp)Application.Current);
-            // AppLogic = new AppLogic(nativeApp);
-            WindowLogic = new WindowLogic(this);
+            
+            // Create cross platform Window
+            PlayerWindow = new PlayerWindow(this);
 
             // Save the startup window state
             NonFullscreenWindowState = WindowState;
@@ -60,10 +59,10 @@ namespace Octopus.Player.UI.Windows
             switch(e.ChangedButton)
             {
                 case MouseButton.Left:
-                    WindowLogic.LeftMouseDown((uint)e.ClickCount);
+                    PlayerWindow.LeftMouseDown((uint)e.ClickCount);
                     break;
                 case MouseButton.Right:
-                    WindowLogic.RightMouseDown((uint)e.ClickCount);
+                    PlayerWindow.RightMouseDown((uint)e.ClickCount);
                     break;
                 default:
                     break;
@@ -117,12 +116,40 @@ namespace Octopus.Player.UI.Windows
             Debug.Assert(sender.GetType() == typeof(MenuItem));
             var menuItem = (MenuItem)sender;
             if (menuItem != null)
-                WindowLogic.MenuItemClick(menuItem.Name);
+                PlayerWindow.MenuItemClick(menuItem.Name);
         }
 
-        public void InformationAlert(string message, string title)
+        public void Alert(AlertType alertType, string message, string title)
         {
-            //throw new NotImplementedException();
+            switch (alertType)
+            {
+                case AlertType.Blank:
+                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.None);
+                    break;
+                case AlertType.Information:
+                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
+                case AlertType.Error:
+                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
+                case AlertType.Warning:
+                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start("explorer.exe", url);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
 }

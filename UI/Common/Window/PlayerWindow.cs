@@ -30,6 +30,18 @@ namespace Octopus.Player.UI
         {
             switch(name)
             {
+                case "about":
+                    NativeWindow.Alert(AlertType.Blank, "\n\t\t  OCTOPUS RAW Player\n\t\t ------------------------\n\t\t  Pre-release version X.X\n\t\t           MIT License\n\n\n\t\t© 2022 OCTOPUSCINEMA\t\t", "About OCTOPUS RAW Player");
+                    break;
+                case "visitInstagram":
+                    NativeWindow.OpenUrl("https://www.instagram.com/octopuscinema/");
+                    break;
+                case "visitYoutube":
+                    NativeWindow.OpenUrl("https://www.youtube.com/channel/UCq7Bk-mekVLJS63I6XUpyLw");
+                    break;
+                case "visitWebsite":
+                    NativeWindow.OpenUrl("http://www.octopuscinema.com/wiki/index.php?title=HI!");
+                    break;
                 case "exit":
                     NativeWindow.Exit();
                     break;
@@ -49,11 +61,31 @@ namespace Octopus.Player.UI
 
         private Core.Error OpenCinemaDNG(string dngPath)
         {
-            var dngSequenceClip = new Core.Playback.CinemaDNGClip(dngPath);
-            var dngValidity = dngSequenceClip.Validate();
+            var dngSequenceClip = new Core.Playback.ClipCinemaDNG(dngPath);
+            return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
+        }
+
+        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.IPlayback, new()
+        {
+            var dngValidity = clip.Validate();
             if (dngValidity != Core.Error.None)
                 return dngValidity;
-            return Core.Error.None;
+
+            // Current playback doesn't support this clip, shut it down
+            if (Playback != null && !Playback.SupportsClip(clip))
+            {
+                Playback.Close();
+                Playback = null;
+            }
+
+            // Create the playback if necessary
+            if (Playback == null)
+                Playback = new T();
+            else
+                Playback.Close();
+
+            // Open the clip
+            return Playback.Open(clip);
         }
     }
 }

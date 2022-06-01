@@ -6,6 +6,8 @@ namespace Octopus.Player.Core
         None,
         BadPath,
         BadFile,
+        BadMetadata,
+        NoVideoStream,
         NotImplmeneted
     }
 }

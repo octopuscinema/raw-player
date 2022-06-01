@@ -1,4 +1,4 @@
-﻿<Window x:Name="playerWindow" x:Class="Octopus.Player.UI.Windows.PlayerWindow"
+﻿<Window x:Name="playerWindow" x:Class="Octopus.Player.UI.Windows.NativePlayerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -155,15 +155,15 @@
                 <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_Visit OCTOPUS RAW Player Website" />
+                <MenuItem Header="_Visit OCTOPUS RAW Player Website"  Name="visitWebsite" Click="MenuItem_Click"/>
                 <MenuItem Header="_Join Us on Social Media">
-                    <MenuItem Header="_Instagram"/>
-                    <MenuItem Header="_YouTube"/>
+                    <MenuItem Header="_Instagram" Name="visitInstagram" Click="MenuItem_Click"/>
+                    <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_OCTOPUSCINEMA GitHub"/>
                 <Separator />
-                <MenuItem Header="_About..." />
+                <MenuItem Header="_About..." Name="about" Click="MenuItem_Click"/>
             </MenuItem>
         </Menu>
 

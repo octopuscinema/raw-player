@@ -25,12 +25,8 @@
     <PackageReference Include="TiffLibrary" Version="0.6.65" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="IO\" />
     <Folder Include="Decoders\" />
-    <Folder Include="Playback\" />
     <Folder Include="Maths\" />
     <Folder Include="Maths\Colour\" />
-    <Folder Include="IO\DNG\" />
-    <Folder Include="Playback\Clip\" />
   </ItemGroup>
 </Project>

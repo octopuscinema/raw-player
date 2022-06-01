@@ -7,6 +7,9 @@ namespace Octopus.Player.Core.Playback
 		Essence Essence { get; }
 
 		Error Validate();
+
+		Error ReadMetadata();
+        IO.IMetadata Metadata { get; }
 	}
 }
 
