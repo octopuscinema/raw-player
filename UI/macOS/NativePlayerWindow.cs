@@ -70,21 +70,38 @@ namespace Octopus.Player.UI.macOS
 			return null;
 		}
 
-		public void InformationAlert(string message, string title)
-        {
-			var alert = new NSAlert()
-			{
-				AlertStyle = NSAlertStyle.Informational,
-				InformativeText = message,
-				MessageText = title
-			};
-			alert.RunModal();
-		}
-
         public void Exit()
         {
 			NSApplication.SharedApplication.Terminate(this);
         }
+
+        public void Alert(AlertType alertType, string message, string title)
+        {
+			NSAlert alert = null;
+			switch (alertType)
+            {
+				case AlertType.Blank:
+				case AlertType.Information:
+					alert = new NSAlert() { AlertStyle = NSAlertStyle.Informational, InformativeText = message, MessageText = title };
+					break;
+				case AlertType.Error:
+					alert = new NSAlert() { AlertStyle = NSAlertStyle.Critical, InformativeText = message, MessageText = title };
+					break;
+				case AlertType.Warning:
+					alert = new NSAlert() { AlertStyle = NSAlertStyle.Warning, InformativeText = message, MessageText = title };
+					break;
+				default:
+					Debug.Assert(false);
+					return;
+			}
+			alert?.RunModal();
+		}
+
+        public void OpenUrl(string url)
+        {
+			NSError urlError;
+			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, null, out urlError);
+		}
     }
 }
 
