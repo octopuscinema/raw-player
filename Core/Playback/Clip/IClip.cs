@@ -5,10 +5,11 @@ namespace Octopus.Player.Core.Playback
 	{
 		string Path { get; }
 		Essence Essence { get; }
+		bool Valid { get; }
 
 		Error Validate();
 
-		Error ReadMetadata();
+		Error ReadMetadata(uint? frame = null);
         IO.IMetadata Metadata { get; }
 	}
 }

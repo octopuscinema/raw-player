@@ -5,16 +5,77 @@ namespace Octopus.Player.Core.Playback
 {
 	public class ClipCinemaDNG : Clip
 	{
-		public ClipCinemaDNG(string sequenceDir)
+        public override Essence Essence { get { return Essence.Sequence; } }
+		
+        private uint SequencingFieldPosition { get; set; }
+        private uint SequencingFieldLength { get; set; }
+        private string CachedFramePath { get; set; }
+
+        public ClipCinemaDNG(string sequenceDir)
 		{
             Path = sequenceDir;
-		}
+            Valid = false;
+        }
 
-        public override Essence Essence { get { return Essence.Sequence; } }
-
-        public override Error ReadMetadata()
+        public override Error ReadMetadata(uint? frame = null)
         {
-            throw new NotImplementedException();
+            // Metadata already read
+            if (Metadata != null)
+                return Error.None;
+
+            // Get path to DNG file
+            string dngPath = null;
+            if (frame.HasValue)
+            {
+                var framePathError = GetFramePath(frame.Value, out dngPath);
+                if (framePathError != Error.None)
+                    return framePathError;
+            }
+            else
+                dngPath = CachedFramePath;
+            if (!System.IO.File.Exists(dngPath))
+                return Error.BadPath;
+
+            try
+            {
+                using var reader = new IO.DNG.Reader(dngPath);
+                Metadata = new IO.DNG.MetadataCinemaDNG(reader, this);
+            }
+            catch
+            {
+                return Error.BadFile;
+            }
+
+            return Error.NotImplmeneted;
+        }
+
+        public Error GetFramePath(uint frame, out string path)
+        {
+            // Clip not valid
+            if (!Valid)
+            {
+                path = null;
+                return Error.ClipNotValidated;
+            }
+
+            // Create sequncing field from the frame number
+            var sequencingField = frame.ToString("D" + SequencingFieldLength);
+            
+            // Use the cached frame path and swap the sequncing field characters            
+            var pathCharArray = CachedFramePath.ToCharArray();
+            var characterPosition = SequencingFieldPosition;
+            foreach(var character in sequencingField)
+                pathCharArray[(int)characterPosition++] = character;
+            path = new string(pathCharArray);
+
+            return Error.None;
+        }
+
+        public Error GetFrameNumber(string dngFramePath, out uint frameNumber)
+        {
+            // Extract the sequencing field from the path
+            string sequencingField = dngFramePath.Substring((int)SequencingFieldPosition, (int)SequencingFieldLength);
+            return uint.TryParse(sequencingField, out frameNumber) ? Error.None : Error.BadFrameIndex;
         }
 
         public override Error Validate()
@@ -23,11 +84,36 @@ namespace Octopus.Player.Core.Playback
             if (!System.IO.Directory.Exists(Path))
                 return Error.BadPath;
 
-            // Check path has DNGs
+            // Check path has sequenceable DNGs
             try
             {
-                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "?.dng", System.IO.SearchOption.TopDirectoryOnly);
-                return dngFiles.Any() ? Error.None : Error.NoVideoStream;
+                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
+
+                // Determine the sequencing field
+                // Travel backwards from where digits start to where digits end
+                if (dngFiles.Any())
+                {
+                    var dngPath = dngFiles.First();
+                    uint? sequenceEndPosition = null;
+                    for (int i = dngPath.Length - 1; i >= 0; i--)
+                    {
+                        var character = dngPath[i];
+                        bool isDigit = Char.IsDigit(character);
+                        if (isDigit && sequenceEndPosition == null)
+                            sequenceEndPosition = (uint)i + 1;
+                        if (!isDigit && sequenceEndPosition != null)
+                        {
+                            SequencingFieldPosition = (uint)i + 1;
+                            SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
+                            CachedFramePath = dngPath;
+                            Valid = true;
+                            return Error.None;
+                        }
+                    }
+                }
+
+                Valid = false;
+                return Error.NoVideoStream;
             }
             catch (Exception e)
             {

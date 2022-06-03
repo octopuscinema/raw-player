@@ -23,6 +23,7 @@ namespace Octopus.Player.Core.Playback
                 SequenceStreamDNG.Dispose();
                 SequenceStreamDNG = null;
             }
+            State = State.Empty;
             Clip = null;
         }
 
@@ -41,7 +42,7 @@ namespace Octopus.Player.Core.Playback
 /*
             try
             {
-                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "?.dng", System.IO.SearchOption.TopDirectoryOnly);
+                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
                 return dngFiles.Any() ? Error.None : Error.NoVideoStream;
             }
             catch (Exception e)
@@ -61,6 +62,21 @@ namespace Octopus.Player.Core.Playback
         public override bool SupportsClip(IClip clip)
         {
             return (clip.GetType() == typeof(ClipCinemaDNG) && SupportedEssence.Contains(clip.Essence));
+        }
+
+        public override void Stop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Play()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Pause()
+        {
+            throw new NotImplementedException();
         }
     }
 }

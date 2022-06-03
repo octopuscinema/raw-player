@@ -1,29 +1,36 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 using System.IO;
 using TiffLibrary;
 
 namespace Octopus.Player.Core.IO.DNG
 {
-    public class Reader : IDisposable
+    public sealed class Reader : IDisposable
     {
         public string FilePath { get; private set; }
-        
+        public bool Valid { get; private set; }
+
         private TiffFileReader Tiff { get; set; }
         private TiffFieldReader FieldReader { get; set; }
-        
+        private TiffImageFileDirectory Ifd { get; set; }
+        private TiffTagReader TagReader { get; set; }
+        private Vector2i? CachedDimensions { get; set; }
+        private Maths.Rational? CachedFramerate { get; set; }
+
         public Reader(string filePath)
         {
             // Open TIFF file
             Tiff = TiffFileReader.Open(filePath);
-            if (Tiff != null)
-                FilePath = filePath;
+            if (Tiff == null)
+                return;
+            Valid = true;
+            FilePath = filePath;
 
+            // Set up IFD field reader
+            FieldReader = Tiff.CreateFieldReader();
+            Ifd = Tiff.ReadImageFileDirectory();
+            TagReader = new TiffTagReader(FieldReader, Ifd);
 
-//            FieldReader = Tiff.CreateFieldReader();
-            //            var ifd = Tiff.ReadImageFileDirectory();
-    //        var tagReader = new TiffTagReader(fieldReader, ifd);
-
-            
             /*
             // Get offsets to the strip/tile data
             TiffValueCollection<ulong> offsets, byteCounts;
@@ -68,35 +75,36 @@ namespace Octopus.Player.Core.IO.DNG
             */
         }
 
+        public Vector2i Dimensions 
+        { 
+            get 
+            {
+                if (!CachedDimensions.HasValue)
+                    CachedDimensions = new Vector2i((int)TagReader.ReadImageWidth(), (int)TagReader.ReadImageLength());
+                return CachedDimensions.Value;
+            } 
+        }
+
+        public Maths.Rational Framerate
+        {
+            get
+            {
+                if (!CachedFramerate.HasValue)
+                {
+                    var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                    CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
+                }
+                return CachedFramerate.Value;
+            }
+        }
+
         public void Dispose()
         {
+            Ifd = null;
             Tiff?.Dispose();
             FieldReader?.Dispose();
             Tiff = null;
             FieldReader = null;
-        }
-
-        public void Sandbox()
-        {
-            /*
-            const int threadCount = 10;
-            var list = new List<int>(threadCount);
-            for (var i = 0; i < threadCount; i++) list.Add(i);
-
-            using (var countdownEvent = new CountdownEvent(threadCount))
-            {
-                for (var i = 0; i < threadCount; i++)
-                    ThreadPool.QueueUserWorkItem(
-                        x =>
-                        {
-                            Console.WriteLine(x);
-                            countdownEvent.Signal();
-                        }, list[i]);
-
-                countdownEvent.Wait();
-            }
-            Console.WriteLine("done");
-            */
         }
     }
 }

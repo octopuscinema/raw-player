@@ -21,6 +21,8 @@ namespace Octopus.Player.Core.Playback
         public virtual List<Essence> SupportedEssence { get; }
         public State State { get; protected set; }
         public IClip Clip { get; protected set; }
+        public bool IsPlaying { get { return State == State.Playing; } }
+        public bool IsPaused { get { return State == State.Paused; } }
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -29,6 +31,9 @@ namespace Octopus.Player.Core.Playback
             return Clip != null;
         }
         public abstract bool SupportsClip(IClip clip);
+        public abstract void Stop();
+        public abstract void Play();
+        public abstract void Pause();
     }
 }
 

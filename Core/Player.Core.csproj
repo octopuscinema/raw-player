@@ -22,11 +22,11 @@
     <None Remove="Decode\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="OpenTK.Mathematics" Version="4.7.2" />
     <PackageReference Include="TiffLibrary" Version="0.6.65" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Decoders\" />
-    <Folder Include="Maths\" />
     <Folder Include="Maths\Colour\" />
   </ItemGroup>
 </Project>

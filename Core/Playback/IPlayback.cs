@@ -20,6 +20,13 @@ namespace Octopus.Player.Core.Playback
 		State State { get; }
 		IClip Clip { get; }
 
+		// Playback controls
+		void Stop();
+		void Play();
+		void Pause();
+		bool IsPlaying { get; }
+		bool IsPaused { get; }
+
 		Error Open(IClip clip);
 		bool IsOpen();
 		void Close();
