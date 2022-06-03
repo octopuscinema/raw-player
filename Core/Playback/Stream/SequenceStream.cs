@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Octopus.Player.Core.Playback
@@ -8,8 +9,11 @@ namespace Octopus.Player.Core.Playback
     {
         public IClip Clip { get; protected set; }
 
+        List<uint> RequestedFrames { get; set; }
+
         protected SequenceStream(IClip clip)
         {
+            Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
 
             // Example usage of thread pool
@@ -35,5 +39,14 @@ namespace Octopus.Player.Core.Playback
         }
 
         public abstract void Dispose();
+
+        public FrameRequestResult RequestFrame(uint frameNumber)
+        {
+            // Sanity check
+            if (frameNumber >= Clip.Metadata.DurationFrames )
+                return FrameRequestResult.ErrorFrameOutOfRange;
+
+            return FrameRequestResult.Success;
+        }
     }
 }

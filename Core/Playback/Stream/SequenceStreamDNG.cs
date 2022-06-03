@@ -21,10 +21,5 @@ namespace Octopus.Player.Core.Playback
                 DNGReader = null;
             }
         }
-
-        public void RequestFrame(uint frameIndex)
-        {
-
-        }
     }
 }

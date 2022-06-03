@@ -4,8 +4,18 @@ using System.Text;
 
 namespace Octopus.Player.Core.Playback
 {
-    internal interface ISequenceStream : IDisposable
+    public enum FrameRequestResult
     {
-        
+        Success,
+        FrameAlreadyInProgress,
+        ErrorFrameOutOfRange,
+        ErrorFramePreviouslyFailed,
+        ErrorBufferFull,
+        ErrorUnknown
+    }
+
+    public interface ISequenceStream : IDisposable
+    {
+        FrameRequestResult RequestFrame(uint frameNumber);
     }
 }
