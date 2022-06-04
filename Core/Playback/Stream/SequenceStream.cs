@@ -9,12 +9,18 @@ namespace Octopus.Player.Core.Playback
     {
         public IClip Clip { get; protected set; }
 
-        List<uint> RequestedFrames { get; set; }
+        Queue<uint> RequestedFrames { get; set; }
+        List<uint> FramesInProgress { get; set; }
+
+        List<uint> DecodedFrames { get; set; }
 
         protected SequenceStream(IClip clip)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
+
+            RequestedFrames = new Queue<uint>();// (int)clip.Metadata.Framerate.ToSingle());
+            FramesInProgress = new List<uint>();
 
             // Example usage of thread pool
             /*
