@@ -12,8 +12,13 @@ namespace Octopus.Player.Core.Playback.Stream
     public struct SequenceFrame
     {
 		public volatile uint frameNumber;
-		public volatile GPU.Render.ITexture imageGPU;
+		public GPU.Render.ITexture gpuImage;
 		public volatile SequenceFrameState state;
+
+		public SequenceFrame(GPU.Render.IContext gpuContext)
+        {
+			gpuImage = gpuContext.CreateTexture();
+        }
 		/*
 		std::atomic_uint64_t FrameNumber;
 		mutable std::vector<u8> pDecodedImage8Bit;

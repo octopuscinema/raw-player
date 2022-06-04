@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 
-namespace Octopus.Player.GPU.OpenGL
+namespace Octopus.Player.GPU.OpenGL.Render
 {
     public class Context : IContext
     {
@@ -16,6 +16,8 @@ namespace Octopus.Player.GPU.OpenGL
 
         public ITexture CreateTexture()
         {
+            //var texture = new Texture();
+            //Textures
             return null;
         }
 
