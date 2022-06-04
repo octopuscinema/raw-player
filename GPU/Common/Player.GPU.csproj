@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Octopus.Player.GPU</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="OpenTK.Mathematics" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTK.Mathematics" Version="4.7.2" />
+  </ItemGroup>
+</Project>

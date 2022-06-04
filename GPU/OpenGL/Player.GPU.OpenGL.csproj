@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Octopus.Player.GPU.OpenGL</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Render\" />
+    <None Remove="OpenTK.Graphics" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Render\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTK.Graphics" Version="4.7.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Player.GPU.csproj" />
+  </ItemGroup>
+</Project>

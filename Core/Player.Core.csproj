@@ -29,4 +29,7 @@
     <Folder Include="Decoders\" />
     <Folder Include="Maths\Colour\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GPU\Common\Player.GPU.csproj" />
+  </ItemGroup>
 </Project>

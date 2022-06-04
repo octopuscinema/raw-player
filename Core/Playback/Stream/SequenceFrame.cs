@@ -4,9 +4,16 @@ using System.Text;
 
 namespace Octopus.Player.Core.Playback.Stream
 {
+	public enum SequenceFrameState
+    {
+
+    }
+
     public struct SequenceFrame
     {
-		uint FrameNumber { get; set; }
+		public volatile uint frameNumber;
+		public volatile GPU.Render.ITexture imageGPU;
+		public volatile SequenceFrameState state;
 		/*
 		std::atomic_uint64_t FrameNumber;
 		mutable std::vector<u8> pDecodedImage8Bit;

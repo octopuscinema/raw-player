@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.UI", "UI\Common\Play
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Core", "Core\Player.Core.csproj", "{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.GPU", "GPU\Common\Player.GPU.csproj", "{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.GPU.OpenGL", "GPU\OpenGL\Player.GPU.OpenGL.csproj", "{727A0B41-E7C9-4147-B83A-E24475F623DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0197F082-CEA8-4CFF-96CC-72D28E2E67E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{727A0B41-E7C9-4147-B83A-E24475F623DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{727A0B41-E7C9-4147-B83A-E24475F623DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{727A0B41-E7C9-4147-B83A-E24475F623DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{727A0B41-E7C9-4147-B83A-E24475F623DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
