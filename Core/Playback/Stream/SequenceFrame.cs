@@ -6,7 +6,7 @@ namespace Octopus.Player.Core.Playback.Stream
 {
 	public enum SequenceFrameState
     {
-
+		Empty
     }
 
     public struct SequenceFrame
@@ -17,8 +17,10 @@ namespace Octopus.Player.Core.Playback.Stream
 
 		public SequenceFrame(GPU.Render.IContext gpuContext)
         {
-			gpuImage = gpuContext.CreateTexture();
-        }
+			gpuImage = gpuContext.CreateTexture(new OpenTK.Mathematics.Vector2i(0,0), GPU.Render.TextureFormat.R16);
+			state = SequenceFrameState.Empty;
+			frameNumber = 0;
+		}
 		/*
 		std::atomic_uint64_t FrameNumber;
 		mutable std::vector<u8> pDecodedImage8Bit;

@@ -2,6 +2,7 @@
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
+using System.Diagnostics;
 
 namespace Octopus.Player.GPU.OpenGL.Render
 {
@@ -21,13 +22,24 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Format = format;
 
             // Create the texture with blank data
-            Handle = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D,Handle);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
-            Context.CheckError();
-
             // TODO: set mipmap/filter and clamp options
-            Valid = true;
+            Action createTextureAction = () =>
+            {
+                Handle = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture2D, Handle);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
+                Context.CheckError();
+                Valid = true;
+            };
+
+            // Support creation of OpenGL texture outside of render thread but warn about it
+            if (context.RenderThreadId != System.Threading.Thread.CurrentThread.ManagedThreadId)
+            {
+                Console.WriteLine("Creating OpenGL texture asyncrhonosly from outside of render thread");
+                context.EnqueueRenderAction(createTextureAction);
+            }
+            else
+                createTextureAction();
         }
 
         public Vector2i Dimensions { get; private set; }
@@ -36,14 +48,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Dispose()
         {
+            Debug.Assert(Valid,"Attempting to dispose invalid texture");
             GL.DeleteTexture(Handle);
             Valid = false;
         }
 
         public void Modify(Vector2i dimensions, TextureFormat format, IntPtr imageData, uint dataSizeBytes)
         {
-            if (dimensions != Dimensions || format != Format)
-                throw new Exception("Modify does not support dimension or format changes");
+            Debug.Assert(dimensions == Dimensions && format == Format, "Modify does not support dimension or format changes");
 
             Vector2i offset = new Vector2i(0, 0);
             Vector2i size = dimensions;

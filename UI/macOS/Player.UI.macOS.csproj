@@ -11,6 +11,7 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,8 +55,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="Xamarin.Mac" />
-    <Reference Include="OpenTK" />
+    <Reference Include="Xamarin.Mac">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces">
       <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\netstandard2.1\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -68,6 +70,7 @@
     <Reference Include="TiffLibrary">
       <HintPath>..\..\packages\TiffLibrary.0.6.65\lib\netstandard2.1\TiffLibrary.dll</HintPath>
     </Reference>
+    <Reference Include="OpenTK" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -118,6 +121,12 @@
     <ProjectReference Include="..\Common\Player.UI.csproj">
       <Project>{292E0AB5-280A-46B0-97C4-7A9ABD794413}</Project>
       <Name>Player.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj">
+      <Name>Player.GPU.OpenGL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GPU\Common\Player.GPU.csproj">
+      <Name>Player.GPU</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

@@ -52,16 +52,6 @@ namespace Octopus.Player.UI.macOS
 				if (dialog.Urls.Length == 0)
 					return null;
 
-				/*
-				var alert = new NSAlert()
-				{
-					AlertStyle = NSAlertStyle.Informational,
-					InformativeText = "Selected: " + url.Path,
-					MessageText = "Folder Selected"
-				};
-				alert.RunModal();
-				*/
-
 				var url = dialog.Urls[0];
 				if (url != null)
 					return url.Path;

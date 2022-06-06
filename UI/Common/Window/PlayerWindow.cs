@@ -8,10 +8,13 @@ namespace Octopus.Player.UI
     {
         private INativeWindow NativeWindow { get; set; }
         public Core.Playback.IPlayback Playback { get; private set; }
+        public bool ForceRender { get; private set; }
+        GPU.Render.IContext RenderContext { get; set; }
 
         public PlayerWindow(INativeWindow nativeWindow)
         {
             NativeWindow = nativeWindow;
+            ForceRender = true;
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -65,7 +68,7 @@ namespace Octopus.Player.UI
             return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
         }
 
-        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.IPlayback, new()
+        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.Playback, new()
         {
             var dngValidity = clip.Validate();
             if (dngValidity != Core.Error.None)
@@ -86,6 +89,17 @@ namespace Octopus.Player.UI
 
             // Open the clip
             return Playback.Open(clip);
+        }
+
+        public void OnRenderInit(GPU.Render.IContext renderContext)
+        {
+            RenderContext = renderContext;
+        }
+
+        public void OnRenderFrame(double timeInterval)
+        {
+            RenderContext.OnRenderFrame(timeInterval);
+            ForceRender = false;
         }
     }
 }

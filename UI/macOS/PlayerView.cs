@@ -14,7 +14,7 @@ namespace Octopus.Player.UI.macOS
     {
         private OpenGLLayer GLLayer { get; set; }
 
-        private NativePlayerWindow PlayerWindow { get { return (NativePlayerWindow)Window; } }
+        private NativePlayerWindow NativePlayerWindow { get { return (NativePlayerWindow)Window; } }
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
@@ -30,7 +30,7 @@ namespace Octopus.Player.UI.macOS
         public override void AwakeFromNib()
         {
             // Create OpenGL layer
-            GLLayer = new OpenGLLayer();
+            GLLayer = new OpenGLLayer(NativePlayerWindow.PlayerWindow);
             GLLayer.ContentsScale = Window.BackingScaleFactor;
             GLLayer.Frame = Frame;
             GLLayer.Position = new CGPoint(0, 0);
@@ -65,14 +65,14 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDown(NSEvent theEvent)
         {
-            if (PlayerWindow != null)
-                PlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount);
         }
 
         public override void RightMouseDown(NSEvent theEvent)
         {
-            if (PlayerWindow != null)
-                PlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
         }
 
         public override void DidChangeBackingProperties()
@@ -85,7 +85,7 @@ namespace Octopus.Player.UI.macOS
 
         partial void toggle(NSButton sender)
         {
-            GLLayer.Animate = !GLLayer.Animate;
+            //GLLayer.Redraw = !GLLayer.Redraw;
         }
     }
 }

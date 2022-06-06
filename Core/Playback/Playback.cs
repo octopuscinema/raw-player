@@ -6,10 +6,11 @@ namespace Octopus.Player.Core.Playback
 {
 	public abstract class Playback : IPlayback
 	{
-		public Playback()
+		public Playback(GPU.Render.IContext renderContext)
 		{
             State = State.Empty;
-		}
+            RenderContext = renderContext;
+        }
 
         ~Playback()
         {
@@ -34,6 +35,8 @@ namespace Octopus.Player.Core.Playback
         public abstract void Stop();
         public abstract void Play();
         public abstract void Pause();
+
+        protected GPU.Render.IContext RenderContext { get; private set; }
     }
 }
 

@@ -6,14 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Render\" />
-    <None Remove="OpenTK.Graphics" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Render\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTK.Graphics" Version="4.7.2" />
+    <Reference Include="OpenTK">
+      <HintPath>\Library\Frameworks\Xamarin.Mac.framework\Versions\8.10.0.1\lib\64bits\full\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Mac">
+      <HintPath>\Library\Frameworks\Xamarin.Mac.framework\Versions\8.10.0.1\lib\64bits\full\Xamarin.Mac.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Player.GPU.csproj" />

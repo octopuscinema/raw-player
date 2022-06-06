@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.Playback
 {
@@ -8,7 +9,8 @@ namespace Octopus.Player.Core.Playback
 	{
         private SequenceStreamDNG SequenceStreamDNG { get; set; }
 
-		public PlaybackCinemaDNG()
+		public PlaybackCinemaDNG(/*GPU.Render.IContext renderContext*/)
+            : base(null)
 		{
             
 		}
@@ -39,18 +41,21 @@ namespace Octopus.Player.Core.Playback
             if (clip.ReadMetadata() != Error.None)
                 return Error.BadMetadata;
             Clip = clip;
-/*
-            try
-            {
-                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
-                return dngFiles.Any() ? Error.None : Error.NoVideoStream;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
-                return Error.BadPath;
-            }
-*/
+            /*
+                        try
+                        {
+                            var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
+                            return dngFiles.Any() ? Error.None : Error.NoVideoStream;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
+                            return Error.BadPath;
+                        }
+            */
+
+            // Test texture creation
+            //var tex = RenderContext.CreateTexture(new Vector2i(0, 0), GPU.Render.TextureFormat.R16);
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);
