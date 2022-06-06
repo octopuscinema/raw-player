@@ -55,9 +55,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="Xamarin.Mac">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Xamarin.Mac" />
     <Reference Include="Microsoft.Bcl.AsyncInterfaces">
       <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\netstandard2.1\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -122,11 +120,12 @@
       <Project>{292E0AB5-280A-46B0-97C4-7A9ABD794413}</Project>
       <Name>Player.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj">
-      <Name>Player.GPU.OpenGL</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\GPU\Common\Player.GPU.csproj">
       <Name>Player.GPU</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.macOS.csproj">
+      <Project>{E4E15C79-CA11-4C9D-851C-36B27F5DCA46}</Project>
+      <Name>Player.GPU.OpenGL.macOS</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
