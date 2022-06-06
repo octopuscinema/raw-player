@@ -8,14 +8,7 @@
   <ItemGroup>
     <Folder Include="Render\" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="OpenTK">
-      <HintPath>\Library\Frameworks\Xamarin.Mac.framework\Versions\8.10.0.1\lib\64bits\full\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="Xamarin.Mac">
-      <HintPath>\Library\Frameworks\Xamarin.Mac.framework\Versions\8.10.0.1\lib\64bits\full\Xamarin.Mac.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Common\Player.GPU.csproj" />
   </ItemGroup>
