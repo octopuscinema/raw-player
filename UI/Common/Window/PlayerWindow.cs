@@ -12,8 +12,6 @@ namespace Octopus.Player.UI
 
         public PlayerWindow(INativeWindow nativeWindow)
         {
-            // Remove this commented out line if teh trace appears on MSVC (Windows) without it
-            //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             NativeWindow = nativeWindow;
         }
 

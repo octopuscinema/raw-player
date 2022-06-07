@@ -11,8 +11,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
     public class Shader : IShader
     {
         public string Name { get; private set; }
-        public bool Valid { get; private set; }
+        public bool Valid {  get { return valid; } }
         public int Program { get; private set; }
+
+        private volatile bool valid;
 
         public Shader(Context context, Stream shaderSourceStream, string name = null)
         {
@@ -74,7 +76,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 GL.DeleteShader(vertexShader);
                 GL.DeleteShader(fragmentShader);
                 Context.CheckError();
-                Valid = true;
+                valid = true;
             };
 
             context.EnqueueRenderAction(buildShaderAction);
@@ -82,7 +84,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Bind()
         {
-            Debug.Assert(Valid, "Attempting to bind an invalid shader");
+            Debug.Assert(valid, "Attempting to bind an invalid shader");
             GL.UseProgram(Program);
             Context.CheckError();
         }
@@ -95,14 +97,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Dispose()
         {
-            Debug.Assert(Valid, "Attempting to dispose invalid shader");
+            Debug.Assert(valid, "Attempting to dispose invalid shader");
 #if __MACOS__
             GL.DeleteProgram(Program, null);
 #else
             GL.DeleteProgram(Program);
 #endif
             Context.CheckError();
-            Valid = false;
+            valid = false;
         }
     }
 }

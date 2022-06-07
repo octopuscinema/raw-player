@@ -9,8 +9,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
 	public sealed class Texture : ITexture
 	{
         public string Name { get; private set; }
-        public bool Valid { get; private set; }
+        public bool Valid { get { return valid; } }
         int Handle { get; set; }
+        private volatile bool valid;
 
         public Texture(Context context, Vector2i dimensions, TextureFormat format, string name = null)
             : this(context, dimensions, format, IntPtr.Zero, name)
@@ -32,7 +33,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 GL.BindTexture(TextureTarget.Texture2D, Handle);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
                 Context.CheckError();
-                Valid = true;
+                valid = true;
             };
 
             context.EnqueueRenderAction(createTextureAction);
@@ -44,13 +45,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Dispose()
         {
-            Debug.Assert(Valid,"Attempting to dispose invalid texture");
+            Debug.Assert(valid,"Attempting to dispose invalid texture");
             GL.DeleteTexture(Handle);
-            Valid = false;
+            valid = false;
         }
 
         public void Modify(Vector2i dimensions, TextureFormat format, IntPtr imageData, uint dataSizeBytes)
         {
+            Debug.Assert(valid, "Attempting to modify invalid texture");
             Debug.Assert(dimensions == Dimensions && format == Format, "Modify does not support dimension or format changes");
 
             Vector2i offset = new Vector2i(0, 0);

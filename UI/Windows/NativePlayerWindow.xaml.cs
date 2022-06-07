@@ -54,6 +54,7 @@ namespace Octopus.Player.UI.Windows
             if (RenderContext == null)
             {
                 RenderContext = new GPU.OpenGL.Render.Context(GLControl);
+                RenderContext.ForceRender += delegate { GLControl.InvalidateVisual(); };
                 PlayerWindow.OnRenderInit(RenderContext);
             }
 

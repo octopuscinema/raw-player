@@ -63,8 +63,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             foreach (string resource in resources) {
                 if (resource.Contains(shaderResourceName))
                 {
-                    var stream = assembly.GetManifestResourceStream(resource);
-                    var shader = new Shader(this, stream, name);
+                    var shader = new Shader(this, assembly.GetManifestResourceStream(resource), name);
                     shaders.Add(shader);
                     return shader;
                 }
