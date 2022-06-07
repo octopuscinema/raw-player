@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -27,7 +28,7 @@ namespace Octopus.Player.Core.IO.DNG
                 DurationFrames = (uint)((int)LastFrame - (int)FirstFrame) + 1;
             }
             else
-                Console.WriteLine("Warning, failed to determine CinemaDNG sequence duration for clip: " + clip.Path);
+                Trace.WriteLine("Warning, failed to determine CinemaDNG sequence duration for clip: " + clip.Path);
         }
     }
 }

@@ -13,6 +13,8 @@
     <None Remove="Maths\Colour\" />
     <None Remove="IO\DNG\" />
     <None Remove="Playback\Item\" />
+    <None Remove="Resources\GLSL\blit.vert" />
+    <None Remove="Resources\GLSL\PipelineCinemaDNG.glsl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +22,10 @@
     <None Remove="IO\" />
     <None Remove="Playback\" />
     <None Remove="Decode\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\GLSL\PipelineCinemaDNG.glsl" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.7.2" />

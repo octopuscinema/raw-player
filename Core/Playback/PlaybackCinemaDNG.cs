@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.Playback
@@ -8,12 +9,29 @@ namespace Octopus.Player.Core.Playback
 	public class PlaybackCinemaDNG : Playback
 	{
         private SequenceStreamDNG SequenceStreamDNG { get; set; }
+        private IShader GpuPipelineProgram { get; set; }
 
-		public PlaybackCinemaDNG(/*GPU.Render.IContext renderContext*/)
-            : base(null)
+		public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
+            : base(renderContext)
 		{
-            
-		}
+            // Load GPU program for DNG pipeline
+            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
+
+            var textureTest = renderContext.CreateTexture(new Vector2i(1920, 1080), TextureFormat.R16);
+            /*
+            GPU.Render.IContext renderContext = null;
+
+            // Load GPU programs
+            switch (renderContext.Api)
+            {
+                case GPU.Render.Api.OpenGL:
+
+                    break;
+                default:
+                    throw new Exception("Unsupported render API");
+            }
+            */
+        }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
 
@@ -49,7 +67,7 @@ namespace Octopus.Player.Core.Playback
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
+                            Trace.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
                             return Error.BadPath;
                         }
             */

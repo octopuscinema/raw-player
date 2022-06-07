@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Render\" />
+    <PackageReference Include="OpenTK.Graphics" Version="4.7.2" />
   </ItemGroup>
 
   <ItemGroup>

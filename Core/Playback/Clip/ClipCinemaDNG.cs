@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Octopus.Player.Core.Playback
@@ -40,13 +41,12 @@ namespace Octopus.Player.Core.Playback
             {
                 using var reader = new IO.DNG.Reader(dngPath);
                 Metadata = new IO.DNG.MetadataCinemaDNG(reader, this);
+                return Error.None;
             }
             catch
             {
                 return Error.BadFile;
             }
-
-            return Error.NotImplmeneted;
         }
 
         public Error GetFramePath(uint frame, out string path)
@@ -117,7 +117,7 @@ namespace Octopus.Player.Core.Playback
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
+                Trace.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
                 return Error.BadPath;
             }
         }

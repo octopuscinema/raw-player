@@ -13,6 +13,7 @@ namespace Octopus.Player.UI
 
         public PlayerWindow(INativeWindow nativeWindow)
         {
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             NativeWindow = nativeWindow;
             ForceRender = true;
         }
@@ -68,7 +69,7 @@ namespace Octopus.Player.UI
             return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
         }
 
-        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.Playback, new()
+        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.Playback
         {
             var dngValidity = clip.Validate();
             if (dngValidity != Core.Error.None)
@@ -83,7 +84,7 @@ namespace Octopus.Player.UI
 
             // Create the playback if necessary
             if (Playback == null)
-                Playback = new T();
+                Playback = Activator.CreateInstance(typeof(T), RenderContext) as T;
             else
                 Playback.Close();
 

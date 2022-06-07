@@ -8,16 +8,18 @@ namespace Octopus.Player.GPU.OpenGL.Render
 {
 	public sealed class Texture : ITexture
 	{
+        public string Name { get; private set; }
         public bool Valid { get; private set; }
         int Handle { get; set; }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format)
-            : this(context, dimensions, format, IntPtr.Zero)
+        public Texture(Context context, Vector2i dimensions, TextureFormat format, string name = null)
+            : this(context, dimensions, format, IntPtr.Zero, name)
         {
         }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, IntPtr imageData)
+        public Texture(Context context, Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null)
 		{
+            Name = name;
             Dimensions = dimensions;
             Format = format;
 
@@ -35,7 +37,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             // Support creation of OpenGL texture outside of render thread but warn about it
             if (context.RenderThreadId != System.Threading.Thread.CurrentThread.ManagedThreadId)
             {
-                Console.WriteLine("Creating OpenGL texture asyncrhonosly from outside of render thread");
+                Trace.WriteLine("Creating OpenGL texture asyncrhonosly from outside of render thread");
                 context.EnqueueRenderAction(createTextureAction);
             }
             else

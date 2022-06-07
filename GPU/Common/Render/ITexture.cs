@@ -16,6 +16,7 @@ namespace Octopus.Player.GPU.Render
 
 	public interface ITexture : IDisposable
 	{
+		string Name { get; }
 		Vector2i Dimensions { get; }
 		TextureFormat Format { get; }
 		bool Valid { get; }

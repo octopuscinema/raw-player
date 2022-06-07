@@ -34,13 +34,13 @@ namespace Octopus.Player.Core.Playback
                     ThreadPool.QueueUserWorkItem(
                         x =>
                         {
-                            Console.WriteLine(x);
+                            Trace.WriteLine(x);
                             countdownEvent.Signal();
                         }, list[i]);
 
                 countdownEvent.Wait();
             }
-            Console.WriteLine("done");
+            Trace.WriteLine("done");
             */
         }
 

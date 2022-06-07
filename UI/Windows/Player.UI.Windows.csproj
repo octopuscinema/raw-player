@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj" />
     <ProjectReference Include="..\Common\Player.UI.csproj" />
   </ItemGroup>
 

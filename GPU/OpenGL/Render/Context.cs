@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
@@ -9,7 +11,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
 {
     public class Context : IContext
     {
-        public List<ITexture> Textures { get; private set; }
+        public GPU.Render.Api Api { get { return Api.OpenGL; } }
+
+        private List<ITexture> textures;
+        private List<IShader> shaders;
+        public IList<ITexture> Textures { get { return textures.AsReadOnly(); } }
+        public IList<IShader> Shaders { get { return shaders.AsReadOnly(); } }
 
         object renderActionsLock;
         private List<Action> RenderActions { get; set; }
@@ -21,30 +28,63 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public Context(object nativeContext)
         {
             NativeContext = nativeContext;
-            Textures = new List<ITexture>();
+            textures = new List<ITexture>();
+            shaders = new List<IShader>();
             RenderActions = new List<Action>();
             renderActionsLock = new object();
             RenderThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 
-            Console.WriteLine("Created OpenGL render context on thread: " + RenderThreadId);
+            Trace.WriteLine("Created OpenGL render context on thread: " + RenderThreadId);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format)
+        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null)
         {
-            return CreateTexture(dimensions, format, IntPtr.Zero);
+            return CreateTexture(dimensions, format, IntPtr.Zero, name);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, IntPtr imageData)
+        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null)
         {
             var texture = new Texture(this, dimensions, format, imageData);
-            Textures.Add(texture);
+            textures.Add(texture);
             return texture;
         }
 
         public void DestroyTexture(ITexture texture)
         {
-            Textures.Remove(texture);
+            textures.Remove(texture);
             texture.Dispose();
+        }
+
+        public IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null)
+        {
+            if (!Path.HasExtension(shaderResourceName))
+                shaderResourceName += ".glsl";
+
+            string[] resources = assembly.GetManifestResourceNames();
+            foreach (string resource in resources) {
+                if (resource.Contains(shaderResourceName))
+                {
+                    var stream = assembly.GetManifestResourceStream(resource);
+                    var shader = new Shader(this, stream, name);
+                    shaders.Add(shader);
+                    return shader;
+                }
+            }
+
+            throw new Exception("Error locating GLSL shader resource: " + shaderResourceName);
+        }
+
+        public IShader CreateShader(Stream vertexShaderSource, Stream fragmentShaderSource, string name = null)
+        {
+            var shader = new Shader(this, vertexShaderSource, fragmentShaderSource, name);
+            shaders.Add(shader);
+            return shader;
+        }
+
+        public void DestroyShader(IShader shader)
+        {
+            shaders.Remove(shader);
+            shader.Dispose();
         }
 
         public static void CheckError()
@@ -115,18 +155,24 @@ namespace Octopus.Player.GPU.OpenGL.Render
             //GL.Viewport(new Rectangle(0, 0, 300, 300));
             //GL.ClearColor (NSColor.Clear.UsingColorSpace (NSColorSpace.CalibratedRGB));
             //OpenTK.Graphics.OpenGL.Color4.Red;
-            GL.ClearColor(1, 0, 0, 1);// Color.Red);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            Context.CheckError();
+
+            GL.ClearColor(0, 0, 1, 1);// Color.Red);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            /*
             GL.Enable(EnableCap.DepthTest);
             GL.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
             GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
+            Context.CheckError();
             if (previousTime == 0)
                 previousTime = timeInterval;
             rotation += 15.0 * (timeInterval - previousTime);
             GL.LoadIdentity();
+            Context.CheckError();
             double comp = 1 / Math.Sqrt(3.0);
             GL.Rotate(rotation, comp, comp, comp);
-
+            Context.CheckError();
             {
                 long f, i;
                 double fSize = 0.5;
@@ -151,20 +197,22 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     GL.End();
                 }
             }
-
+            Context.CheckError();
             GL.Flush();
             previousTime = timeInterval;
             GL.Disable(EnableCap.DepthTest);
-            
+            */
+            Context.CheckError();
+
             //GL.Hint (HintTarget.LineSmoothHint, HintMode.DontCare);
             //GL.Hint (HintTarget.PolygonSmoothHint, HintMode.DontCare);
         }
 
         public void Dispose()
         {
-            foreach (var texture in Textures)
+            foreach (var texture in textures)
                 texture.Dispose();
-            Textures = null;
+            textures = null;
 
             lock (renderActionsLock)
             {

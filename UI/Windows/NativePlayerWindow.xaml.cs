@@ -27,6 +27,7 @@ namespace Octopus.Player.UI.Windows
         public bool IsFullscreen { get; private set; }
         private WindowState NonFullscreenWindowState { get; set; }
         private PlayerWindow PlayerWindow { get; set; }
+        public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
         public NativePlayerWindow()
         {
@@ -50,8 +51,13 @@ namespace Octopus.Player.UI.Windows
 
         private void GLControl_OnRender(TimeSpan delta)
         {
-            GL.ClearColor(Color4.Blue);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            if (RenderContext == null)
+            {
+                RenderContext = new GPU.OpenGL.Render.Context(GLControl);
+                PlayerWindow.OnRenderInit(RenderContext);
+            }
+
+            PlayerWindow.OnRenderFrame(delta.TotalSeconds);
         }
 
         private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
@@ -148,7 +154,7 @@ namespace Octopus.Player.UI.Windows
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                Trace.WriteLine(e.Message);
             }
         }
     }
