@@ -80,11 +80,13 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             // Read source code from streams
             StreamReader shaderReader = new StreamReader(shaderSourceStream);
+            var shaderSource = shaderReader.ReadToEnd();
+            shaderReader.Dispose();
+            shaderSourceStream.Dispose();
 
             // Create and compile vertex and fragment shader
             var vertexShader = GL.CreateShader(ShaderType.VertexShader);
             var fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            var shaderSource = shaderReader.ReadToEnd();
             GL.ShaderSource(vertexShader, "#define VERT\n" + shaderSource);
             GL.ShaderSource(fragmentShader, "#define FRAG\n" + shaderSource);
             GL.CompileShader(vertexShader);
@@ -116,7 +118,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             // Check link status
             int programLinkStatus;
+#if __MACOS__
+            GL.GetProgram(Program, ProgramParameter.LinkStatus, out programLinkStatus);
+#else
             GL.GetProgram(Program, GetProgramParameterName.LinkStatus, out programLinkStatus);
+#endif
             if (programLinkStatus != 1)
                 throw new Exception(Name != null ? "GLSL shader '" + Name + "' failed to link" : "GLSL shader failed to link");
 
@@ -145,7 +151,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void Dispose()
         {
             Debug.Assert(Valid, "Attempting to dispose invalid shader");
+#if __MACOS__
+            GL.DeleteProgram(Program, null);
+#else
             GL.DeleteProgram(Program);
+#endif
             Context.CheckError();
             Valid = false;
         }
