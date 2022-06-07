@@ -10,17 +10,21 @@ namespace Octopus.Player.GPU.Render
         Metal,
         Direct3D
     }
+
+    public delegate void ForceRender();
+
     public interface IContext : IDisposable
     {
         Api Api { get; }
 
         object NativeContext { get; }
 
+        event ForceRender ForceRender;
+
         ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null);
         ITexture CreateTexture(Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null);
         void DestroyTexture(ITexture texture);
 
-        IShader CreateShader(Stream vertexShaderSource, Stream fragmentShaderSource, string name = null);
         IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null);
         void DestroyShader(IShader shader);
         

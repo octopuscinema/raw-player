@@ -8,7 +8,6 @@ namespace Octopus.Player.UI
     {
         private INativeWindow NativeWindow { get; set; }
         public Core.Playback.IPlayback Playback { get; private set; }
-        public bool ForceRender { get; private set; }
         GPU.Render.IContext RenderContext { get; set; }
 
         public PlayerWindow(INativeWindow nativeWindow)
@@ -16,7 +15,6 @@ namespace Octopus.Player.UI
             // Remove this commented out line if teh trace appears on MSVC (Windows) without it
             //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             NativeWindow = nativeWindow;
-            ForceRender = true;
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -101,7 +99,6 @@ namespace Octopus.Player.UI
         public void OnRenderFrame(double timeInterval)
         {
             RenderContext.OnRenderFrame(timeInterval);
-            ForceRender = false;
         }
     }
 }

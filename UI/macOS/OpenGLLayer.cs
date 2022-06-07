@@ -18,6 +18,8 @@ namespace Octopus.Player.UI.macOS
     {
         PlayerWindow PlayerWindow { get; set; }
         public GPU.OpenGL.Render.Context RenderContext { get; private set; }
+
+        volatile bool forceRender;
         
         public OpenGLLayer(PlayerWindow playerWindow) : base()
         {
@@ -42,11 +44,12 @@ namespace Octopus.Player.UI.macOS
         void Initialize()
         {
             Asynchronous = true;
+            forceRender = true;
         }
 
         public override bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, ref CVTimeStamp timeStamp)
         {
-            return PlayerWindow.ForceRender;
+            return forceRender;
         }
 
         public override void DrawInCGLContext(OpenGL.CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, ref CVTimeStamp timeStamp)
@@ -54,10 +57,12 @@ namespace Octopus.Player.UI.macOS
             if (RenderContext == null)
             {
                 RenderContext = new GPU.OpenGL.Render.Context(glContext);
+                RenderContext.ForceRender += delegate { forceRender = true; };
                 PlayerWindow.OnRenderInit(RenderContext);
             }
 
             PlayerWindow.OnRenderFrame(timeInterval);
+            forceRender = false;
         }
 
         public override CGLPixelFormat CopyCGLPixelFormatForDisplayMask (uint mask)

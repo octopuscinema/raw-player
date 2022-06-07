@@ -14,23 +14,10 @@ namespace Octopus.Player.Core.Playback
 		public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
 		{
-            // Load GPU program for DNG pipeline
+            // Load GPU program for CinemaDNG pipeline
             GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
 
-            var textureTest = renderContext.CreateTexture(new Vector2i(1920, 1080), TextureFormat.R16);
-            /*
-            GPU.Render.IContext renderContext = null;
-
-            // Load GPU programs
-            switch (renderContext.Api)
-            {
-                case GPU.Render.Api.OpenGL:
-
-                    break;
-                default:
-                    throw new Exception("Unsupported render API");
-            }
-            */
+            //var textureTest = renderContext.CreateTexture(new Vector2i(1920, 1080), TextureFormat.R16);
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }

@@ -25,6 +25,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             // Create the texture with blank data
             // TODO: set mipmap/filter and clamp options
+            // Warning, the imageData pointer will probably be invalid when the action is run!
             Action createTextureAction = () =>
             {
                 Handle = GL.GenTexture();
@@ -34,14 +35,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 Valid = true;
             };
 
-            // Support creation of OpenGL texture outside of render thread but warn about it
-            if (context.RenderThreadId != System.Threading.Thread.CurrentThread.ManagedThreadId)
-            {
-                Trace.WriteLine("Creating OpenGL texture asyncrhonosly from outside of render thread");
-                context.EnqueueRenderAction(createTextureAction);
-            }
-            else
-                createTextureAction();
+            context.EnqueueRenderAction(createTextureAction);
         }
 
         public Vector2i Dimensions { get; private set; }

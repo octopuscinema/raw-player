@@ -12,6 +12,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
     public class Context : IContext
     {
         public GPU.Render.Api Api { get { return Api.OpenGL; } }
+        public object NativeContext { get; private set; }
+        public int RenderThreadId { get; private set; }
+        public event ForceRender ForceRender;
 
         private List<ITexture> textures;
         private List<IShader> shaders;
@@ -20,10 +23,6 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         object renderActionsLock;
         private List<Action> RenderActions { get; set; }
-
-        public object NativeContext { get; private set; }
-
-        public int RenderThreadId { get; private set; }
 
         public Context(object nativeContext)
         {
@@ -74,13 +73,6 @@ namespace Octopus.Player.GPU.OpenGL.Render
             throw new Exception("Error locating GLSL shader resource: " + shaderResourceName);
         }
 
-        public IShader CreateShader(Stream vertexShaderSource, Stream fragmentShaderSource, string name = null)
-        {
-            var shader = new Shader(this, vertexShaderSource, fragmentShaderSource, name);
-            shaders.Add(shader);
-            return shader;
-        }
-
         public void DestroyShader(IShader shader)
         {
             shaders.Remove(shader);
@@ -104,6 +96,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             {
                 RenderActions.Add(action);
             }
+            ForceRender?.Invoke();
         }
 
         public void OnRenderFrame(double timeInterval)
