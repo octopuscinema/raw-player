@@ -10,10 +10,9 @@
     <RootNamespace>Octopus.Player.GPU.OpenGL</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
+    <DefineConstants>__MACOS__;__UNIFIED__;DEBUG;TRACE;</DefineConstants>
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>false</EnableCodeSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
@@ -47,10 +46,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Render\Context.cs" />
-    <Compile Include="Render\Texture.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Common\Player.GPU.csproj">
       <Project>{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}</Project>
       <Name>Player.GPU</Name>
@@ -59,6 +54,11 @@
   <ItemGroup>
      <PackageReference Include="OpenTK.Mathematics" version="4.7.2" />
      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Render\Shader.cs" />
+    <Compile Include="Render\Context.cs" />
+    <Compile Include="Render\Texture.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

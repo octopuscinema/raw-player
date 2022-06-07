@@ -13,7 +13,8 @@ namespace Octopus.Player.UI
 
         public PlayerWindow(INativeWindow nativeWindow)
         {
-            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            // Remove this commented out line if teh trace appears on MSVC (Windows) without it
+            //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             NativeWindow = nativeWindow;
             ForceRender = true;
         }
