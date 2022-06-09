@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.GPU.OpenGL.Render
 {
@@ -80,6 +81,32 @@ namespace Octopus.Player.GPU.OpenGL.Render
             };
 
             context.EnqueueRenderAction(buildShaderAction);
+        }
+
+        private int UniformLocation(string uniformName)
+        {
+            var location = GL.GetUniformLocation(Program, uniformName);
+            Context.CheckError();
+            if (location == -1)
+                throw new Exception("Could not find shader uniform '" + uniformName + ((Name == null) ? "' in GLSL shader" : "' in GLSL shader: " + Name));
+            return location;
+        }
+
+        public void SetUniform(string uniformName, float value)
+        {
+            GL.Uniform1(UniformLocation(uniformName), value);
+            Context.CheckError();
+        }
+
+        public void SetUniform(string uniformName, Vector2 value)
+        {
+            GL.Uniform2(UniformLocation(uniformName), value);
+            Context.CheckError();
+        }
+        public void SetUniform(string uniformName, Vector4 value)
+        {
+            GL.Uniform4(UniformLocation(uniformName), value);
+            Context.CheckError();
         }
 
         public void Bind()

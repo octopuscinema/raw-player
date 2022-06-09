@@ -13,7 +13,6 @@ namespace Octopus.Player.GPU.OpenGL.Render
     {
         public GPU.Render.Api Api { get { return Api.OpenGL; } }
         public object NativeContext { get; private set; }
-        public int RenderThreadId { get; private set; }
         public event ForceRender ForceRender;
 
         private List<ITexture> textures;
@@ -24,16 +23,26 @@ namespace Octopus.Player.GPU.OpenGL.Render
         object renderActionsLock;
         private List<Action> RenderActions { get; set; }
 
+        private VertexBuffer Draw2DVertexBuffer { get; set; }
+        private VertexBuffer activeVertexBuffer;
+        private Shader activeShader;
+
         public Context(object nativeContext)
         {
+            // Initialise GPU resource lists
             NativeContext = nativeContext;
             textures = new List<ITexture>();
             shaders = new List<IShader>();
             RenderActions = new List<Action>();
             renderActionsLock = new object();
-            RenderThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 
-            Trace.WriteLine("Created OpenGL render context on thread: " + RenderThreadId);
+            // Create vertex buffer for 2D drawing
+            var vertexFormat = new VertexFormat();
+            vertexFormat.AddParameter(VertexFormatParameter.Position2f);
+            Vector2[] rectVerts = new Vector2[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
+            Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
+
+            Trace.WriteLine("Created OpenGL render context on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
         }
 
         public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null)
@@ -109,99 +118,47 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     RenderActions.Clear();
                 }
             }
-            TestGLRender(timeInterval);
+
+            // Placeholder green
+            GL.ClearColor(0, 1, 0, 1);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        double previousTime;
-        double rotation;
-        float[,] cube_vertices = new float[8, 3] {
-            {-1, -1, 1},  // 2    0
-			{1, -1, 1},   // 1    1
-			{1, 1, 1},    // 0    2
-			{-1, 1, 1},   // 3    3
-			{-1, 1, -1},  // 7    4
-			{1, 1, -1},   // 4    5
-			{-1, -1, -1}, // 6    6
-			{1, -1, -1}   // 5    7
-					
-		};
-        float[,] cube_face_colors = new float[6, 3] {
-            {0.4f, 1.0f, 0.4f}, // flora
-			{0.0f, 0.0f, 1.0f}, // blueberry
-			{0.4f, 0.8f, 1.0f}, // sky
-			{1.0f, 0.8f, 0.4f}, // cantelopue
-			{1.0f, 1.0f, 0.4f}, // blubble gum
-			{0.5f, 0.0f, 0.25f}  // marron
-		};
-        int num_faces = 6;
-        short[,] cube_faces = new short[6, 4] {
-            {3, 0, 1, 2}, // +Z
-			{0, 3, 4, 6}, // -X
-			{2, 1, 7, 5}, // +X
-			{3, 2, 5, 4}, // +Y
-			{1, 0, 6, 7}, // -Y
-			{5, 7, 6, 4}  // -Z
-		};
-        private void TestGLRender(double timeInterval)
+        public void Draw2D(IShader shader, ITexture texture, Vector2i pos, Vector2i size)
         {
-            //GL.Viewport(new Rectangle(0, 0, 300, 300));
-            //GL.ClearColor (NSColor.Clear.UsingColorSpace (NSColorSpace.CalibratedRGB));
-            //OpenTK.Graphics.OpenGL.Color4.Red;
+            SetVertexBuffer(Draw2DVertexBuffer);
+            SetShader((Shader)shader);
+            shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
+            //shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / new Vector2(Width, Height));
+            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+        }
 
-            Context.CheckError();
+        private void SetShader(Shader shader)
+        {
+            if (activeShader == shader)
+                return;
 
-            GL.ClearColor(0, 0, 1, 1);// Color.Red);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            /*
-            GL.Enable(EnableCap.DepthTest);
-            GL.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
-            GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
-            Context.CheckError();
-            if (previousTime == 0)
-                previousTime = timeInterval;
-            rotation += 15.0 * (timeInterval - previousTime);
-            GL.LoadIdentity();
-            Context.CheckError();
-            double comp = 1 / Math.Sqrt(3.0);
-            GL.Rotate(rotation, comp, comp, comp);
-            Context.CheckError();
-            {
-                long f, i;
-                double fSize = 0.5;
-                GL.Begin(BeginMode.Quads);
-                for (f = 0; f < num_faces; f++)
-                {
-                    GL.Color3(cube_face_colors[f, 0], cube_face_colors[f, 1], cube_face_colors[f, 2]);
-                    for (i = 0; i < 4; i++)
-                    {
-                        GL.Vertex3(cube_vertices[cube_faces[f, i], 0] * fSize, cube_vertices[cube_faces[f, i], 1] * fSize, cube_vertices[cube_faces[f, i], 2] * fSize);
-                    }
-                }
+            shader.Bind();
+            activeShader = shader;
+        }
 
-                GL.End();
-                GL.Color3(0, 0, 0);//, 1);// Color.Black);
+        private void SetVertexBuffer(VertexBuffer vertexBuffer)
+        {
+            if (activeVertexBuffer == vertexBuffer)
+                return;
 
-                for (f = 0; f < num_faces; f++)
-                {
-                    GL.Begin(BeginMode.LineLoop);
-                    for (i = 0; i < 4; i++)
-                        GL.Vertex3(cube_vertices[cube_faces[f, i], 0] * fSize, cube_vertices[cube_faces[f, i], 1] * fSize, cube_vertices[cube_faces[f, i], 2] * fSize);
-                    GL.End();
-                }
-            }
-            Context.CheckError();
-            GL.Flush();
-            previousTime = timeInterval;
-            GL.Disable(EnableCap.DepthTest);
-            */
-            Context.CheckError();
-
-            //GL.Hint (HintTarget.LineSmoothHint, HintMode.DontCare);
-            //GL.Hint (HintTarget.PolygonSmoothHint, HintMode.DontCare);
+            if (activeVertexBuffer != null)
+                activeVertexBuffer.Unbind();
+            if ( vertexBuffer != null)
+                vertexBuffer.Bind();
+            activeVertexBuffer = vertexBuffer;
         }
 
         public void Dispose()
         {
+            SetVertexBuffer(null);
+            Draw2DVertexBuffer.Dispose();
+
             foreach (var texture in textures)
                 texture.Dispose();
             textures = null;
