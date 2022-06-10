@@ -100,12 +100,20 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void SetUniform(string uniformName, Vector2 value)
         {
+#if __MACOS__
+            GL.Uniform2(UniformLocation(uniformName), value.X, value.Y);
+#else
             GL.Uniform2(UniformLocation(uniformName), value);
+#endif
             Context.CheckError();
         }
         public void SetUniform(string uniformName, Vector4 value)
         {
+#if __MACOS__
+            GL.Uniform4(UniformLocation(uniformName), value.X, value.Y, value.Z, value.W);
+#else
             GL.Uniform4(UniformLocation(uniformName), value);
+#endif
             Context.CheckError();
         }
 

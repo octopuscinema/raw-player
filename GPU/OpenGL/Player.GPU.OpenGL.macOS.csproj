@@ -59,6 +59,7 @@
     <Compile Include="Render\Shader.cs" />
     <Compile Include="Render\Context.cs" />
     <Compile Include="Render\Texture.cs" />
+    <Compile Include="Render\VertexBuffer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

@@ -130,7 +130,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             SetShader((Shader)shader);
             shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
             //shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / new Vector2(Width, Height));
+#if __MACOS__
+            GL.DrawArrays(BeginMode.TriangleFan, 0, 4);
+#else
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+#endif
         }
 
         private void SetShader(Shader shader)

@@ -25,13 +25,22 @@ namespace Octopus.Player.GPU.OpenGL.Render
             UsageHint = usageHint;
             VertexFormat = vertexFormat;
             SizeBytes = VertexFormat.VertexSizeBytes * vertexCount;
-
+#if __MACOS__
+            int handle;
+            GL.GenBuffers(1, out handle);
+            Handle = handle;
+#else
             Handle = GL.GenBuffer();
+#endif
             GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
             var usageGL = usageHint == GPU.Render.BufferUsageHint.Static ? OpenTK.Graphics.OpenGL.BufferUsageHint.StaticDraw : OpenTK.Graphics.OpenGL.BufferUsageHint.DynamicDraw;
 
             System.Runtime.InteropServices.GCHandle vertexDataHandle = System.Runtime.InteropServices.GCHandle.Alloc(vertexData, System.Runtime.InteropServices.GCHandleType.Pinned);
+#if __MACOS__
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)SizeBytes, vertexDataHandle.AddrOfPinnedObject(), usageGL);
+#else
             GL.BufferData(BufferTarget.ArrayBuffer, (int)SizeBytes, vertexDataHandle.AddrOfPinnedObject(), usageGL);
+#endif
             vertexDataHandle.Free();
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
@@ -76,7 +85,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void Dispose()
         {
             Debug.Assert(valid, "Attempting to dispose invalid vertex buffer");
+#if __MACOS__
+            var handle = Handle;
+            GL.DeleteBuffers(1, ref handle);
+#else
             GL.DeleteBuffer(Handle);
+#endif
             VertexFormat = null;
             SizeBytes = 0;
             valid = false;
