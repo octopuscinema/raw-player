@@ -17,7 +17,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         private volatile bool valid;
 
-        public Shader(Context context, Stream shaderSourceStream, string name = null, string shaderVersion = "330")
+        public Shader(Context context, Stream shaderSourceStream, VertexFormat vertexFormat, string name = null, string shaderVersion = "120")
         {
             Name = name;
 
@@ -71,6 +71,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 if (programLinkStatus != 1)
                     throw new Exception(Name != null ? "GLSL shader '" + Name + "' failed to link" : "GLSL shader failed to link");
 
+                // Bind attribute locations
+                for(int i = 0; i < vertexFormat.Parameters.Count; i++)
+                    GL.BindAttribLocation(Program, i, vertexFormat.Parameters[i].ParameterName);
+
                 // Tidy up unneeded stuff
                 GL.DetachShader(Program, vertexShader);
                 GL.DetachShader(Program, fragmentShader);
@@ -115,6 +119,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
             GL.Uniform4(UniformLocation(uniformName), value);
 #endif
             Context.CheckError();
+        }
+
+        public void AttributeLocation(string attributeName)
+        {
+            //GL.GetAttribLocation(Program,)
+            //GL.BindAttribLocation()
         }
 
         public void Bind()

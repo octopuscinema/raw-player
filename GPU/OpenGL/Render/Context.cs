@@ -41,9 +41,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             renderActionsLock = new object();
 
             // Create default vertex array object
+#if !__MACOS__
             DefaultVertexArrayHandle = GL.GenVertexArray();
             GL.BindVertexArray(DefaultVertexArrayHandle);
             CheckError();
+#endif
 
             // Create vertex buffer for 2D drawing
             var vertexFormat = new VertexFormat();
@@ -52,6 +54,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
 
             Trace.WriteLine("Created OpenGL render context on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+            Trace.WriteLine("OpenGL version: " + GL.GetString(StringName.Version));
+            Trace.WriteLine("GLSL version: " + GL.GetString(StringName.ShadingLanguageVersion));
         }
 
         public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null)
@@ -81,7 +86,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             foreach (string resource in resources) {
                 if (resource.Contains(shaderResourceName))
                 {
-                    var shader = new Shader(this, assembly.GetManifestResourceStream(resource), name);
+                    var shader = new Shader(this, assembly.GetManifestResourceStream(resource), Draw2DVertexBuffer.VertexFormat, name);
                     shaders.Add(shader);
                     return shader;
                 }
@@ -171,8 +176,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
         {
             SetVertexBuffer(null);
             Draw2DVertexBuffer.Dispose();
+#if !__MACOS__
             GL.DeleteBuffer(DefaultVertexArrayHandle);
-
+#endif
             foreach (var texture in textures)
                 texture.Dispose();
             textures = null;
@@ -182,6 +188,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 RenderActions = null;
             }
             renderActionsLock = null;
+        }
+
+        public void RequestRender()
+        {
+            ForceRender?.Invoke();
         }
     }
 }

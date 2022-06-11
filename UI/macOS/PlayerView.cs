@@ -60,6 +60,7 @@ namespace Octopus.Player.UI.macOS
             {
                 GLLayer.Frame = Frame;
                 GLLayer.RemoveAllAnimations();
+                GLLayer.RenderContext.RequestRender();
             }
         }
 
@@ -85,7 +86,7 @@ namespace Octopus.Player.UI.macOS
 
         partial void toggle(NSButton sender)
         {
-            //GLLayer.Redraw = !GLLayer.Redraw;
+            
         }
     }
 }

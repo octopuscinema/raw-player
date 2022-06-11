@@ -4,7 +4,7 @@ varying vec2 TextureCoordinates;
 // GLSL Vertex shader program
 #ifdef VERT
 
-layout (location = 0) in vec2 VertexPosition;
+attribute vec2 VertexPosition;
 
 //uniform vec4 RectUV;
 uniform vec4 RectBounds;
@@ -30,9 +30,8 @@ void main(void)
 
 // GLSL Fragment/pixel shader program
 #ifdef FRAG
-out vec4 FragColor;
 void main() 
 {
-	FragColor = vec4(0,TextureCoordinates.x,1,1);
+	gl_FragColor = vec4(0,TextureCoordinates.x,1,1);
 }
 #endif

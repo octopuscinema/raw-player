@@ -56,7 +56,7 @@ namespace Octopus.Player.UI.macOS
         {
             if (RenderContext == null)
             {
-                RenderContext = new GPU.OpenGL.Render.Context(glContext);
+                RenderContext = new GPU.OpenGL.Render.Context(PlayerWindow.NativeWindow, glContext);
                 RenderContext.ForceRender += delegate { forceRender = true; };
                 PlayerWindow.OnRenderInit(RenderContext);
             }
@@ -70,12 +70,12 @@ namespace Octopus.Player.UI.macOS
             // make sure to add a null value
             // TODO: Disable depth buffer
             var attribs = new object [] { 
-				CGLPixelFormatAttribute.Accelerated, 
-				CGLPixelFormatAttribute.DoubleBuffer, 
-				CGLPixelFormatAttribute.ColorSize, 24, 
-				CGLPixelFormatAttribute.DepthSize, 16 };
-                        
-            CGLPixelFormat pixelFormat = new CGLPixelFormat (attribs);
+				CGLPixelFormatAttribute.Accelerated,
+                CGLPixelFormatAttribute.DoubleBuffer,
+                CGLPixelFormatAttribute.ColorSize, 24,
+                CGLPixelFormatAttribute.DepthSize, 16 };
+
+            CGLPixelFormat pixelFormat = new CGLPixelFormat(attribs);
             return pixelFormat;
         }
     }

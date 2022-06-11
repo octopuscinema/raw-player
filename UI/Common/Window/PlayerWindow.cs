@@ -6,7 +6,7 @@ namespace Octopus.Player.UI
 {
     public class PlayerWindow
     {
-        private INativeWindow NativeWindow { get; set; }
+        public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
         GPU.Render.IContext RenderContext { get; set; }
 

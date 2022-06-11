@@ -32,6 +32,7 @@ namespace Octopus.Player.GPU.Render
 
         void OnRenderFrame(double timeInterval);
         void Draw2D(IShader shader, ITexture texture, Vector2i pos, Vector2i size);
+        void RequestRender();
     }
 }
 

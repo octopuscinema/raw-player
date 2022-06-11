@@ -3,6 +3,7 @@ using System;
 using Foundation;
 using AppKit;
 using System.Diagnostics;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -10,8 +11,10 @@ namespace Octopus.Player.UI.macOS
 	{
 		public PlayerWindow PlayerWindow { get; private set; }
 
-		// Called when created from unmanaged code
-		public NativePlayerWindow (IntPtr handle) : base(handle)
+        public Vector2i FramebufferSize { get { return new Vector2i((int)ContentView.Frame.Width, (int)ContentView.Frame.Height); } }
+
+        // Called when created from unmanaged code
+        public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);

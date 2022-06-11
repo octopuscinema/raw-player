@@ -16,7 +16,7 @@ namespace Octopus.Player.Core.Playback
 		{
             // Load GPU program for CinemaDNG pipeline
             GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
-
+            renderContext.RequestRender();
             //var textureTest = renderContext.CreateTexture(new Vector2i(1920, 1080), TextureFormat.R16);
         }
 

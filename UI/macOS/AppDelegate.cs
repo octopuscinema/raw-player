@@ -31,22 +31,6 @@ namespace Octopus.Player.UI.macOS
 			var menuItem = (NSMenuItem)sender;
 			if (menuItem != null)
 				PlayerWindowController.PlayerWindow.PlayerWindow.MenuItemClick(menuItem.Identifier);
-			/*
-			var dlg = NSOpenPanel.OpenPanel;
-			dlg.CanChooseFiles = false;
-			dlg.CanChooseDirectories = true;
-
-			if (dlg.RunModal() == 1)
-			{
-				var alert = new NSAlert()
-				{
-					AlertStyle = NSAlertStyle.Informational,
-					InformativeText = "At this point we should do something with the folder that the user just selected in the Open File Dialog box...",
-					MessageText = "Folder Selected"
-				};
-				alert.RunModal();
-			}
-			*/
 		}
 
 		static void Main(string[] args)

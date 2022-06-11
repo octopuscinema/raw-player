@@ -50,6 +50,9 @@
       <Project>{D7258E82-6D7F-425B-946A-A2FB75C6F5D7}</Project>
       <Name>Player.GPU</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\UI\Common\Player.UI.csproj">
+      <Name>Player.UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
      <PackageReference Include="OpenTK.Mathematics" version="4.7.2" />
