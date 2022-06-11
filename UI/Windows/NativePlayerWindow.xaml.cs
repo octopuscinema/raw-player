@@ -29,6 +29,8 @@ namespace Octopus.Player.UI.Windows
         private PlayerWindow PlayerWindow { get; set; }
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
+        public Vector2i FramebufferSize { get; private set; }
+
         public NativePlayerWindow()
         {
             InitializeComponent();
@@ -43,7 +45,7 @@ namespace Octopus.Player.UI.Windows
             var mainSettings = new GLWpfControlSettings 
             { 
                 MajorVersion = 3, 
-                MinorVersion = 2,
+                MinorVersion = 3,
                 RenderContinuously = false 
             };
             GLControl.Start(mainSettings);
@@ -53,7 +55,7 @@ namespace Octopus.Player.UI.Windows
         {
             if (RenderContext == null)
             {
-                RenderContext = new GPU.OpenGL.Render.Context(GLControl);
+                RenderContext = new GPU.OpenGL.Render.Context(this, GLControl);
                 RenderContext.ForceRender += delegate { GLControl.InvalidateVisual(); };
                 PlayerWindow.OnRenderInit(RenderContext);
             }
@@ -157,6 +159,11 @@ namespace Octopus.Player.UI.Windows
             {
                 Trace.WriteLine(e.Message);
             }
+        }
+
+        private void GLControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
         }
     }
 }

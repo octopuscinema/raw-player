@@ -18,6 +18,7 @@ namespace Octopus.Player.Core.Playback
             if (IsOpen())
                 Close();
         }
+        protected GPU.Render.IContext RenderContext { get; private set; }
 
         public virtual List<Essence> SupportedEssence { get; }
         public State State { get; protected set; }
@@ -35,8 +36,7 @@ namespace Octopus.Player.Core.Playback
         public abstract void Stop();
         public abstract void Play();
         public abstract void Pause();
-
-        protected GPU.Render.IContext RenderContext { get; private set; }
+        public abstract void OnRenderFrame(double timeInterval);
     }
 }
 

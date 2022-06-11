@@ -22,23 +22,32 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         object renderActionsLock;
         private List<Action> RenderActions { get; set; }
+        public UI.INativeWindow NativeWindow { get; private set; }
 
         private VertexBuffer Draw2DVertexBuffer { get; set; }
         private VertexBuffer activeVertexBuffer;
         private Shader activeShader;
 
-        public Context(object nativeContext)
+        private int DefaultVertexArrayHandle { get; set; }
+
+        public Context(UI.INativeWindow nativeWindow, object nativeContext)
         {
             // Initialise GPU resource lists
+            NativeWindow = nativeWindow;
             NativeContext = nativeContext;
             textures = new List<ITexture>();
             shaders = new List<IShader>();
             RenderActions = new List<Action>();
             renderActionsLock = new object();
 
+            // Create default vertex array object
+            DefaultVertexArrayHandle = GL.GenVertexArray();
+            GL.BindVertexArray(DefaultVertexArrayHandle);
+            CheckError();
+
             // Create vertex buffer for 2D drawing
             var vertexFormat = new VertexFormat();
-            vertexFormat.AddParameter(VertexFormatParameter.Position2f);
+            vertexFormat.AddParameter(VertexFormatParameter.Position2f, "VertexPosition");
             Vector2[] rectVerts = new Vector2[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
             Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
 
@@ -129,11 +138,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             SetVertexBuffer(Draw2DVertexBuffer);
             SetShader((Shader)shader);
             shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
-            //shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / new Vector2(Width, Height));
+            shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / NativeWindow.FramebufferSize.ToVector2());
 #if __MACOS__
             GL.DrawArrays(BeginMode.TriangleFan, 0, 4);
 #else
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+			GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
 #endif
         }
 
@@ -162,6 +171,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         {
             SetVertexBuffer(null);
             Draw2DVertexBuffer.Dispose();
+            GL.DeleteBuffer(DefaultVertexArrayHandle);
 
             foreach (var texture in textures)
                 texture.Dispose();

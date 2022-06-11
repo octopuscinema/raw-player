@@ -97,6 +97,8 @@ namespace Octopus.Player.UI
         public void OnRenderFrame(double timeInterval)
         {
             RenderContext.OnRenderFrame(timeInterval);
+            if (Playback != null)
+                Playback.OnRenderFrame(timeInterval);
         }
     }
 }

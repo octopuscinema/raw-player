@@ -122,16 +122,12 @@
             <Setter Property="FontWeight" Value="Normal"/>
         </Style>
     </Window.Resources>
-
-   
-
     <Grid>
-        
-
         <glWpfControl:GLWpfControl
             x:Name="GLControl"
             Render="GLControl_OnRender" 
             MouseDown="GLControl_MouseDown"
+            SizeChanged="GLControl_SizeChanged"
             SnapsToDevicePixels="True"/>
         <Border HorizontalAlignment="Center" Height="80" VerticalAlignment="Bottom" Width="520" Background="Black" Opacity="0.5" BorderThickness="0" CornerRadius="8" Margin="0,0,0,20"/>
 

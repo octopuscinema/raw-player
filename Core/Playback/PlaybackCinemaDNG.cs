@@ -88,6 +88,12 @@ namespace Octopus.Player.Core.Playback
         {
             throw new NotImplementedException();
         }
+
+        public override void OnRenderFrame(double timeInterval)
+        {
+            if (GpuPipelineProgram != null)
+                RenderContext.Draw2D(GpuPipelineProgram, null, new Vector2i(0, 0), new Vector2i(100, 100));
+        }
     }
 }
 

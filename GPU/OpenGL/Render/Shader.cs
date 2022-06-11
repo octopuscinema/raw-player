@@ -17,7 +17,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         private volatile bool valid;
 
-        public Shader(Context context, Stream shaderSourceStream, string name = null)
+        public Shader(Context context, Stream shaderSourceStream, string name = null, string shaderVersion = "330")
         {
             Name = name;
 
@@ -32,8 +32,8 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 // Create and compile vertex and fragment shader
                 var vertexShader = GL.CreateShader(ShaderType.VertexShader);
                 var fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-                GL.ShaderSource(vertexShader, "#define VERT\n" + shaderSource);
-                GL.ShaderSource(fragmentShader, "#define FRAG\n" + shaderSource);
+                GL.ShaderSource(vertexShader, "#version " + shaderVersion + "\n#define VERT\n" + shaderSource);
+                GL.ShaderSource(fragmentShader, "#version " + shaderVersion + "\n#define FRAG\n" + shaderSource);
                 GL.CompileShader(vertexShader);
                 GL.CompileShader(fragmentShader);
                 Context.CheckError();

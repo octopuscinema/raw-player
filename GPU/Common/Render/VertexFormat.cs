@@ -13,9 +13,11 @@ namespace Octopus.Player.GPU.Render
     public struct VertexFormatParameterEntry
     {
 		public VertexFormatParameter Parameter { get; set; }
+		public string ParameterName { get; set; }
 		public uint ByteOffset { get; set; }
-		public VertexFormatParameterEntry(VertexFormatParameter parameter, uint byteOffset)
+		public VertexFormatParameterEntry(VertexFormatParameter parameter, string parameterName, uint byteOffset)
         {
+			ParameterName = parameterName;
 			Parameter = parameter;
 			ByteOffset = byteOffset;
         }
@@ -73,10 +75,10 @@ namespace Octopus.Player.GPU.Render
 			}
 		}
 
-		public void AddParameter(VertexFormatParameter parameter)
+		public void AddParameter(VertexFormatParameter parameter, string parameterName)
         {
 			// Create the parameter entry
-			VertexFormatParameterEntry entry = new VertexFormatParameterEntry(parameter, VertexSizeBytes);
+			VertexFormatParameterEntry entry = new VertexFormatParameterEntry(parameter, parameterName, VertexSizeBytes);
 
 			// Get the size of the parameter and save the new size of the vertex
 			Parameters.Add(entry);

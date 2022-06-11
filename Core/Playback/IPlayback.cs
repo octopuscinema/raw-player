@@ -27,10 +27,13 @@ namespace Octopus.Player.Core.Playback
 		bool IsPlaying { get; }
 		bool IsPaused { get; }
 
+		// Clip control
 		Error Open(IClip clip);
 		bool IsOpen();
 		void Close();
 		bool SupportsClip(IClip clip);
+
+		void OnRenderFrame(double timeInterval);
 	}
 }
 

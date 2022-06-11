@@ -1,4 +1,6 @@
-﻿namespace Octopus.Player.UI
+﻿using OpenTK.Mathematics;
+
+namespace Octopus.Player.UI
 {
 	public enum AlertType
     {
@@ -18,6 +20,7 @@
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
 		void Exit();
+		Vector2i FramebufferSize { get; }
 	}
 }
 

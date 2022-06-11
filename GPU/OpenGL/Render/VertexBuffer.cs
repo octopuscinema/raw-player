@@ -44,6 +44,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             vertexDataHandle.Free();
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
+            valid = true;
             Context.CheckError();
         }
 

@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\UI\Common\Player.UI.csproj" />
     <ProjectReference Include="..\Common\Player.GPU.csproj" />
   </ItemGroup>
 </Project>
