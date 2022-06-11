@@ -12,5 +12,6 @@ namespace Octopus.Player.Core.IO
         Maths.Rational Framerate { get; }
 
         Vector2i Dimensions { get; }
+        uint BitDepth { get; }
     }
 }

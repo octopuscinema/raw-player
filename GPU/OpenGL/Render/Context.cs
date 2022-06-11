@@ -56,10 +56,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null)
         {
-            return CreateTexture(dimensions, format, IntPtr.Zero, name);
+            return CreateTexture(dimensions, format, null, name);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null)
+        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, string name = null)
         {
             var texture = new Texture(this, dimensions, format, imageData);
             textures.Add(texture);

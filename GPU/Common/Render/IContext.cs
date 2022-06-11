@@ -22,7 +22,7 @@ namespace Octopus.Player.GPU.Render
         event ForceRender ForceRender;
 
         ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null);
-        ITexture CreateTexture(Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null);
+        ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, string name = null);
         void DestroyTexture(ITexture texture);
 
         IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null);

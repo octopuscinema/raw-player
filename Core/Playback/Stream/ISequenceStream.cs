@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,5 +18,6 @@ namespace Octopus.Player.Core.Playback
     public interface ISequenceStream : IDisposable
     {
         FrameRequestResult RequestFrame(uint frameNumber);
+        Vector2i Dimensions { get; }
     }
 }

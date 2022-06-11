@@ -14,11 +14,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private volatile bool valid;
 
         public Texture(Context context, Vector2i dimensions, TextureFormat format, string name = null)
-            : this(context, dimensions, format, IntPtr.Zero, name)
+            : this(context, dimensions, format, null, name)
         {
         }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, IntPtr imageData, string name = null)
+        public Texture(Context context, Vector2i dimensions, TextureFormat format, byte[] imageData, string name = null)
 		{
             Name = name;
             Dimensions = dimensions;
@@ -50,7 +50,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             valid = false;
         }
 
-        public void Modify(Vector2i dimensions, TextureFormat format, IntPtr imageData, uint dataSizeBytes)
+        public void Modify(Vector2i dimensions, TextureFormat format, byte[] imageData, uint dataSizeBytes)
         {
             Debug.Assert(valid, "Attempting to modify invalid texture");
             Debug.Assert(dimensions == Dimensions && format == Format, "Modify does not support dimension or format changes");
@@ -74,6 +74,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 case TextureFormat.RGBX16:
                     return PixelFormat.Rgba;
                 case TextureFormat.R16:
+                case TextureFormat.R8:
                     return PixelFormat.Red;
                 default:
                     throw new Exception("Unhandled texture format: " + format.ToString());
@@ -87,6 +88,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 case TextureFormat.RGBA8:
                 case TextureFormat.RGBX8:
                 case TextureFormat.RGB8:
+                case TextureFormat.R8:
                     return PixelType.UnsignedByte;
                 case TextureFormat.RGBA16:
                 case TextureFormat.RGBX16:
@@ -114,6 +116,8 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     return PixelInternalFormat.Rgb16;
                 case TextureFormat.R16:
                     return PixelInternalFormat.R16;
+                case TextureFormat.R8:
+                    return PixelInternalFormat.R8;
                 default:
                     throw new Exception("Unhandled texture format: " + format.ToString());
             }

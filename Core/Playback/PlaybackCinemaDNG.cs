@@ -64,7 +64,7 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);
-            SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip);
+            SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
                
             return Error.NotImplmeneted;
         }

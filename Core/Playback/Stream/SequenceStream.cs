@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Octopus.Player.Core.Playback.Stream;
+using Octopus.Player.GPU.Render;
+using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -13,14 +16,24 @@ namespace Octopus.Player.Core.Playback
         List<uint> FramesInProgress { get; set; }
 
         List<uint> DecodedFrames { get; set; }
+        List<SequenceFrame> FreeFrames { get; set; }
 
-        protected SequenceStream(IClip clip)
+        public Vector2i Dimensions { get { Debug.Assert(Clip != null && Clip.Metadata != null); return Clip.Metadata.Dimensions; } }
+
+        protected SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, TimeSpan bufferDuration)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
 
+            // Pre allocate queues
             RequestedFrames = new Queue<uint>();// (int)clip.Metadata.Framerate.ToSingle());
             FramesInProgress = new List<uint>();
+
+            // Allocate storage for free slots
+            var bufferLengthFrames = (uint)(bufferDuration.Duration().TotalSeconds * clip.Metadata.Framerate.ToDouble());
+            FreeFrames = new List<SequenceFrame>();
+            for (int i = 0; i < bufferLengthFrames; i++)
+                FreeFrames.Add(new SequenceFrame(gpuContext, clip, gpuFormat));
 
             // Example usage of thread pool
             /*
@@ -54,5 +67,7 @@ namespace Octopus.Player.Core.Playback
 
             return FrameRequestResult.Success;
         }
+
+        public abstract Error DecodeFrame(SequenceFrame frame);
     }
 }

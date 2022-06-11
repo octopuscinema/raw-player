@@ -16,6 +16,7 @@ namespace Octopus.Player.Core.IO.DNG
             // Assign from the reader
             Dimensions = reader.Dimensions;
             Framerate = reader.Framerate;
+            BitDepth = reader.BitDepth;
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
             var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);

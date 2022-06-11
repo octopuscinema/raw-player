@@ -16,6 +16,7 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffTagReader TagReader { get; set; }
         private Vector2i? CachedDimensions { get; set; }
         private Maths.Rational? CachedFramerate { get; set; }
+        private uint? CachedBitDepth { get; set; }
 
         public Reader(string filePath)
         {
@@ -95,6 +96,19 @@ namespace Octopus.Player.Core.IO.DNG
                     CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
                 }
                 return CachedFramerate.Value;
+            }
+        }
+
+        public uint BitDepth
+        {
+            get
+            {
+                if (!CachedBitDepth.HasValue)
+                {
+                    var bitDepth = TagReader.ReadShortField(TiffTag.BitsPerSample, 1).GetFirstOrDefault();
+                    CachedBitDepth = bitDepth;
+                }
+                return CachedBitDepth.Value;
             }
         }
 

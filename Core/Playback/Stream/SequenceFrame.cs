@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU.Render;
+using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Octopus.Player.Core.Playback.Stream
@@ -12,14 +16,17 @@ namespace Octopus.Player.Core.Playback.Stream
     public struct SequenceFrame
     {
 		public volatile uint frameNumber;
-		public GPU.Render.ITexture gpuImage;
 		public volatile SequenceFrameState state;
+		public GPU.Render.ITexture gpuImage;
+		public byte[] decodedImage;
 
-		public SequenceFrame(GPU.Render.IContext gpuContext)
+		public SequenceFrame(GPU.Render.IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
-			gpuImage = gpuContext.CreateTexture(new OpenTK.Mathematics.Vector2i(0,0), GPU.Render.TextureFormat.R16);
+			Debug.Assert(clip.Metadata != null, "Attempting to create sequence frame for clip without clip metadata");
+			gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
 			state = SequenceFrameState.Empty;
 			frameNumber = 0;
+			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 		}
 		/*
 		std::atomic_uint64_t FrameNumber;
