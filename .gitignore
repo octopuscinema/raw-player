@@ -40,3 +40,8 @@ packages
 Decoders/LJ92/LJ92.macOS.xcodeproj/xcuserdata
 Decoders/LJ92/LJ92.macOS.xcodeproj/project.xcworkspace/xcuserdata
 Decoders/LJ92/DerivedData
+*.pdb
+*.tlog
+*.idb
+*.log
+Decoders/LJ92/x64
