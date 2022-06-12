@@ -12,7 +12,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		11C9169A285637D20016B35B /* libLJ92.macOS.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLJ92.macOS.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		11C9169A285637D20016B35B /* libLJ92.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLJ92.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11C9169D285637D20016B35B /* LJ92.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LJ92.h; sourceTree = "<group>"; };
 		11C916A1285637D20016B35B /* LJ92.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LJ92.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -40,7 +40,7 @@
 		11C9169B285637D20016B35B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11C9169A285637D20016B35B /* libLJ92.macOS.dylib */,
+				11C9169A285637D20016B35B /* libLJ92.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,9 +59,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11C91699285637D20016B35B /* LJ92.macOS */ = {
+		11C91699285637D20016B35B /* LJ92 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92.macOS" */;
+			buildConfigurationList = 11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92" */;
 			buildPhases = (
 				11C91696285637D20016B35B /* Headers */,
 				11C91697285637D20016B35B /* Sources */,
@@ -71,9 +71,9 @@
 			);
 			dependencies = (
 			);
-			name = LJ92.macOS;
+			name = LJ92;
 			productName = Player.Decoders.LJ92.macOS;
-			productReference = 11C9169A285637D20016B35B /* libLJ92.macOS.dylib */;
+			productReference = 11C9169A285637D20016B35B /* libLJ92.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -103,7 +103,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11C91699285637D20016B35B /* LJ92.macOS */,
+				11C91699285637D20016B35B /* LJ92 */,
 			);
 		};
 /* End PBXProject section */
@@ -277,7 +277,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92.macOS" */ = {
+		11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11C916A6285637D20016B35B /* Debug */,
