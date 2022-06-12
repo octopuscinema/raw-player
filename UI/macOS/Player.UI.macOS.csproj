@@ -130,7 +130,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\..\Core\Decoders\libLJ92.dylib">
+    <NativeReference Include="..\..\Decoders\LJ92\DerivedData\LJ92.macOS\Build\Products\Release\libLJ92.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
