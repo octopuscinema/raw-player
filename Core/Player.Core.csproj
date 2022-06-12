@@ -38,4 +38,9 @@
   <ItemGroup>
     <ProjectReference Include="..\GPU\Common\Player.GPU.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="libLJ92.dylib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

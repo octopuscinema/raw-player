@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PlayerMenu.xib.designer.cs">
@@ -127,6 +128,12 @@
       <Project>{E4E15C79-CA11-4C9D-851C-36B27F5DCA46}</Project>
       <Name>Player.GPU.OpenGL.macOS</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\..\Core\Decoders\libLJ92.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

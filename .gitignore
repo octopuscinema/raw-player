@@ -37,3 +37,5 @@ bin
 *.user
 *.nupkg
 packages
+Decoders/LJ92/LJ92.macOS.xcodeproj/xcuserdata
+Decoders/LJ92/LJ92.macOS.xcodeproj/project.xcworkspace/xcuserdata

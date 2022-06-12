@@ -14,6 +14,8 @@ namespace Octopus.Player.Core.Playback
 		public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
 		{
+            var testDll = Decoders.LJ92.TestMethod(1);
+
             // Load GPU program for CinemaDNG pipeline
             GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
             renderContext.RequestRender();
