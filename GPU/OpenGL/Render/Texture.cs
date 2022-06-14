@@ -12,6 +12,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public bool Valid { get { return valid; } }
         int Handle { get; set; }
         private volatile bool valid;
+        private Context Context { get; set; }
 
         public Texture(Context context, Vector2i dimensions, TextureFormat format, string name = null)
             : this(context, dimensions, format, null, name)
@@ -23,6 +24,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Name = name;
             Dimensions = dimensions;
             Format = format;
+            Context = context;
 
             // Create the texture with blank data
             // TODO: set mipmap/filter and clamp options
@@ -46,7 +48,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void Dispose()
         {
             Debug.Assert(valid,"Attempting to dispose invalid texture");
-            GL.DeleteTexture(Handle);
+            Action deleteTextureAction = () =>
+            {
+                GL.DeleteTexture(Handle);
+            };
+            Context.EnqueueRenderAction(deleteTextureAction);
             valid = false;
         }
 

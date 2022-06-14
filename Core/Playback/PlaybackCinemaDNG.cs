@@ -10,16 +10,16 @@ namespace Octopus.Player.Core.Playback
 	{
         private SequenceStreamDNG SequenceStreamDNG { get; set; }
         private IShader GpuPipelineProgram { get; set; }
+        private ITexture GpuFrameTest { get; set; }
 
 		public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
 		{
-            var testDll = Decoders.LJ92.TestMethod(1);
+            //var testDll = Decoders.LJ92.TestMethod(1);
 
             // Load GPU program for CinemaDNG pipeline
             GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
             renderContext.RequestRender();
-            //var textureTest = renderContext.CreateTexture(new Vector2i(1920, 1080), TextureFormat.R16);
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
@@ -48,21 +48,11 @@ namespace Octopus.Player.Core.Playback
             if (clip.ReadMetadata() != Error.None)
                 return Error.BadMetadata;
             Clip = clip;
-            /*
-                        try
-                        {
-                            var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
-                            return dngFiles.Any() ? Error.None : Error.NoVideoStream;
-                        }
-                        catch (Exception e)
-                        {
-                            Trace.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
-                            return Error.BadPath;
-                        }
-            */
 
-            // Test texture creation
-            //var tex = RenderContext.CreateTexture(new Vector2i(0, 0), GPU.Render.TextureFormat.R16);
+            // Test frame texture
+            if (GpuFrameTest != null)
+                GpuFrameTest.Dispose();
+            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, TextureFormat.R16, "gpuFrameTest");
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);

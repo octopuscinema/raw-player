@@ -30,7 +30,7 @@ namespace Player::Decoders::LJ92
         return param + 1;
     }
 
-    extern "C" int Decode(uint8_t * pCompressedIn, int compressedSizeBytes, uint16_t * pOut, int width, int height, int bitDepth)
+    extern "C" int Decode(uint8_t* pCompressedIn, int compressedSizeBytes, uint16_t* pOut, int width, int height, int bitDepth)
     {
         return 0;
     }

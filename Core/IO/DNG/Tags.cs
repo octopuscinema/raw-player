@@ -6,11 +6,41 @@ namespace Octopus.Player.Core.IO.DNG
 {
     public enum TiffTagsDNG
     {
-
-    }
+		ForwardMatrix2 = 50965,
+		ForwardMatrix1 = 50964,
+		CalibrationIlluminant2 = 50779,
+		CalibrationIlluminant1 = 50778,
+		BaselineExposure = 50730,
+		AsShotWhiteXY = 50729,
+		AsShotNeutral = 50728,
+		CameraCalibration2 = 50724,
+		CameraCalibration1 = 50723,
+		ColorMatrix2 = 50722,
+		ColorMatrix1 = 50721,
+		WhiteLevel = 50717,
+		BlackLevel = 50714,
+		BlackLevelRepeatDim = 50713,
+		LinearizationTable = 50712,
+		CFAPlaneColor = 50710,
+		UniqueCameraModel = 50708,
+		DNGBackwardVersion = 50707,
+		DNGVersion = 50706,
+		ISO = 34855,
+        CFAPattern = 33422,
+        CFARepeatPatternDim = 33421,
+		/*DateTime = 306,
+		Software = 305,
+		PlanarConfiguration = 284,
+		StripByteCounts = 279,
+		RowsPerStrip = 278,
+		SamplesPerPixel = 277,
+		Orientation = 274,
+		StripOffsets = 273*/
+	}
 
     public enum TiffTagsCinemaDNG
     {
-        FrameRate = 51044
-    }
+        FrameRate = 51044,
+		TimeCodes = 51043
+	}
 }

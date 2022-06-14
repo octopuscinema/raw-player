@@ -5,6 +5,16 @@ using System.Text;
 
 namespace Octopus.Player.Core.IO
 {
+    public enum CFAPattern
+    {
+        None,
+        RGGB,
+        BGGR,
+        GBRG,
+        GRBG,
+        Unknown
+    }
+
     public abstract class Metadata : IMetadata
     {
         public uint DurationFrames { get; protected set; }

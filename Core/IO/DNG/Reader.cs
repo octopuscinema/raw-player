@@ -1,6 +1,8 @@
 ﻿using OpenTK.Mathematics;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TiffLibrary;
 
 namespace Octopus.Player.Core.IO.DNG
@@ -14,9 +16,12 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffFieldReader FieldReader { get; set; }
         private TiffImageFileDirectory Ifd { get; set; }
         private TiffTagReader TagReader { get; set; }
+
         private Vector2i? CachedDimensions { get; set; }
         private Maths.Rational? CachedFramerate { get; set; }
         private uint? CachedBitDepth { get; set; }
+        private CFAPattern? CachedCFAPattern { get; set; }
+        private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
 
         public Reader(string filePath)
         {
@@ -109,6 +114,49 @@ namespace Octopus.Player.Core.IO.DNG
                     CachedBitDepth = bitDepth;
                 }
                 return CachedBitDepth.Value;
+            }
+        }
+
+        public Vector2i CFARepeatPatternDimensions
+        {
+            get
+            {
+                if (!CachedCFARepeatPatternDimensions.HasValue)
+                {
+                    var repeatpattern = TagReader.ReadShortField((TiffTag)TiffTagsDNG.CFARepeatPatternDim);
+                    CachedCFARepeatPatternDimensions = (repeatpattern.Count == 2) ? new Vector2i(repeatpattern[0], repeatpattern[1]) : new Vector2i(0, 0);
+                }
+                return CachedCFARepeatPatternDimensions.Value;
+            }
+        }
+
+        public CFAPattern CFAPattern
+        {
+            get
+            {
+                if(!CachedCFAPattern.HasValue)
+                {
+                    // Read CFA tag
+                    var pattern = TagReader.ReadShortField((TiffTag)TiffTagsDNG.CFAPattern);
+                    switch(pattern.Count)
+                    {
+                        case 0:
+                            CachedCFAPattern = CFAPattern.None;
+                            break;
+                        case 4:
+                            if (pattern.ToArray().SequenceEqual(new ushort[] { 0, 1, 1, 2 }))
+                                CachedCFAPattern = CFAPattern.RGGB;
+                            else if (pattern.ToArray().SequenceEqual(new ushort[] { 2, 1, 1, 0 }))
+                                CachedCFAPattern = CFAPattern.BGGR;
+                            else
+                                CachedCFAPattern = CFAPattern.Unknown;
+                            break;
+                        default:
+                            CachedCFAPattern = CFAPattern.Unknown;
+                            break;
+                    }
+                }
+                return CachedCFAPattern.Value;
             }
         }
 

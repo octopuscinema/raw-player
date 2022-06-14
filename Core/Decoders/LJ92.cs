@@ -9,4 +9,3 @@ namespace Octopus.Player.Core.Decoders
 		public static extern int TestMethod(int param);
 	}
 }
-

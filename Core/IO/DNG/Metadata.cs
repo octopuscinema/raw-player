@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.IO.DNG
 {
@@ -10,6 +11,8 @@ namespace Octopus.Player.Core.IO.DNG
     {
         public uint FirstFrame { get; private set; }
         public uint LastFrame { get; private set; }
+        public Vector2i CFARepeatPatternDimensions { get; private set; }
+        public CFAPattern CFAPattern { get; private set; }
 
         public MetadataCinemaDNG(Reader reader, Playback.ClipCinemaDNG clip)
         {
@@ -17,6 +20,8 @@ namespace Octopus.Player.Core.IO.DNG
             Dimensions = reader.Dimensions;
             Framerate = reader.Framerate;
             BitDepth = reader.BitDepth;
+            CFAPattern = reader.CFAPattern;
+            CFARepeatPatternDimensions = reader.CFARepeatPatternDimensions;
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
             var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);

@@ -2,7 +2,12 @@
 
 namespace Player::Decoders::Unpack
 {
-	extern "C" void Unpack12to16Bit(uint16_t* p16BitOut, const uint8_t* p12BitPacked, size_t sizeBytes)
+    extern "C" int TestUnpackMethod(int param)
+    {
+        return param +1;
+    }
+
+	extern "C" void Unpack12to16Bit(uint16_t* p16BitOut, const uint8_t* p12BitPacked, std::size_t sizeBytes)
 	{
 		const uint8_t *pEnd = p12BitPacked + sizeBytes;
 		uint8_t b0, b1, b2;
@@ -21,8 +26,7 @@ namespace Player::Decoders::Unpack
 		}
 	}
 
-	//static extern int Unpack14to16Bit([Out] byte[] out16Bit, byte[] in, IntPtr sizeBytes);
-	extern "C" void Unpack14to16Bit(uint16_t* p16BitOut, const uint8_t* p14BitPacked, size_t sizeBytes)
+	extern "C" void Unpack14to16Bit(uint16_t* p16BitOut, const uint8_t* p14BitPacked, std::size_t sizeBytes)
 	{
 		const uint8_t* pEnd = p14BitPacked + sizeBytes;
 		uint8_t b0, b1, b2, b3, b4, b5, b6;
