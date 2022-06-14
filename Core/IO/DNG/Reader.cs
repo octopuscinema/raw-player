@@ -22,6 +22,7 @@ namespace Octopus.Player.Core.IO.DNG
         private uint? CachedBitDepth { get; set; }
         private CFAPattern? CachedCFAPattern { get; set; }
         private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
+        private Compression? CachedCompression { get; set; }
 
         public Reader(string filePath)
         {
@@ -157,6 +158,20 @@ namespace Octopus.Player.Core.IO.DNG
                     }
                 }
                 return CachedCFAPattern.Value;
+            }
+        }
+
+        public Compression Compression
+        {
+            get
+            {
+                if(!CachedCompression.HasValue)
+                {
+                    var tiffCompression = TagReader.ReadCompression();
+                    CachedCompression = (tiffCompression == TiffCompression.NoCompression || tiffCompression == TiffCompression.Jpeg) ?
+                        (Compression)tiffCompression : Compression.Unknown;
+                }
+                return CachedCompression.Value;
             }
         }
 

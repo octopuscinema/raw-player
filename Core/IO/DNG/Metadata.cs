@@ -7,12 +7,20 @@ using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.IO.DNG
 {
+    public enum Compression
+    {
+        Unknown = -1,
+        None = 1,
+        LJ92 = 7
+    }
+
     public class MetadataCinemaDNG : Metadata
     {
         public uint FirstFrame { get; private set; }
         public uint LastFrame { get; private set; }
         public Vector2i CFARepeatPatternDimensions { get; private set; }
         public CFAPattern CFAPattern { get; private set; }
+        public Compression Compression { get; private set; }
 
         public MetadataCinemaDNG(Reader reader, Playback.ClipCinemaDNG clip)
         {
