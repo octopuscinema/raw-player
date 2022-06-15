@@ -114,8 +114,21 @@ namespace Octopus.Player.Core.IO.DNG
                 return Error.BadImageData;
             Valid = true;
 
-            // Extract strip/tile data
+            switch(Compression)
+            {
+                case Compression.LJ92:
+                    return ReadCompressedImageData(ref offsets, ref byteCounts);
+                case Compression.None:
+                    return ReadUncompressedImageData(ref offsets, ref byteCounts);
+                default:
+                    return Error.NotImplmeneted;
+            }
+        }
+
+        private Error ReadUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts)
+        {
             using var contentReader = Tiff.CreateContentReader();
+
             int count = offsets.Count;
             for (int i = 0; i < count; i++)
             {
@@ -136,7 +149,35 @@ namespace Octopus.Player.Core.IO.DNG
 
             }
 
-            return Error.None;
+            return Error.NotImplmeneted;
+        }
+
+        private Error ReadCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts)
+        {
+            // Extract strip/tile data
+            using var contentReader = Tiff.CreateContentReader();
+
+            int count = offsets.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var offset = (long)offsets[i];
+                int byteCount = (int)byteCounts[i];
+                byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+
+                try
+                {
+                    contentReader.Read(offset, data.AsMemory(0, byteCount));
+                    //using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
+                    //fs.Write(data, 0, byteCount);
+                }
+                finally
+                {
+                    System.Buffers.ArrayPool<byte>.Shared.Return(data);
+                }
+
+            }
+
+            return Error.NotImplmeneted;
         }
 
         public Vector2i Dimensions
