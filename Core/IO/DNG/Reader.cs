@@ -23,6 +23,8 @@ namespace Octopus.Player.Core.IO.DNG
         private CFAPattern? CachedCFAPattern { get; set; }
         private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
         private Compression? CachedCompression { get; set; }
+        private PhotometricInterpretation? CachedPhotometricInterpretation { get; set; }
+        private DataLayout? CachedDataLayout { get; set; }
 
         public Reader(string filePath)
         {
@@ -80,6 +82,57 @@ namespace Octopus.Player.Core.IO.DNG
                 }
             }
             */
+        }
+
+        public DataLayout DecodeImageData(ref byte[] dataOut)
+        {
+            // Get offsets to the strip/tile data
+            TiffValueCollection<ulong> offsets, byteCounts;
+            if (Ifd.Contains(TiffTag.TileOffsets))
+            {
+                CachedDataLayout = DataLayout.Tiles;
+                offsets = TagReader.ReadTileOffsets();
+                byteCounts = TagReader.ReadTileByteCounts();
+            }
+            else if (Ifd.Contains(TiffTag.StripOffsets))
+            {
+                CachedDataLayout = DataLayout.Strips;
+                offsets = TagReader.ReadStripOffsets();
+                byteCounts = TagReader.ReadStripByteCounts();
+            }
+            else
+            {
+                CachedDataLayout = DataLayout.Unknown;
+                throw new InvalidDataException("DNG is neither striped or tiled.");
+            }
+            if (offsets.Count != byteCounts.Count)
+            {
+                throw new InvalidDataException();
+            }
+
+            // Extract strip/tile data
+            using var contentReader = Tiff.CreateContentReader();
+            int count = offsets.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var offset = (long)offsets[i];
+                int byteCount = (int)byteCounts[i];
+                byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+                
+                try
+                {
+                    contentReader.Read(offset, data.AsMemory(0, byteCount));
+                    //using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
+                    //fs.Write(data, 0, byteCount);
+                }
+                finally
+                {
+                    System.Buffers.ArrayPool<byte>.Shared.Return(data);
+                }
+                
+            }
+            
+            return CachedDataLayout.Value;
         }
 
         public Vector2i Dimensions 
@@ -174,6 +227,22 @@ namespace Octopus.Player.Core.IO.DNG
                 return CachedCompression.Value;
             }
         }
+
+        public PhotometricInterpretation PhotometricInterpretation
+        {
+            get
+            {
+                if (!CachedPhotometricInterpretation.HasValue)
+                {
+                    var photometricInterpretation = (PhotometricInterpretation)TagReader.ReadPhotometricInterpretation();
+                    CachedPhotometricInterpretation = (photometricInterpretation == PhotometricInterpretation.LinearRaw || photometricInterpretation == PhotometricInterpretation.ColorFilterArray) ?
+                        photometricInterpretation : PhotometricInterpretation.Unknown;
+                }
+                return CachedPhotometricInterpretation.Value;
+            }
+        }
+
+        public bool Monochrome { get { return PhotometricInterpretation == PhotometricInterpretation.LinearRaw; } }
 
         public void Dispose()
         {

@@ -14,6 +14,20 @@ namespace Octopus.Player.Core.IO.DNG
         LJ92 = 7
     }
 
+    public enum PhotometricInterpretation
+    {
+        Unknown = -1,
+        ColorFilterArray = 32803,
+        LinearRaw = 34892
+    }
+
+    public enum DataLayout
+    {
+        Unknown,
+        Strips,
+        Tiles
+    }
+
     public class MetadataCinemaDNG : Metadata
     {
         public uint FirstFrame { get; private set; }
@@ -30,6 +44,7 @@ namespace Octopus.Player.Core.IO.DNG
             BitDepth = reader.BitDepth;
             CFAPattern = reader.CFAPattern;
             CFARepeatPatternDimensions = reader.CFARepeatPatternDimensions;
+            Compression = reader.Compression;
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
             var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
