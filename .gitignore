@@ -48,3 +48,5 @@ Decoders/LJ92/x64
 Decoders/Unpack/DerivedData
 Decoders/Unpack/Unpack.macOS.xcodeproj/xcuserdata
 Decoders/Unpack/Unpack.macOS.xcodeproj/project.xcworkspace/xcuserdata
+*.ilk
+Decoders/Unpack/x64

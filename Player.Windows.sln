@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Decoders", "Decoders", "{06
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LJ92.Windows", "Decoders\LJ92\LJ92.Windows.vcxproj", "{670D9676-9A37-4E62-8C84-80AF6F09C968}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Unpack.Windows", "Decoders\Unpack\Unpack.Windows.vcxproj", "{23D0C6FB-C097-4894-BD1F-11BBE1971828}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,14 @@ Global
 		{670D9676-9A37-4E62-8C84-80AF6F09C968}.Release|Any CPU.Build.0 = Release|x64
 		{670D9676-9A37-4E62-8C84-80AF6F09C968}.Release|x64.ActiveCfg = Release|x64
 		{670D9676-9A37-4E62-8C84-80AF6F09C968}.Release|x64.Build.0 = Release|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Debug|Any CPU.Build.0 = Debug|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Debug|x64.ActiveCfg = Debug|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Debug|x64.Build.0 = Debug|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Release|Any CPU.ActiveCfg = Release|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Release|Any CPU.Build.0 = Release|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Release|x64.ActiveCfg = Release|x64
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +97,7 @@ Global
 		{40D73598-3EB8-495D-9DB4-D3CF41302186} = {5B507A59-D958-4FAC-B186-71AA4BD2FC4D}
 		{E8BB5D4A-862C-4662-B1AA-0E93CD007455} = {5B507A59-D958-4FAC-B186-71AA4BD2FC4D}
 		{670D9676-9A37-4E62-8C84-80AF6F09C968} = {06DF0907-1189-4A3C-B90D-0D716A322588}
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828} = {06DF0907-1189-4A3C-B90D-0D716A322588}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8E4D64FF-0694-420B-BFC3-747C1FE230FD}
