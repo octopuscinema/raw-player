@@ -21,13 +21,6 @@ namespace Octopus.Player.Core.IO.DNG
         LinearRaw = 34892
     }
 
-    public enum DataLayout
-    {
-        Unknown,
-        Strips,
-        Tiles
-    }
-
     public class MetadataCinemaDNG : Metadata
     {
         public uint FirstFrame { get; private set; }

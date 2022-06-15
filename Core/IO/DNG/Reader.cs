@@ -1,6 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using TiffLibrary;
@@ -24,7 +25,10 @@ namespace Octopus.Player.Core.IO.DNG
         private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
         private Compression? CachedCompression { get; set; }
         private PhotometricInterpretation? CachedPhotometricInterpretation { get; set; }
-        private DataLayout? CachedDataLayout { get; set; }
+        private bool? CachedIsTiled { get; set; }
+        private uint? CachedTileCount { get; set; }
+        private uint? CachedStripCount { get; set; }
+        private Vector2i? CachedTileDimensions { get; set; }
 
         public Reader(string filePath)
         {
@@ -84,31 +88,31 @@ namespace Octopus.Player.Core.IO.DNG
             */
         }
 
-        public DataLayout DecodeImageData(ref byte[] dataOut)
+        public Error DecodeImageData(ref byte[] dataOut)
         {
+            CachedIsTiled = false;
+            Valid = false;
+
             // Get offsets to the strip/tile data
             TiffValueCollection<ulong> offsets, byteCounts;
             if (Ifd.Contains(TiffTag.TileOffsets))
             {
-                CachedDataLayout = DataLayout.Tiles;
+                CachedIsTiled = true;
                 offsets = TagReader.ReadTileOffsets();
                 byteCounts = TagReader.ReadTileByteCounts();
+                CachedTileCount = (uint)offsets.Count;
             }
             else if (Ifd.Contains(TiffTag.StripOffsets))
             {
-                CachedDataLayout = DataLayout.Strips;
                 offsets = TagReader.ReadStripOffsets();
                 byteCounts = TagReader.ReadStripByteCounts();
+                CachedStripCount = (uint)offsets.Count;
             }
             else
-            {
-                CachedDataLayout = DataLayout.Unknown;
-                throw new InvalidDataException("DNG is neither striped or tiled.");
-            }
+                return Error.BadImageData;
             if (offsets.Count != byteCounts.Count)
-            {
-                throw new InvalidDataException();
-            }
+                return Error.BadImageData;
+            Valid = true;
 
             // Extract strip/tile data
             using var contentReader = Tiff.CreateContentReader();
@@ -118,7 +122,7 @@ namespace Octopus.Player.Core.IO.DNG
                 var offset = (long)offsets[i];
                 int byteCount = (int)byteCounts[i];
                 byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
-                
+
                 try
                 {
                     contentReader.Read(offset, data.AsMemory(0, byteCount));
@@ -129,20 +133,20 @@ namespace Octopus.Player.Core.IO.DNG
                 {
                     System.Buffers.ArrayPool<byte>.Shared.Return(data);
                 }
-                
+
             }
-            
-            return CachedDataLayout.Value;
+
+            return Error.None;
         }
 
-        public Vector2i Dimensions 
-        { 
-            get 
+        public Vector2i Dimensions
+        {
+            get
             {
                 if (!CachedDimensions.HasValue)
                     CachedDimensions = new Vector2i((int)TagReader.ReadImageWidth(), (int)TagReader.ReadImageLength());
                 return CachedDimensions.Value;
-            } 
+            }
         }
 
         public Maths.Rational Framerate
@@ -188,11 +192,11 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if(!CachedCFAPattern.HasValue)
+                if (!CachedCFAPattern.HasValue)
                 {
                     // Read CFA tag
                     var pattern = TagReader.ReadShortField((TiffTag)TiffTagsDNG.CFAPattern);
-                    switch(pattern.Count)
+                    switch (pattern.Count)
                     {
                         case 0:
                             CachedCFAPattern = CFAPattern.None;
@@ -218,7 +222,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if(!CachedCompression.HasValue)
+                if (!CachedCompression.HasValue)
                 {
                     var tiffCompression = TagReader.ReadCompression();
                     CachedCompression = (tiffCompression == TiffCompression.NoCompression || tiffCompression == TiffCompression.Jpeg) ?
@@ -243,6 +247,49 @@ namespace Octopus.Player.Core.IO.DNG
         }
 
         public bool Monochrome { get { return PhotometricInterpretation == PhotometricInterpretation.LinearRaw; } }
+
+        public bool IsTiled
+        {
+            get
+            {
+                if (!CachedIsTiled.HasValue)
+                    CachedIsTiled = Ifd.Contains(TiffTag.TileOffsets);
+                return CachedIsTiled.Value;
+            }
+        }
+
+        public Vector2i TileDimensions
+        {
+            get
+            {
+                Debug.Assert(IsTiled);
+                if (!CachedTileDimensions.HasValue)
+                    CachedTileDimensions = new Vector2i((int)TagReader.ReadTileWidth().GetValueOrDefault(0), (int)TagReader.ReadTileLength().GetValueOrDefault(0));
+                return CachedTileDimensions.Value;
+            }
+        }
+
+        public uint TileCount
+        {
+            get
+            {
+                Debug.Assert(IsTiled);
+                if ( !CachedTileCount.HasValue)
+                    CachedTileCount = (uint)TagReader.ReadTileOffsets().Count;
+                return CachedTileCount.Value;
+            }
+        }
+
+        public uint StripCount
+        {
+            get
+            {
+                Debug.Assert(!IsTiled);
+                if ( !CachedStripCount.HasValue)
+                    CachedStripCount = (uint)TagReader.ReadStripOffsets().Count;
+                return CachedStripCount.Value;
+            }
+        }
 
         public void Dispose()
         {
