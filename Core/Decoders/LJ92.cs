@@ -7,5 +7,7 @@ namespace Octopus.Player.Core.Decoders
 	{
 		[DllImport("LJ92")]
 		public static extern int TestMethod(int param);
+
+
 	}
 }

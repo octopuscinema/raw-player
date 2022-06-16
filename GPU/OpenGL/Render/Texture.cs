@@ -59,7 +59,18 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void Modify(Vector2i dimensions, TextureFormat format, byte[] imageData, uint dataSizeBytes)
         {
             Debug.Assert(valid, "Attempting to modify invalid texture");
-            Debug.Assert(dimensions == Dimensions && format == Format, "Modify does not support dimension or format changes");
+            Debug.Assert(dimensions.X <= Dimensions.X && dimensions.Y <= Dimensions.Y && format == Format, "Modify does not support dimension or format changes");
+            /*
+            unsafe
+            {
+                fixed (byte* p = imageData)
+                {
+                    IntPtr ptr = (IntPtr)p;
+                    // do you stuff here
+                }
+            }*/
+
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
 
             Vector2i offset = new Vector2i(0, 0);
             Vector2i size = dimensions;

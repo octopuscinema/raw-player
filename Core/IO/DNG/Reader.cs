@@ -22,8 +22,9 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffTagReader TagReader { get; set; }
 
         private Vector2i? CachedDimensions { get; set; }
-        private Maths.Rational? CachedFramerate { get; set; }
+        private Rational? CachedFramerate { get; set; }
         private uint? CachedBitDepth { get; set; }
+        private uint? CachedDecodedBitDepth { get; set; }
         private CFAPattern? CachedCFAPattern { get; set; }
         private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
         private Compression? CachedCompression { get; set; }
@@ -32,6 +33,9 @@ namespace Octopus.Player.Core.IO.DNG
         private uint? CachedTileCount { get; set; }
         private uint? CachedStripCount { get; set; }
         private Vector2i? CachedTileDimensions { get; set; }
+        private ushort[] CachedLinearizationTable { get; set; }
+        private ushort? CachedBlackLevel { get; set; }
+        private ushort? CachedWhiteLevel { get; set; }
 
         public Reader(string filePath)
         {
@@ -198,7 +202,6 @@ namespace Octopus.Player.Core.IO.DNG
 
         private Error ReadCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, ref byte[] dataOut)
         {
-            // Extract strip/tile data
             using var contentReader = Tiff.CreateContentReader();
 
             int count = offsets.Count;
@@ -257,6 +260,29 @@ namespace Octopus.Player.Core.IO.DNG
                     CachedBitDepth = bitDepth;
                 }
                 return CachedBitDepth.Value;
+            }
+        }
+
+        public uint DecodedBitDepth
+        {
+            get
+            {
+                if (!CachedDecodedBitDepth.HasValue)
+                {
+                    switch(Compression)
+                    {
+                        case Compression.None:
+                            CachedDecodedBitDepth = BitDepth > 8u ? 16u : 8u;
+                            break;
+                        case Compression.LJ92:
+                            CachedDecodedBitDepth = 16u;
+                            break;
+                        default:
+                            CachedDecodedBitDepth = BitDepth;
+                            break;
+                    }
+                }
+                return CachedDecodedBitDepth.Value;
             }
         }
 
@@ -373,6 +399,41 @@ namespace Octopus.Player.Core.IO.DNG
                 if ( !CachedStripCount.HasValue)
                     CachedStripCount = (uint)TagReader.ReadStripOffsets().Count;
                 return CachedStripCount.Value;
+            }
+        }
+
+        public ushort[] LinearizationTable
+        {
+            get
+            {
+                if ( CachedLinearizationTable == null )
+                {
+                    if (Ifd.Contains((TiffTag)TiffTagsDNG.LinearizationTable))
+                        CachedLinearizationTable = TagReader.ReadShortField((TiffTag)TiffTagsDNG.LinearizationTable).ToArray();
+                    else
+                        CachedLinearizationTable = new ushort[0];
+                }
+                return CachedLinearizationTable;
+            }
+        }
+
+        public ushort BlackLevel
+        {
+            get
+            {
+                if (!CachedBlackLevel.HasValue)
+                    CachedBlackLevel = TagReader.ReadShortField((TiffTag)TiffTagsDNG.BlackLevel, 1).First();
+                return CachedBlackLevel.Value;
+            }
+        }
+
+        public ushort WhiteLevel
+        {
+            get
+            {
+                if (!CachedWhiteLevel.HasValue)
+                    CachedWhiteLevel = TagReader.ReadShortField((TiffTag)TiffTagsDNG.WhiteLevel, 1).First();
+                return CachedWhiteLevel.Value;
             }
         }
 

@@ -10,3 +10,22 @@
 #define DECODER_EXPORT_BEGIN
 #define DECODER_EXPORT_END
 #endif
+
+namespace Octopus::Player::Core
+{
+    // Should match C# 'public enum Octopus.Player.Core.Error' in 'Error.cs'
+    enum class eError
+    {
+        None,
+        ClipNotValidated,
+        BadPath,
+        BadFile,
+        BadMetadata,
+        NoVideoStream,
+        FrameNotPresent,
+        BadFrame,
+        BadImageData,
+        BadFrameIndex,
+        NotImplmeneted
+    }
+}

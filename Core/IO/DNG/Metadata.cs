@@ -28,6 +28,11 @@ namespace Octopus.Player.Core.IO.DNG
         public Vector2i CFARepeatPatternDimensions { get; private set; }
         public CFAPattern CFAPattern { get; private set; }
         public Compression Compression { get; private set; }
+        public uint TileCount { get; private set; }
+        public Vector2i TileDimensions { get; private set; }
+        public ushort[] LinearizationTable { get; private set; }
+        public ushort BlackLevel { get; private set; }
+        public ushort WhiteLevel { get; private set; }
 
         public MetadataCinemaDNG(Reader reader, Playback.ClipCinemaDNG clip)
         {
@@ -35,9 +40,13 @@ namespace Octopus.Player.Core.IO.DNG
             Dimensions = reader.Dimensions;
             Framerate = reader.Framerate;
             BitDepth = reader.BitDepth;
+            DecodedBitDepth = reader.DecodedBitDepth;
             CFAPattern = reader.CFAPattern;
             CFARepeatPatternDimensions = reader.CFARepeatPatternDimensions;
             Compression = reader.Compression;
+            TileCount = reader.IsTiled ? reader.TileCount : 0;
+            TileDimensions = reader.IsTiled ? reader.TileDimensions : new Vector2i(0, 0);
+            LinearizationTable = reader.LinearizationTable;
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
             var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);

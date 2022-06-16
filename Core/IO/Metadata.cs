@@ -23,5 +23,6 @@ namespace Octopus.Player.Core.IO
 
         public Vector2i Dimensions { get; protected set; }
         public uint BitDepth { get; protected set; }
+        public uint DecodedBitDepth { get; protected set; }
     }
 }
