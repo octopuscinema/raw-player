@@ -57,7 +57,12 @@ namespace Octopus.Player.Core.Playback
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);
             SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
-               
+
+            // Wip decode test
+            var frame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8);
+            frame.frameNumber = 0;
+            SequenceStreamDNG.DecodeFrame(frame);
+
             return Error.NotImplmeneted;
         }
 

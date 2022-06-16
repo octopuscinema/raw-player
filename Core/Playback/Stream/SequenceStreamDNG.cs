@@ -1,4 +1,5 @@
-﻿using Octopus.Player.Core.Playback.Stream;
+﻿using Octopus.Player.Core.Maths;
+using Octopus.Player.Core.Playback.Stream;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,6 +56,13 @@ namespace Octopus.Player.Core.Playback
                 DNGReader.Dispose();
                 DNGReader = null;
                 return Error.BadFrame;
+            }
+
+            if (DNGReader.Compression == IO.DNG.Compression.None)
+            {
+                var bytesPerPixel = Clip.Metadata.BitDepth <= 8 ? 1 : 2;
+                Debug.Assert(frame.decodedImage.Length == bytesPerPixel * Clip.Metadata.Dimensions.Area());
+                DNGReader.DecodeImageData(ref frame.decodedImage);
             }
             //DNGReader.Read
             //Clip.Path

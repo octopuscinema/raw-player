@@ -1,9 +1,12 @@
-﻿using OpenTK.Mathematics;
+﻿using Octopus.Player.Core.Decoders;
+using Octopus.Player.Core.Maths;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using TiffLibrary;
 
 namespace Octopus.Player.Core.IO.DNG
@@ -117,42 +120,83 @@ namespace Octopus.Player.Core.IO.DNG
             switch(Compression)
             {
                 case Compression.LJ92:
-                    return ReadCompressedImageData(ref offsets, ref byteCounts);
+                    return ReadCompressedImageData(ref offsets, ref byteCounts, ref dataOut);
                 case Compression.None:
-                    return ReadUncompressedImageData(ref offsets, ref byteCounts);
+                    return ReadUncompressedImageData(ref offsets, ref byteCounts, ref dataOut);
                 default:
                     return Error.NotImplmeneted;
             }
         }
 
-        private Error ReadUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts)
+        private Error ReadUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, ref byte[] dataOut/*, bool multithread = false*/)
         {
             using var contentReader = Tiff.CreateContentReader();
+            var offsetsCount = offsets.Count;
+            var bytesPerPixel = BitDepth <= 8 ? 1 : 2;
+            var expectedDataOutSize = Dimensions.Area() * bytesPerPixel;
+            Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
+            var dataOutOffset = 0;
 
-            int count = offsets.Count;
-            for (int i = 0; i < count; i++)
+            switch (BitDepth)
             {
-                var offset = (long)offsets[i];
-                int byteCount = (int)byteCounts[i];
-                byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+                // For 8 or 16-bit uncompressed, we don't need to unpack, just read directly to output buffer
+                case 8:
+                case 16:
+                    
+                    for (int i = 0; i < offsetsCount; i++)
+                    {
+                        var segmentSizeBytes = (int)byteCounts[i];
+                        try
+                        {
+                            contentReader.Read((long)offsets[i], dataOut.AsMemory(dataOutOffset, segmentSizeBytes));
+                            dataOutOffset += segmentSizeBytes;
+                        }
+                        catch
+                        {
+                            return Error.BadImageData;
+                        }
+                    }
+                    break;
 
-                try
-                {
-                    contentReader.Read(offset, data.AsMemory(0, byteCount));
-                    //using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
-                    //fs.Write(data, 0, byteCount);
-                }
-                finally
-                {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(data);
-                }
-
+                // 12 or 14-bit packed, read into a temporary buffer then unpack to target buffer
+                case 12:
+                case 14:
+                    for (int i = 0; i < offsetsCount; i++)
+                    {
+                        var segmentSizeBytes = (int)byteCounts[i];
+                        byte[] packedData = System.Buffers.ArrayPool<byte>.Shared.Rent(segmentSizeBytes);
+                        
+                        try
+                        {
+                            contentReader.Read((long)offsets[i], packedData.AsMemory(0, segmentSizeBytes));
+                            if (BitDepth == 12)
+                                Unpack.Unpack12to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
+                            else
+                                Unpack.Unpack14to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
+                            dataOutOffset += (segmentSizeBytes * 16) / (int)BitDepth;
+                        }
+                        catch
+                        {
+                            return Error.BadImageData;
+                        }
+                        finally
+                        {
+                            System.Buffers.ArrayPool<byte>.Shared.Return(packedData);
+                        }
+                    }
+                    break;
+                default:
+                    return Error.NotImplmeneted;
             }
 
-            return Error.NotImplmeneted;
+            // Sanity check the output size
+            Debug.Assert(dataOutOffset == expectedDataOutSize);
+            if (dataOutOffset != expectedDataOutSize)
+                return Error.BadImageData;
+            return Error.None;
         }
 
-        private Error ReadCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts)
+        private Error ReadCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, ref byte[] dataOut)
         {
             // Extract strip/tile data
             using var contentReader = Tiff.CreateContentReader();
@@ -162,17 +206,17 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 var offset = (long)offsets[i];
                 int byteCount = (int)byteCounts[i];
-                byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+                byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
 
                 try
                 {
-                    contentReader.Read(offset, data.AsMemory(0, byteCount));
+                    contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
                     //using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
                     //fs.Write(data, 0, byteCount);
                 }
                 finally
                 {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(data);
+                    System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
                 }
 
             }

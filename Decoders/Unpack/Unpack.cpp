@@ -7,10 +7,11 @@ namespace Player::Decoders::Unpack
         return param +1;
     }
 
-	extern "C" void Unpack12to16Bit(uint16_t* p16BitOut, const uint8_t* p12BitPacked, std::size_t sizeBytes)
+	extern "C" void Unpack12to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p12BitPacked, std::size_t sizeBytes)
 	{
 		const uint8_t *pEnd = p12BitPacked + sizeBytes;
 		uint8_t b0, b1, b2;
+		uint16_t* p16BitOut = (uint16_t*)(pOut + outOffsetBytes);
 
 		while (p12BitPacked != pEnd)
 		{
@@ -26,10 +27,11 @@ namespace Player::Decoders::Unpack
 		}
 	}
 
-	extern "C" void Unpack14to16Bit(uint16_t* p16BitOut, const uint8_t* p14BitPacked, std::size_t sizeBytes)
+	extern "C" void Unpack14to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p14BitPacked, std::size_t sizeBytes)
 	{
 		const uint8_t* pEnd = p14BitPacked + sizeBytes;
 		uint8_t b0, b1, b2, b3, b4, b5, b6;
+		uint16_t* p16BitOut = (uint16_t*)(pOut + outOffsetBytes);
 
 		while (p14BitPacked != pEnd)
 		{
@@ -54,6 +56,14 @@ namespace Player::Decoders::Unpack
 
 			// Pixel1: Byte0 bits0-7 | Byte1 bits8-13
 			*p16BitOut++ = (0x3fff & (b1 << 8)) | b0;
+		}
+	}
+
+	extern "C" void TestByteArray(uint8_t* pOut, const uint8_t* pIn, std::size_t sizeBytes)
+	{
+		for (int i = 0; i < sizeBytes; i++)
+		{
+			pOut[i] = pIn[i] * 2;
 		}
 	}
 }
