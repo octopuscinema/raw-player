@@ -7,6 +7,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Octopus.Player.UI.Windows</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyName>OCTOPUS RAW Player</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
