@@ -30,6 +30,12 @@ namespace Octopus.Player.GPU.Render
         }
     }
 
+    public enum TextureFilter
+    {
+        Nearest = 0,
+        Linear = 1
+    }
+
     public enum TextureFormat
     {
 		RGBA8,
@@ -47,8 +53,10 @@ namespace Octopus.Player.GPU.Render
 		string Name { get; }
 		Vector2i Dimensions { get; }
 		TextureFormat Format { get; }
-		bool Valid { get; }
-		void Modify(Vector2i dimensions, TextureFormat format, byte[] imageData, uint dataSizeBytes);
-	}
+        TextureFilter Filter { get; }
+        bool Valid { get; }
+        void Modify(IContext context, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
+
+    }
 }
 

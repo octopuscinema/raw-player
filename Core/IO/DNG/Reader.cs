@@ -95,7 +95,7 @@ namespace Octopus.Player.Core.IO.DNG
             */
         }
 
-        public Error DecodeImageData(ref byte[] dataOut)
+        public Error DecodeImageData(byte[] dataOut)
         {
             CachedIsTiled = false;
             Valid = false;
@@ -124,20 +124,20 @@ namespace Octopus.Player.Core.IO.DNG
             switch(Compression)
             {
                 case Compression.LJ92:
-                    return ReadCompressedImageData(ref offsets, ref byteCounts, ref dataOut);
+                    return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
                 case Compression.None:
-                    return ReadUncompressedImageData(ref offsets, ref byteCounts, ref dataOut);
+                    return DecodeUncompressedImageData(ref offsets, ref byteCounts, dataOut);
                 default:
                     return Error.NotImplmeneted;
             }
         }
 
-        private Error ReadUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, ref byte[] dataOut/*, bool multithread = false*/)
+        private Error DecodeUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut/*, bool multithread = false*/)
         {
             using var contentReader = Tiff.CreateContentReader();
             var offsetsCount = offsets.Count;
-            var bytesPerPixel = BitDepth <= 8 ? 1 : 2;
-            var expectedDataOutSize = Dimensions.Area() * bytesPerPixel;
+            var expectedDataSize = (Dimensions.Area() * BitDepth) / 8;
+            var expectedDataOutSize = (Dimensions.Area() * DecodedBitDepth) / 8;
             Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
             var dataOutOffset = 0;
 
@@ -146,10 +146,10 @@ namespace Octopus.Player.Core.IO.DNG
                 // For 8 or 16-bit uncompressed, we don't need to unpack, just read directly to output buffer
                 case 8:
                 case 16:
-                    
                     for (int i = 0; i < offsetsCount; i++)
                     {
-                        var segmentSizeBytes = (int)byteCounts[i];
+                        var expectedRemainingData = expectedDataSize - dataOutOffset;
+                        var segmentSizeBytes = Math.Min((int)byteCounts[i], (int)expectedRemainingData);
                         try
                         {
                             contentReader.Read((long)offsets[i], dataOut.AsMemory(dataOutOffset, segmentSizeBytes));
@@ -165,11 +165,12 @@ namespace Octopus.Player.Core.IO.DNG
                 // 12 or 14-bit packed, read into a temporary buffer then unpack to target buffer
                 case 12:
                 case 14:
+                    var packedDataOffset = 0;
                     for (int i = 0; i < offsetsCount; i++)
                     {
-                        var segmentSizeBytes = (int)byteCounts[i];
+                        var expectedRemainingData = expectedDataSize - packedDataOffset;
+                        var segmentSizeBytes = Math.Min((int)expectedRemainingData, (int)byteCounts[i]);
                         byte[] packedData = System.Buffers.ArrayPool<byte>.Shared.Rent(segmentSizeBytes);
-                        
                         try
                         {
                             contentReader.Read((long)offsets[i], packedData.AsMemory(0, segmentSizeBytes));
@@ -177,6 +178,7 @@ namespace Octopus.Player.Core.IO.DNG
                                 Unpack.Unpack12to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
                             else
                                 Unpack.Unpack14to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
+                            packedDataOffset += segmentSizeBytes;
                             dataOutOffset += (segmentSizeBytes * 16) / (int)BitDepth;
                         }
                         catch
@@ -200,7 +202,7 @@ namespace Octopus.Player.Core.IO.DNG
             return Error.None;
         }
 
-        private Error ReadCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, ref byte[] dataOut)
+        private Error DecodeCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
         {
             using var contentReader = Tiff.CreateContentReader();
 

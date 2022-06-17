@@ -62,7 +62,7 @@ namespace Octopus.Player.Core.Playback
             {
                 var bytesPerPixel = Clip.Metadata.BitDepth <= 8 ? 1 : 2;
                 Debug.Assert(frame.decodedImage.Length == bytesPerPixel * Clip.Metadata.Dimensions.Area());
-                DNGReader.DecodeImageData(ref frame.decodedImage);
+                DNGReader.DecodeImageData(frame.decodedImage);
             }
             //DNGReader.Read
             //Clip.Path

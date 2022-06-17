@@ -96,6 +96,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
             return location;
         }
 
+        public void SetUniform(string uniformName, int value)
+        {
+            GL.Uniform1(UniformLocation(uniformName), value);
+            Context.CheckError();
+        }
+
         public void SetUniform(string uniformName, float value)
         {
             GL.Uniform1(UniformLocation(uniformName), value);

@@ -13,8 +13,8 @@ uniform vec2 OrthographicBoundsInverse;
 void main(void)
 {
 	// Calculate Texture Coordinates from vertex position
-	vec2 UV0 = vec2(0.0,0.0);//RectUV.xy;
-	vec2 UV1 = vec2(1.0,1.0);//RectUV.zw;
+	vec2 UV0 = vec2(0.0,1.0);//RectUV.xy;
+	vec2 UV1 = vec2(1.0,0.0);//RectUV.zw;
 	TextureCoordinates = UV0 + VertexPosition*(UV1-UV0);
 	
 	// Calculate position
@@ -30,8 +30,10 @@ void main(void)
 
 // GLSL Fragment/pixel shader program
 #ifdef FRAG
+uniform sampler2D rawImage;
 void main() 
 {
-	gl_FragColor = vec4(0,TextureCoordinates.x,1,1);
+	float pixel = texture2D(rawImage,TextureCoordinates).r * 32.0f;
+	gl_FragColor = vec4(pixel,pixel,pixel,1);
 }
 #endif

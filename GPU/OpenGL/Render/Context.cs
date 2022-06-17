@@ -27,6 +27,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private VertexBuffer Draw2DVertexBuffer { get; set; }
         private VertexBuffer activeVertexBuffer;
         private Shader activeShader;
+        private IDictionary<TextureUnit,Texture> activeTexture;
 
         private int DefaultVertexArrayHandle { get; set; }
 
@@ -39,6 +40,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
             shaders = new List<IShader>();
             RenderActions = new List<Action>();
             renderActionsLock = new object();
+
+            // Setup active texture tracking dictionary
+            activeTexture = new Dictionary<TextureUnit, Texture>();
 
             // Create default vertex array object
 #if !__MACOS__
@@ -59,14 +63,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Trace.WriteLine("GLSL version: " + GL.GetString(StringName.ShadingLanguageVersion));
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, string name = null)
+        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)
         {
-            return CreateTexture(dimensions, format, null, name);
+            return CreateTexture(dimensions, format, null, filter, name);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, string name = null)
+        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
         {
-            var texture = new Texture(this, dimensions, format, imageData);
+            var texture = new Texture(this, dimensions, format, imageData, filter);
             textures.Add(texture);
             return texture;
         }
@@ -138,12 +142,23 @@ namespace Octopus.Player.GPU.OpenGL.Render
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        public void Draw2D(IShader shader, ITexture texture, Vector2i pos, Vector2i size)
+        public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size)
         {
             SetVertexBuffer(Draw2DVertexBuffer);
             SetShader((Shader)shader);
+            if (textures != null)
+            {
+                int textureUnit = 0;
+                foreach (var texture in textures)
+                {
+                    shader.SetUniform(texture.Key, textureUnit);
+                    SetTexture((Texture)texture.Value, TextureUnit.Texture0 + textureUnit);
+                    textureUnit++;
+                }
+            }
             shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
             shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / NativeWindow.FramebufferSize.ToVector2());
+
 #if __MACOS__
             GL.DrawArrays(BeginMode.TriangleFan, 0, 4);
 #else
@@ -170,6 +185,18 @@ namespace Octopus.Player.GPU.OpenGL.Render
             if ( vertexBuffer != null)
                 vertexBuffer.Bind();
             activeVertexBuffer = vertexBuffer;
+        }
+
+        public void SetTexture(Texture texture, TextureUnit unit = TextureUnit.Texture0)
+        {
+            if (activeTexture.ContainsKey(unit) && activeTexture[unit] == texture)
+                return;
+
+            if (texture == null)
+                Texture.Unbind(unit);
+            else
+                texture.Bind(unit);
+            activeTexture[unit] = texture;
         }
 
         public void Dispose()

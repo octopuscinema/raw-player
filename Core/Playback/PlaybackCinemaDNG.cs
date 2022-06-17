@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 
@@ -49,10 +50,7 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadMetadata;
             Clip = clip;
 
-            // Test frame texture
-            if (GpuFrameTest != null)
-                GpuFrameTest.Dispose();
-            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, TextureFormat.R16, "gpuFrameTest");
+            
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);
@@ -62,6 +60,14 @@ namespace Octopus.Player.Core.Playback
             var frame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
             frame.frameNumber = 0;
             SequenceStreamDNG.DecodeFrame(frame);
+
+            // Test frame texture
+            if (GpuFrameTest != null)
+                GpuFrameTest.Dispose();
+            //var imageData = new byte[cinemaDNGClip.Metadata.Dimensions.Area() * 2];
+            //for (int i = 0; i < imageData.Length; i++)
+            //    imageData[i] = (i > imageData.Length / 2) ? (byte)128 : (byte)255;
+            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, TextureFormat.R16, frame.decodedImage, TextureFilter.Nearest, "gpuFrameTest");
 
             return Error.NotImplmeneted;
         }
@@ -88,8 +94,8 @@ namespace Octopus.Player.Core.Playback
 
         public override void OnRenderFrame(double timeInterval)
         {
-            if (GpuPipelineProgram != null)
-                RenderContext.Draw2D(GpuPipelineProgram, null, new Vector2i(0, 0), new Vector2i(100, 100));
+            if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid)
+                RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest} }, new Vector2i(0, 0), new Vector2i(1280, 720));
         }
     }
 }

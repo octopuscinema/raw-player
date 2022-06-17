@@ -3,6 +3,7 @@ using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Octopus.Player.GPU.OpenGL.Render
 {
@@ -14,26 +15,28 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private volatile bool valid;
         private Context Context { get; set; }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, string name = null)
-            : this(context, dimensions, format, null, name)
+        public Texture(Context context, Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)
+            : this(context, dimensions, format, null, filter, name)
         {
         }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, byte[] imageData, string name = null)
+        public Texture(Context context, Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
 		{
             Name = name;
             Dimensions = dimensions;
             Format = format;
             Context = context;
+            Filter = filter;
 
-            // Create the texture with blank data
-            // TODO: set mipmap/filter and clamp options
-            // Warning, the imageData pointer will probably be invalid when the action is run!
             Action createTextureAction = () =>
             {
                 Handle = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, Handle);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLTextureMinFilter(Filter));
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLTextureMagFilter(Filter));
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
                 Context.CheckError();
                 valid = true;
             };
@@ -45,36 +48,58 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public TextureFormat Format { get; private set; }
 
+        public TextureFilter Filter { get; private set; }
+
+        public void Bind(TextureUnit unit = TextureUnit.Texture0)
+        {
+            Debug.Assert(valid, "Attempting to bind an invalid texture");
+            GL.ActiveTexture(unit);
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            Context.CheckError();
+        }
+
+        static public void Unbind(TextureUnit unit = TextureUnit.Texture0)
+        {
+            GL.ActiveTexture(unit);
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+            Context.CheckError();
+        }
+
         public void Dispose()
         {
             Debug.Assert(valid,"Attempting to dispose invalid texture");
             Action deleteTextureAction = () =>
             {
                 GL.DeleteTexture(Handle);
+                Context.CheckError();
             };
             Context.EnqueueRenderAction(deleteTextureAction);
             valid = false;
         }
 
-        public void Modify(Vector2i dimensions, TextureFormat format, byte[] imageData, uint dataSizeBytes)
+        public void Modify(IContext context, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0)
         {
             Debug.Assert(valid, "Attempting to modify invalid texture");
-            Debug.Assert(dimensions.X <= Dimensions.X && dimensions.Y <= Dimensions.Y && format == Format, "Modify does not support dimension or format changes");
-            /*
-            unsafe
+            Debug.Assert(size.X <= Dimensions.X && size.Y <= Dimensions.Y, "Size cannot be larger than texture dimensions");
+            Debug.Assert(origin.X <= Dimensions.X && origin.Y <= Dimensions.Y, "Origin cannot be larger than texture dimensions");
+
+            ((Context)context).SetTexture(this);
+
+            if ( imageDataOffset == 0 )
+                GL.TexSubImage2D(TextureTarget.Texture2D, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), imageData);
+            else
             {
-                fixed (byte* p = imageData)
+                GCHandle pinnedImageData = GCHandle.Alloc(imageData, GCHandleType.Pinned);
+                try
                 {
-                    IntPtr ptr = (IntPtr)p;
-                    // do you stuff here
+                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), IntPtr.Add(pinnedImageData.AddrOfPinnedObject(), (int)imageDataOffset));
                 }
-            }*/
-
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
-
-            Vector2i offset = new Vector2i(0, 0);
-            Vector2i size = dimensions;
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, offset.X, offset.Y, size.X, size.Y, GLPixelFormat(format), GLPixelType(format), imageData);
+                finally
+                {
+                    pinnedImageData.Free();
+                }
+            }
+            
             Context.CheckError();
         }
 
@@ -116,6 +141,32 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     throw new Exception("Unhandled texture format: " + format.ToString());
             }
         }
+
+        private static TextureMinFilter GLTextureMinFilter(TextureFilter filter)
+        {
+            switch(filter)
+            {
+                case TextureFilter.Linear:
+                    return TextureMinFilter.Linear;
+                case TextureFilter.Nearest:
+                    return TextureMinFilter.Nearest;
+                default:
+                    throw new Exception("Unhandled texture filter");
+            }
+        }
+        private static TextureMagFilter GLTextureMagFilter(TextureFilter filter)
+        {
+            switch (filter)
+            {
+                case TextureFilter.Linear:
+                    return TextureMagFilter.Linear;
+                case TextureFilter.Nearest:
+                    return TextureMagFilter.Nearest;
+                default:
+                    throw new Exception("Unhandled texture filter");
+            }
+        }
+
 
         private static PixelInternalFormat GLPixelInternalFormat(TextureFormat format)
         {
