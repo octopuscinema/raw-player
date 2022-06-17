@@ -269,7 +269,7 @@ namespace Octopus::Player::Decoders::LJ92
 		}
 		self->huffbits = maxbits;
 		/* Now fill the lut */
-		u16* hufflut = (u16*)malloc((1 << maxbits) * sizeof(u16));
+		u16* hufflut = (u16*)malloc(((size_t)1 << maxbits) * sizeof(u16));
 		if (hufflut == NULL) return LJ92_ERROR_NO_MEMORY;
 		self->hufflut = hufflut;
 		int i = 0;
@@ -452,7 +452,7 @@ namespace Octopus::Player::Decoders::LJ92
 		self->ix += BEH(self->data[self->ix]);
 		self->cnt = 0;
 		self->b = 0;
-		int write = self->writelen;
+
 		// Now need to decode huffman coded values
 		int c = 0;
 		int pixels = self->y * self->x;
@@ -481,9 +481,7 @@ namespace Octopus::Player::Decoders::LJ92
 				thisrow = temprow;
 				Px = lastrow[col]; // Use value above for first pixel in row
 			}
-			if (--write == 0) {
-				write = self->writelen;
-			}
+			
 			if (self->ix >= self->datalen + 2) break;
 		}
 		if (c >= pixels) ret = LJ92_ERROR_NONE;
@@ -496,7 +494,7 @@ namespace Octopus::Player::Decoders::LJ92
 		self->ix += BEH(self->data[self->ix]);
 		self->cnt = 0;
 		self->b = 0;
-		int write = self->writelen;
+		
 		// Now need to decode huffman coded values
 		int pixels = self->y * self->x;
 		u16* out = self->image;
@@ -515,8 +513,6 @@ namespace Octopus::Player::Decoders::LJ92
 			
 			out[c++] = left;
 			
-			if (--write == 0)
-				write = self->writelen;
 			if (self->ix >= self->datalen + 2)
 				break;
 			Px = left;
@@ -532,9 +528,6 @@ namespace Octopus::Player::Decoders::LJ92
 			left = Px + diff;
 			
 			out[c++] = left;
-
-			if (--write == 0)
-				write = self->writelen;
 
 			if (self->ix >= self->datalen + 2)
 				break;
@@ -852,10 +845,10 @@ namespace Octopus::Player::Decoders::LJ92
 
 	LJ92_ERRORS lj92_decode(lj92& lj,
 		uint16_t* target, int writeLength, int skipLength,
-		uint16_t* linearize, int linearizeLength) {
+		uint16_t* linearize, int linearizeLength) 
+	{
 		LJ92_ERRORS ret = LJ92_ERROR_NONE;
 		ljp* self = &lj;
-		if (self == NULL) return LJ92_ERROR_BAD_HANDLE;
 		self->image = target;
 		self->writelen = writeLength;
 		self->skiplen = skipLength;
@@ -865,7 +858,8 @@ namespace Octopus::Player::Decoders::LJ92
 		return ret;
 	}
 
-	void lj92_close(lj92& lj) {
+	void lj92_close(lj92& lj) 
+	{
 		ljp* self = &lj;
 		if (self != nullptr)
 			free_memory(self);
@@ -873,20 +867,20 @@ namespace Octopus::Player::Decoders::LJ92
  
     Core::eError LJ92Error(LJ92_ERRORS error)
     {
-    switch (error) {
-        case LJ92_ERROR_NONE:
-           return Core::eError::None;
-		case LJ92_ERROR_CORRUPT:
-            return Core::eError::BadImageData;
-		case LJ92_ERROR_NO_MEMORY:
-            return Core::eError::NotImplmeneted;
-		case LJ92_ERROR_BAD_HANDLE:
-            return Core::eError::BadImageData;
-		case LJ92_ERROR_TOO_WIDE:
-            return Core::eError::BadMetadata;
-        default:
-            return Core::eError::NotImplmeneted;
-    }
+		switch (error) {
+			case LJ92_ERROR_NONE:
+			   return Core::eError::None;
+			case LJ92_ERROR_CORRUPT:
+				return Core::eError::BadImageData;
+			case LJ92_ERROR_NO_MEMORY:
+				return Core::eError::NotImplmeneted;
+			case LJ92_ERROR_BAD_HANDLE:
+				return Core::eError::BadImageData;
+			case LJ92_ERROR_TOO_WIDE:
+				return Core::eError::BadMetadata;
+			default:
+				return Core::eError::NotImplmeneted;
+		}
     }
 
     extern "C" int TestMethod(int param)
@@ -902,9 +896,8 @@ namespace Octopus::Player::Decoders::LJ92
         if ( error == Core::eError::None )
         {
             if ( actualWidth == width && actualHeight == height && actualBitDepth == bitDepth )
-            {
-                //lj92_decode(lj, (uint16_t*)pOut, 0, 0, nullptr, 0);
-            } else
+                error = LJ92Error(lj92_decode(lj, (uint16_t*)pOut, 0, 0, nullptr, 0));
+            else
                 error = Core::eError::BadMetadata;
             lj92_close(lj);
         }

@@ -27,5 +27,5 @@ namespace Octopus::Player::Core
         BadImageData,
         BadFrameIndex,
         NotImplmeneted
-    }
+    };
 }
