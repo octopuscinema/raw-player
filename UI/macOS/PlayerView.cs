@@ -62,6 +62,8 @@ namespace Octopus.Player.UI.macOS
                 GLLayer.RemoveAllAnimations();
                 GLLayer.RenderContext.RequestRender();
             }
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.OnFramebufferResize(NativePlayerWindow.FramebufferSize);
         }
 
         public override void MouseDown(NSEvent theEvent)

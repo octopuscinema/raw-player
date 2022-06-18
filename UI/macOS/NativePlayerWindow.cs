@@ -95,6 +95,11 @@ namespace Octopus.Player.UI.macOS
 			NSError urlError;
 			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, null, out urlError);
 		}
+
+        public void EnableMenuItem(string name, bool enabled)
+        {
+            //throw new NotImplementedException();
+        }
     }
 }
 
