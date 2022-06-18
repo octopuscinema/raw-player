@@ -19,6 +19,12 @@ using OpenTK.Wpf;
 
 namespace Octopus.Player.UI.Windows
 {
+    public struct DefaultWindowsTheme : ITheme
+    {
+        public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
+        public Vector3 EmptyBackground { get { return new Vector3(SystemColors.MenuBarColor.R, SystemColors.MenuBarColor.G, SystemColors.MenuBarColor.B) / 255.0f; } }
+    }
+
     /// <summary>
     /// Interaction logic for PlayerWindow.xaml
     /// </summary>
@@ -36,7 +42,7 @@ namespace Octopus.Player.UI.Windows
             InitializeComponent();
             
             // Create cross platform Window
-            PlayerWindow = new PlayerWindow(this);
+            PlayerWindow = new PlayerWindow(this/*, new DefaultWindowsTheme()*/);
 
             // Save the startup window state
             NonFullscreenWindowState = WindowState;

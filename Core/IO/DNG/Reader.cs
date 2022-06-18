@@ -123,7 +123,7 @@ namespace Octopus.Player.Core.IO.DNG
 
             switch(Compression)
             {
-                case Compression.LJ92:
+                case Compression.LosslessJPEG:
                     return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
                 case Compression.None:
                     return DecodeUncompressedImageData(ref offsets, ref byteCounts, dataOut);
@@ -245,8 +245,18 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedFramerate.HasValue)
                 {
-                    var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
-                    CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
+                    try
+                    {
+                        // CinemaDNG spec states framerate is signed rational
+                        var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
+                    }
+                    catch
+                    {
+                        // Handle OCTOPUSCAMERA dng bug where framerate was written out as unsigned rational
+                        var framerate = TagReader.ReadRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        CachedFramerate = new Maths.Rational((int)framerate.Numerator, (int)framerate.Denominator);
+                    }
                 }
                 return CachedFramerate.Value;
             }
@@ -276,7 +286,7 @@ namespace Octopus.Player.Core.IO.DNG
                         case Compression.None:
                             CachedDecodedBitDepth = BitDepth > 8u ? 16u : 8u;
                             break;
-                        case Compression.LJ92:
+                        case Compression.LosslessJPEG:
                             CachedDecodedBitDepth = 16u;
                             break;
                         default:
@@ -319,6 +329,8 @@ namespace Octopus.Player.Core.IO.DNG
                                 CachedCFAPattern = CFAPattern.RGGB;
                             else if (pattern.ToArray().SequenceEqual(new ushort[] { 2, 1, 1, 0 }))
                                 CachedCFAPattern = CFAPattern.BGGR;
+                            else if (pattern.ToArray().SequenceEqual(new ushort[] { 1, 0, 2, 1 }))
+                                CachedCFAPattern = CFAPattern.GRBG;
                             else
                                 CachedCFAPattern = CFAPattern.Unknown;
                             break;
@@ -424,7 +436,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedBlackLevel.HasValue)
-                    CachedBlackLevel = TagReader.ReadShortField((TiffTag)TiffTagsDNG.BlackLevel, 1).First();
+                    CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagsDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagsDNG.BlackLevel, 1).First() : 0);
                 return CachedBlackLevel.Value;
             }
         }
@@ -434,7 +446,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedWhiteLevel.HasValue)
-                    CachedWhiteLevel = TagReader.ReadShortField((TiffTag)TiffTagsDNG.WhiteLevel, 1).First();
+                    CachedWhiteLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagsDNG.WhiteLevel) ? TagReader.ReadLongField((TiffTag)TiffTagsDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
                 return CachedWhiteLevel.Value;
             }
         }

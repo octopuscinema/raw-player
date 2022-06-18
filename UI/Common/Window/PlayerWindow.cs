@@ -9,12 +9,12 @@ namespace Octopus.Player.UI
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
         GPU.Render.IContext RenderContext { get; set; }
-        ITheme theme;
+        public ITheme Theme { get; private set; }
 
-        public PlayerWindow(INativeWindow nativeWindow)
+        public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
             NativeWindow = nativeWindow;
-            theme = new DefaultTheme();
+            Theme = theme != null ? theme : new DefaultTheme();
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -105,7 +105,7 @@ namespace Octopus.Player.UI
         {
             NativeWindow.EnableMenuItem("metadata", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
-            RenderContext.BackgroundColor = theme.EmptyBackground;
+            RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }
 
@@ -115,7 +115,7 @@ namespace Octopus.Player.UI
             Debug.Assert(Playback != null && Playback.Clip != null);
             if ( Playback != null && Playback.Clip != null )
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
-            RenderContext.BackgroundColor = theme.ClipBackground;
+            RenderContext.BackgroundColor = Theme.ClipBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }
 
@@ -127,7 +127,7 @@ namespace Octopus.Player.UI
         public void OnRenderInit(GPU.Render.IContext renderContext)
         {
             RenderContext = renderContext;
-            RenderContext.BackgroundColor = theme.EmptyBackground;
+            RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }
 
