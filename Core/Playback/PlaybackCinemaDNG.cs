@@ -36,6 +36,11 @@ namespace Octopus.Player.Core.Playback
                 SequenceStreamDNG.Dispose();
                 SequenceStreamDNG = null;
             }
+            if (GpuFrameTest != null)
+            {
+                GpuFrameTest.Dispose();
+                GpuFrameTest = null;
+            }
             State = State.Empty;
             Clip = null;
             ClipClosed?.Invoke(this, new EventArgs());
@@ -59,7 +64,7 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(SequenceStreamDNG == null);
             SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
 
-            // Wip decode test
+            // Decode test
             var frame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
             frame.frameNumber = 0;
             SequenceStreamDNG.DecodeFrame(frame);
@@ -67,9 +72,6 @@ namespace Octopus.Player.Core.Playback
             // Test frame texture
             if (GpuFrameTest != null)
                 GpuFrameTest.Dispose();
-            //var imageData = new byte[cinemaDNGClip.Metadata.Dimensions.Area() * 2];
-            //for (int i = 0; i < imageData.Length; i++)
-            //    imageData[i] = (i > imageData.Length / 2) ? (byte)128 : (byte)255;
             GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, TextureFormat.R16, frame.decodedImage, TextureFilter.Nearest, "gpuFrameTest");
 
             return Error.NotImplmeneted;

@@ -8,6 +8,6 @@ namespace Octopus.Player.UI
     public struct DefaultTheme : ITheme
     {
         public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
-        public Vector3 EmptyBackground { get { return new Vector3(0.75f, 0.75f, 0.75f); } }
+        public Vector3 EmptyBackground { get { return new Vector3(0.9f, 0.9f, 0.9f); } }
     }
 }

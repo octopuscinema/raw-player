@@ -98,6 +98,10 @@ namespace Octopus.Player.UI.macOS
 
         public void EnableMenuItem(string name, bool enabled)
         {
+			var menu = NSApplication.SharedApplication.MainMenu;
+			var helpMenu = menu.ItemWithTitle("Help");
+			helpMenu.Enabled = false;
+			//helpMenu.Hidden = true;
             //throw new NotImplementedException();
         }
     }

@@ -55,7 +55,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-     <PackageReference Include="OpenTK.Mathematics" version="4.7.2" />
+     <PackageReference Include="OpenTK.Mathematics" version="4.7.4" />
      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
