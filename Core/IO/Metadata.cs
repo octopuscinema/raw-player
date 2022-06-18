@@ -1,7 +1,9 @@
-﻿using OpenTK.Mathematics;
+﻿using Octopus.Player.Core.Maths;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Octopus.Player.Core.IO
 {
@@ -17,12 +19,23 @@ namespace Octopus.Player.Core.IO
 
     public abstract class Metadata : IMetadata
     {
+        public string Title { get; protected set; }
         public uint DurationFrames { get; protected set; }
-
-        public Maths.Rational Framerate { get; protected set; }
-
         public Vector2i Dimensions { get; protected set; }
+        public Maths.Rational Framerate { get; protected set; }
+        public virtual Rational AspectRatio { get { return new Rational(Dimensions.X, Dimensions.Y); } }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
+
+        public override string ToString()
+        {
+            string text = "";
+            var properties = typeof(Metadata).GetProperties(System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+            foreach (var property in properties)
+                text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";
+
+            return text;
+        }
     }
 }

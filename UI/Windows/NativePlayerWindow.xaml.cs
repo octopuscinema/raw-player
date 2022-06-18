@@ -120,6 +120,20 @@ namespace Octopus.Player.UI.Windows
             Application.Current.Shutdown();
         }
 
+        public void EnableMenuItem(string name, bool enabled)
+        {
+            var menuItems = PlayerMenu.Items;
+            foreach (var item in menuItems)
+            {
+                var menuItem = item as MenuItem;
+                if (menuItem != null && menuItem.Name == name)
+                {
+                    menuItem.IsEnabled = enabled;
+                    return;
+                }
+            }
+        }
+
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(MenuItem));
@@ -164,6 +178,7 @@ namespace Octopus.Player.UI.Windows
         private void GLControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
+            PlayerWindow.OnFramebufferResize(FramebufferSize);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Octopus.Player.UI
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
 #nullable disable
+		void EnableMenuItem(string name, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
 		void Exit();

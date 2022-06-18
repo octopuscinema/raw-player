@@ -1,6 +1,6 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 using System.Diagnostics;
-using Octopus.Player;
 
 namespace Octopus.Player.UI
 {
@@ -9,10 +9,12 @@ namespace Octopus.Player.UI
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
         GPU.Render.IContext RenderContext { get; set; }
+        ITheme theme;
 
         public PlayerWindow(INativeWindow nativeWindow)
         {
             NativeWindow = nativeWindow;
+            theme = new DefaultTheme();
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -54,6 +56,11 @@ namespace Octopus.Player.UI
                     if (dngPath != null)
                         OpenCinemaDNG(dngPath);
                     break;
+                case "metadata":
+                    Debug.Assert(Playback != null && Playback.Clip != null);
+                    if (Playback != null && Playback.Clip != null)
+                        NativeWindow.Alert(AlertType.Blank, Playback.Clip.Metadata.ToString() + "\n", "Metadata for '" + Playback.Clip.Metadata.Title + "'");
+                    break;
                 default:
                     Debug.Assert(false,"Unhandled menu item: " + name);
                     break;
@@ -76,22 +83,52 @@ namespace Octopus.Player.UI
             if (Playback != null && !Playback.SupportsClip(clip))
             {
                 Playback.Close();
+                Playback.ClipOpened -= OnClipOpened;
+                Playback.ClipClosed -= OnClipClosed;
                 Playback = null;
             }
 
             // Create the playback if necessary
             if (Playback == null)
+            {
                 Playback = Activator.CreateInstance(typeof(T), RenderContext) as T;
+                Playback.ClipOpened += OnClipOpened;
+                Playback.ClipClosed += OnClipClosed;
+            } 
             else
                 Playback.Close();
 
             // Open the clip
             return Playback.Open(clip);
         }
+        public void OnClipClosed(object sender, EventArgs e)
+        {
+            NativeWindow.EnableMenuItem("metadata", false);
+            NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
+            RenderContext.BackgroundColor = theme.EmptyBackground;
+            RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+        }
+
+        public void OnClipOpened(object sender, EventArgs e)
+        {
+            NativeWindow.EnableMenuItem("metadata", true);
+            Debug.Assert(Playback != null && Playback.Clip != null);
+            if ( Playback != null && Playback.Clip != null )
+                NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
+            RenderContext.BackgroundColor = theme.ClipBackground;
+            RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+        }
+
+        public void OnFramebufferResize(Vector2i framebufferSize)
+        {
+            RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+        }
 
         public void OnRenderInit(GPU.Render.IContext renderContext)
         {
             RenderContext = renderContext;
+            RenderContext.BackgroundColor = theme.EmptyBackground;
+            RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }
 
         public void OnRenderFrame(double timeInterval)

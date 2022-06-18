@@ -32,6 +32,8 @@ namespace Octopus.Player.Core.Playback
         {
             return Clip != null;
         }
+        public abstract event EventHandler ClipOpened;
+        public abstract event EventHandler ClipClosed;
         public abstract bool SupportsClip(IClip clip);
         public abstract void Stop();
         public abstract void Play();

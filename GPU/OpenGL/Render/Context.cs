@@ -12,7 +12,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
     public class Context : IContext
     {
         public GPU.Render.Api Api { get { return Api.OpenGL; } }
+        public Vector3 BackgroundColor { get; set; }
+        public RedrawBackground RedrawBackground { get; set; }
         public object NativeContext { get; private set; }
+        public Vector2i FramebufferSize { get { return NativeWindow.FramebufferSize; } }
         public event ForceRender ForceRender;
 
         private List<ITexture> textures;
@@ -137,9 +140,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 }
             }
 
-            // Placeholder green
-            GL.ClearColor(0, 1, 0, 1);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            // Draw background
+            if (RedrawBackground != RedrawBackground.Off)
+            {
+                GL.ClearColor(BackgroundColor.X, BackgroundColor.Y, BackgroundColor.Z, 1);
+                GL.Clear(ClearBufferMask.ColorBufferBit);
+                if (RedrawBackground == RedrawBackground.Once)
+                    RedrawBackground = RedrawBackground.Off;
+            }
         }
 
         public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size)
@@ -157,7 +165,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 }
             }
             shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
-            shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / NativeWindow.FramebufferSize.ToVector2());
+            shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / FramebufferSize.ToVector2());
 
 #if __MACOS__
             GL.DrawArrays(BeginMode.TriangleFan, 0, 4);

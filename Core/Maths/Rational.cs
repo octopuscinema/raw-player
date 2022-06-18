@@ -48,7 +48,7 @@ namespace Octopus.Player.Core.Maths
 
         public override string ToString()
         {
-            return Numerator.ToString() + "/" + Denominator.ToString();
+            return Numerator.ToString() + "/" + Denominator.ToString() + " (" + ToSingle().ToString("n2") + ")";
         }
     }
 }

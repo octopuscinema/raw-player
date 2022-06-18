@@ -12,13 +12,24 @@ namespace Octopus.Player.GPU.Render
         Direct3D
     }
 
+    public enum RedrawBackground
+    {
+        Once,
+        Off,
+        On
+    }
+
     public delegate void ForceRender();
 
     public interface IContext : IDisposable
     {
         Api Api { get; }
 
+        Vector3 BackgroundColor {get; set;}
+        RedrawBackground RedrawBackground {get; set;}
+
         object NativeContext { get; }
+        Vector2i FramebufferSize { get; }
 
         event ForceRender ForceRender;
 

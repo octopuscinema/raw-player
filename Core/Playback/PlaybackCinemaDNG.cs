@@ -13,7 +13,10 @@ namespace Octopus.Player.Core.Playback
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
 
-		public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
+        public override event EventHandler ClipOpened;
+        public override event EventHandler ClipClosed;
+
+        public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
 		{
             //var testDll = Decoders.LJ92.TestMethod(1);
@@ -35,6 +38,7 @@ namespace Octopus.Player.Core.Playback
             }
             State = State.Empty;
             Clip = null;
+            ClipClosed?.Invoke(this, new EventArgs());
         }
 
         public override Error Open(IClip clip)
@@ -49,8 +53,7 @@ namespace Octopus.Player.Core.Playback
             if (clip.ReadMetadata() != Error.None)
                 return Error.BadMetadata;
             Clip = clip;
-
-            
+            ClipOpened?.Invoke(this, new EventArgs());
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);
@@ -94,8 +97,13 @@ namespace Octopus.Player.Core.Playback
 
         public override void OnRenderFrame(double timeInterval)
         {
-            if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid)
-                RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest} }, new Vector2i(0, 0), new Vector2i(1280, 720));
+            if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)
+            {
+                Vector2i rectPos;
+                Vector2i rectSize;
+                RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
+                RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } }, rectPos, rectSize);
+            }
         }
     }
 }

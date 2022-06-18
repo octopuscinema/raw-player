@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.IO.DNG
@@ -47,6 +49,11 @@ namespace Octopus.Player.Core.IO.DNG
             TileCount = reader.IsTiled ? reader.TileCount : 0;
             TileDimensions = reader.IsTiled ? reader.TileDimensions : new Vector2i(0, 0);
             LinearizationTable = reader.LinearizationTable;
+            BlackLevel = reader.BlackLevel;
+            WhiteLevel = reader.WhiteLevel;
+
+            // Title is just the path without the parent folders
+            Title = Path.GetFileName(clip.Path);
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
             var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
@@ -60,6 +67,28 @@ namespace Octopus.Player.Core.IO.DNG
             }
             else
                 Trace.WriteLine("Warning, failed to determine CinemaDNG sequence duration for clip: " + clip.Path);
+        }
+
+        public override string ToString()
+        {
+            string text = base.ToString() + "\nCinemaDNG\n-------------\n";
+
+            var properties = GetType().GetProperties(System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+            foreach (var property in properties)
+            {
+                switch (property.Name)
+                {
+                    case "LinearizationTable":
+                        text += "LinearizationTable: " + ((LinearizationTable == null || LinearizationTable.Length==0) ? "None\n" : LinearizationTable.Length + " entries\n");
+                        break;
+                    default:
+                        text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";
+                        break;
+                }
+            }
+
+            return text;
         }
     }
 }

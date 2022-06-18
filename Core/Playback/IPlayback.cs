@@ -32,6 +32,8 @@ namespace Octopus.Player.Core.Playback
 		bool IsOpen();
 		void Close();
 		bool SupportsClip(IClip clip);
+		event EventHandler ClipOpened;
+		event EventHandler ClipClosed;
 
 		void OnRenderFrame(double timeInterval);
 	}
