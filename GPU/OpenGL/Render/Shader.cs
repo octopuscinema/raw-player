@@ -14,18 +14,21 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public string Name { get; private set; }
         public bool Valid {  get { return valid; } }
         public int Program { get; private set; }
+        public IReadOnlyList<string> Defines { get; private set; }
 
         private volatile bool valid;
 
-        public Shader(Context context, Stream shaderSourceStream, VertexFormat vertexFormat, string name = null, string shaderVersion = "120")
+        public Shader(Context context, System.Reflection.Assembly assembly, string resourceName, VertexFormat vertexFormat, string name = null, IList<string> defines = null, string shaderVersion = "120")
         {
             Name = name;
+            Defines = new List<string>(defines);
 
             Action buildShaderAction = () =>
             {
                 // Read source code from streams
+                var shaderSourceStream = assembly.GetManifestResourceStream(resourceName);
                 StreamReader shaderReader = new StreamReader(shaderSourceStream);
-                var shaderSource = shaderReader.ReadToEnd();
+                var shaderSource = Preprocess(shaderReader.ReadToEnd(), assembly);
                 shaderReader.Dispose();
                 shaderSourceStream.Dispose();
 
@@ -87,6 +90,64 @@ namespace Octopus.Player.GPU.OpenGL.Render
             context.EnqueueRenderAction(buildShaderAction);
         }
 
+        string AddDefines(string source)
+        {
+            string defineBlock = "";
+            foreach(var define in Defines)
+                defineBlock += "#define " + define + "\n";
+            return defineBlock + source;
+        }
+
+        string AddIncludes(string source, System.Reflection.Assembly assembly, string[] localResources, ref uint depth)
+        {
+            depth++;
+            if (depth > 16)
+                throw new Exception("Shader include depth maximum of 16 reached, check for cycling header dependancy");
+
+            const string includeToken = "#include ";
+
+            // Find lines which start '#include'
+            var includeLines = new List<string>();
+            using (StringReader reader = new StringReader(source))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if ( line.StartsWith(includeToken))
+                        includeLines.Add(line.Replace("\n", "").Replace("\r", ""));
+                }
+            }
+
+            // Apply the #includes
+            foreach(var includeLine in includeLines)
+            {
+                // Extract the filename and check its in the resource list
+                var filename = includeLine.Replace(includeToken, "").Replace("\"","");
+                var includeResource = Array.Find(localResources, element => element.EndsWith(filename));
+                if ( string.IsNullOrEmpty(includeResource) )
+                    throw new Exception("Could not find shader include resource: '" + filename + "'");
+
+                // Load the include resource and recursively add includes
+                var includeSourceStream = assembly.GetManifestResourceStream(includeResource);
+                StreamReader includeReader = new StreamReader(includeSourceStream);
+                var includeSource = AddIncludes(includeReader.ReadToEnd(), assembly, localResources, ref depth);
+                includeReader.Dispose();
+                includeSourceStream.Dispose();
+
+                // Finally replace the include line with the include source
+                source = source.Replace(includeLine, includeSource);
+            }
+
+            return source;
+        }
+
+        string Preprocess(string source, System.Reflection.Assembly assembly)
+        {
+            uint includeDepth = 0;
+            var localResources = assembly.GetManifestResourceNames();
+            return AddIncludes(AddDefines(source), assembly, localResources, ref includeDepth);
+        }
+        
         private int UniformLocation(string uniformName)
         {
             var location = GL.GetUniformLocation(Program, uniformName);
@@ -96,20 +157,23 @@ namespace Octopus.Player.GPU.OpenGL.Render
             return location;
         }
 
-        public void SetUniform(string uniformName, int value)
+        public void SetUniform(IContext context, string uniformName, int value)
         {
+            ((Context)context).SetShader(this);
             GL.Uniform1(UniformLocation(uniformName), value);
             Context.CheckError();
         }
 
-        public void SetUniform(string uniformName, float value)
+        public void SetUniform(IContext context, string uniformName, float value)
         {
+            ((Context)context).SetShader(this);
             GL.Uniform1(UniformLocation(uniformName), value);
             Context.CheckError();
         }
 
-        public void SetUniform(string uniformName, Vector2 value)
+        public void SetUniform(IContext context, string uniformName, Vector2 value)
         {
+            ((Context)context).SetShader(this);
 #if __MACOS__
             GL.Uniform2(UniformLocation(uniformName), value.X, value.Y);
 #else
@@ -117,20 +181,15 @@ namespace Octopus.Player.GPU.OpenGL.Render
 #endif
             Context.CheckError();
         }
-        public void SetUniform(string uniformName, Vector4 value)
+        public void SetUniform(IContext context, string uniformName, Vector4 value)
         {
+            ((Context)context).SetShader(this);
 #if __MACOS__
             GL.Uniform4(UniformLocation(uniformName), value.X, value.Y, value.Z, value.W);
 #else
             GL.Uniform4(UniformLocation(uniformName), value);
 #endif
             Context.CheckError();
-        }
-
-        public void AttributeLocation(string attributeName)
-        {
-            //GL.GetAttribLocation(Program,)
-            //GL.BindAttribLocation()
         }
 
         public void Bind()

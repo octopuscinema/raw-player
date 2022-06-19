@@ -13,6 +13,8 @@ namespace Octopus.Player.Core.Playback
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
 
+        private IList<string> shaderDefines;
+
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
@@ -22,8 +24,9 @@ namespace Octopus.Player.Core.Playback
             //var testDll = Decoders.LJ92.TestMethod(1);
 
             // Load GPU program for CinemaDNG pipeline
-            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG");
-            renderContext.RequestRender();
+            shaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
+            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", shaderDefines);
+            //renderContext.RequestRender();
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
@@ -77,6 +80,42 @@ namespace Octopus.Player.Core.Playback
             return Error.NotImplmeneted;
         }
 
+        private IList<string> ShaderDefinesForClip(IClip clip)
+        {
+            Debug.Assert(SupportsClip(clip));
+            var dngMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+            Debug.Assert(dngMetadata != null);
+
+            var defines = new List<string>();
+            
+            switch (dngMetadata.CFAPattern)
+            {
+                case IO.CFAPattern.None:
+                    defines.Add("MONOCHROME");
+                    break;
+                case IO.CFAPattern.RGGB:
+                    defines.Add("BAYER_XGGX");
+                    defines.Add("BAYER_RB");
+                    break;
+                case IO.CFAPattern.BGGR:
+                    defines.Add("BAYER_XGGX");
+                    defines.Add("BAYER_BR");
+                    break;
+                case IO.CFAPattern.GBRG:
+                    defines.Add("BAYER_GXXG");
+                    defines.Add("BAYER_BR");
+                    break;
+                case IO.CFAPattern.GRBG:
+                    defines.Add("BAYER_GXXG");
+                    defines.Add("BAYER_RB");
+                    break;
+                default:
+                    throw new Exception("Unsupported DNG CFA pattern");
+            }
+
+            return defines;
+        }
+
         public override bool SupportsClip(IClip clip)
         {
             return (clip.GetType() == typeof(ClipCinemaDNG) && SupportedEssence.Contains(clip.Essence));
@@ -104,6 +143,9 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
+                var imageSize = (Vector2)GpuFrameTest.Dimensions;
+                var invImageSize = new Vector2(1, 1) / imageSize;
+                GpuPipelineProgram.SetUniform(RenderContext,"imageSizeAndInvSize", new Vector4(imageSize.X, imageSize.Y, invImageSize.X, invImageSize.Y));
                 RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } }, rectPos, rectSize);
             }
         }

@@ -84,16 +84,17 @@ namespace Octopus.Player.GPU.OpenGL.Render
             texture.Dispose();
         }
 
-        public IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null)
+        public IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IList<string> defines = null)
         {
             if (!Path.HasExtension(shaderResourceName))
                 shaderResourceName += ".glsl";
 
-            string[] resources = assembly.GetManifestResourceNames();
-            foreach (string resource in resources) {
+            var resources = assembly.GetManifestResourceNames();
+            foreach (string resource in resources) 
+            {
                 if (resource.Contains(shaderResourceName))
                 {
-                    var shader = new Shader(this, assembly.GetManifestResourceStream(resource), Draw2DVertexBuffer.VertexFormat, name);
+                    var shader = new Shader(this, assembly, resource, Draw2DVertexBuffer.VertexFormat, name, defines);
                     shaders.Add(shader);
                     return shader;
                 }
@@ -159,13 +160,13 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 int textureUnit = 0;
                 foreach (var texture in textures)
                 {
-                    shader.SetUniform(texture.Key, textureUnit);
+                    shader.SetUniform(this, texture.Key, textureUnit);
                     SetTexture((Texture)texture.Value, TextureUnit.Texture0 + textureUnit);
                     textureUnit++;
                 }
             }
-            shader.SetUniform("RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
-            shader.SetUniform("OrthographicBoundsInverse", new Vector2(1, 1) / FramebufferSize.ToVector2());
+            shader.SetUniform(this, "RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
+            shader.SetUniform(this, "OrthographicBoundsInverse", new Vector2(1, 1) / FramebufferSize.ToVector2());
 
 #if __MACOS__
             GL.DrawArrays(BeginMode.TriangleFan, 0, 4);
@@ -174,7 +175,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 #endif
         }
 
-        private void SetShader(Shader shader)
+        public void SetShader(Shader shader)
         {
             if (activeShader == shader)
                 return;

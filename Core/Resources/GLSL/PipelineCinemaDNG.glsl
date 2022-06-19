@@ -1,5 +1,5 @@
 // Interpolated fragment/vertex values
-varying vec2 TextureCoordinates;
+varying vec2 textureCoordinates;
 
 // GLSL Vertex shader program
 #ifdef VERT
@@ -15,7 +15,7 @@ void main(void)
 	// Calculate Texture Coordinates from vertex position
 	vec2 UV0 = vec2(0.0,1.0);//RectUV.xy;
 	vec2 UV1 = vec2(1.0,0.0);//RectUV.zw;
-	TextureCoordinates = UV0 + VertexPosition*(UV1-UV0);
+	textureCoordinates = UV0 + VertexPosition*(UV1-UV0);
 	
 	// Calculate position
 	vec2 Translate = RectBounds.xy;
@@ -30,10 +30,34 @@ void main(void)
 
 // GLSL Fragment/pixel shader program
 #ifdef FRAG
+
+#ifndef MONOCHROME
+#include "ProxyDebayer.glsl.h"
+uniform vec4 imageSizeAndInvSize;
+#endif
+
 uniform sampler2D rawImage;
+
 void main() 
 {
-	float pixel = texture2D(rawImage,TextureCoordinates).r * 32.0f;
-	gl_FragColor = vec4(pixel,pixel,pixel,1);
+	float exposure = 32.0;
+
+#ifdef MONOCHROME
+	float pixel = texture2D(rawImage,textureCoordinates).r * exposure;
+	vec3 rgbOut = vec3(pixel, pixel, pixel);
+#endif
+
+#ifdef BAYER_XGGX
+	vec3 rgbOut = DebayerXGGX(rawImage, textureCoordinates, imageSizeAndInvSize) * exposure;
+#endif
+#ifdef BAYER_GXXG
+	vec3 rgbOut = DebayerGXXG(rawImage, textureCoordinates, imageSizeAndInvSize) * exposure;
+#endif
+
+#ifdef BAYER_BR
+	rgbOut.xz = rgbOut.zx;
+#endif
+
+	gl_FragColor = vec4(rgbOut,1);
 }
 #endif
