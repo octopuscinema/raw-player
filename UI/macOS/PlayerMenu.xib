@@ -92,6 +92,19 @@
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="Clip" enabled="NO" identifier="clip" id="nlY-NV-0CE">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Clip" id="g5h-A5-szt">
+                        <items>
+                            <menuItem title="Metadata..." enabled="NO" identifier="metadata" id="4L7-2y-W5k">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="4wF-tA-Fto"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
                 <menuItem title="View" id="295">
                     <menu key="submenu" title="View" id="296"/>
                 </menuItem>
@@ -115,23 +128,36 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="491">
                         <items>
-                            <menuItem title="Visit OCTOPUS RAW Player Website" keyEquivalent="?" id="492"/>
+                            <menuItem title="Visit OCTOPUS RAW Player Website" keyEquivalent="?" identifier="visitWebsite" id="492">
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="pbh-Jq-cz6"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Join Us on Social Media" id="0aO-Tq-r9a">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" id="tuu-Gv-cqa">
                                     <items>
-                                        <menuItem title="Instagram" id="Od0-UG-mf6">
+                                        <menuItem title="Instagram" identifier="visitInstagram" id="Od0-UG-mf6">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="s2j-bu-GfL"/>
+                                            </connections>
                                         </menuItem>
-                                        <menuItem title="YouTube" id="7HZ-lk-17m">
+                                        <menuItem title="YouTube" identifier="visitYoutube" id="7HZ-lk-17m">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="a8G-Tj-BMl"/>
+                                            </connections>
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="wvb-nc-IvL"/>
-                            <menuItem title="OCTOPUSCINEMA GitHub" id="Jbe-n4-Osj">
+                            <menuItem title="OCTOPUSCINEMA GitHub" identifier="visitGithub" id="Jbe-n4-Osj">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="8dt-P4-CpR"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>

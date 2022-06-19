@@ -18,6 +18,8 @@ namespace Octopus.Player.UI.macOS
 		{
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
+
+			//AspectRatio = new CoreGraphics.CGSize(0, 0);
 		}
 
 		// Called when created directly from a XIB file
@@ -26,6 +28,9 @@ namespace Octopus.Player.UI.macOS
 		{
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
+
+			//AspectRatio = new CoreGraphics.CGSize(640, 480);
+			//Aspe
 		}
 
 		// Native window implementations
@@ -93,16 +98,20 @@ namespace Octopus.Player.UI.macOS
         public void OpenUrl(string url)
         {
 			NSError urlError;
-			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, null, out urlError);
+			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
         public void EnableMenuItem(string name, bool enabled)
         {
 			var menu = NSApplication.SharedApplication.MainMenu;
-			var helpMenu = menu.ItemWithTitle("Help");
-			helpMenu.Enabled = false;
-			//helpMenu.Hidden = true;
-            //throw new NotImplementedException();
+			foreach (var item in menu.Items)
+			{
+				if (item.Identifier == name)
+				{
+					item.Enabled = enabled;
+					return;
+				}
+			}
         }
     }
 }

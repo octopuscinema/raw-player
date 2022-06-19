@@ -45,6 +45,9 @@ namespace Octopus.Player.UI
                 case "visitWebsite":
                     NativeWindow.OpenUrl("http://www.octopuscinema.com/wiki/index.php?title=HI!");
                     break;
+                case "visitGithub":
+                    NativeWindow.OpenUrl("https://github.com/octopuscinema");
+                    break;
                 case "exit":
                     NativeWindow.Exit();
                     break;
@@ -103,7 +106,7 @@ namespace Octopus.Player.UI
         }
         public void OnClipClosed(object sender, EventArgs e)
         {
-            NativeWindow.EnableMenuItem("metadata", false);
+            NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
@@ -111,7 +114,7 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
-            NativeWindow.EnableMenuItem("metadata", true);
+            NativeWindow.EnableMenuItem("clip", true);
             Debug.Assert(Playback != null && Playback.Clip != null);
             if ( Playback != null && Playback.Clip != null )
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
