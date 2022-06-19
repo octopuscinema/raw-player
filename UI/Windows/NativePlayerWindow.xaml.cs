@@ -188,7 +188,7 @@ namespace Octopus.Player.UI.Windows
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
             PlayerWindow.OnFramebufferResize(FramebufferSize);
         }
-#if 0
+#if WINDOW_ASPECT_RATIO_LOCK
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
