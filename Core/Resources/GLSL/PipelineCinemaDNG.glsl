@@ -52,10 +52,10 @@ void main()
 #endif
 
 #ifdef BAYER_XGGX
-	lowp vec3 rgbOut = DebayerXGGX(rawImage, normalisedCoordinates) * exposure;
+	lowp vec3 rgbOut = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
 #endif
 #ifdef BAYER_GXXG
-	lowp vec3 rgbOut = DebayerGXXG(rawImage, normalisedCoordinates) * exposure;
+	lowp vec3 rgbOut = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
 #endif
 
 #ifdef BAYER_BR
