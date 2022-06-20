@@ -147,7 +147,9 @@
                 <Separator />
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="_Metadata" IsEnabled="False" Name="metadata" Click="MenuItem_Click"/>
+            <MenuItem Header="_Clip" IsEnabled="False" Name="clip">
+                <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
+            </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
             </MenuItem>

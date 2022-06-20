@@ -18,7 +18,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         private volatile bool valid;
 
-        public Shader(Context context, System.Reflection.Assembly assembly, string resourceName, VertexFormat vertexFormat, string name = null, IList<string> defines = null, string shaderVersion = "120")
+        public Shader(Context context, System.Reflection.Assembly assembly, string resourceName, VertexFormat vertexFormat, string name = null, IList<string> defines = null, string shaderVersion = "130")
         {
             Name = name;
             Defines = new List<string>(defines);
