@@ -149,6 +149,11 @@
             </MenuItem>
             <MenuItem Header="_Clip" IsEnabled="False" Name="clip">
                 <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="_Debayer Quality">
+                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True"/>
+                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
@@ -165,8 +170,5 @@
                 <MenuItem Header="_About..." Name="about" Click="MenuItem_Click"/>
             </MenuItem>
         </Menu>
-
     </Grid>
-
-    
 </Window>

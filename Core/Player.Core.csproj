@@ -14,8 +14,8 @@
     <None Remove="IO\DNG\" />
     <None Remove="Playback\Item\" />
     <None Remove="Resources\GLSL\blit.vert" />
+    <None Remove="Resources\GLSL\DebayerDraft.glsl.h" />
     <None Remove="Resources\GLSL\PipelineCinemaDNG.glsl" />
-    <None Remove="Resources\GLSL\ProxyDebayer.glsl.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\GLSL\ProxyDebayer.glsl.h" />
+    <EmbeddedResource Include="Resources\GLSL\DebayerDraft.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\PipelineCinemaDNG.glsl" />
   </ItemGroup>
   <ItemGroup>

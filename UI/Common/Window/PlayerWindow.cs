@@ -64,6 +64,8 @@ namespace Octopus.Player.UI
                     if (Playback != null && Playback.Clip != null)
                         NativeWindow.Alert(AlertType.Blank, Playback.Clip.Metadata.ToString() + "\n", "Metadata for '" + Playback.Clip.Metadata.Title + "'");
                     break;
+                case "debayerQualityDraft":
+                    break;
                 default:
                     Debug.Assert(false,"Unhandled menu item: " + name);
                     break;

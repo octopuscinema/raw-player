@@ -143,9 +143,6 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
-                var imageSize = (Vector2)GpuFrameTest.Dimensions;
-                var invImageSize = new Vector2(1, 1) / imageSize;
-                GpuPipelineProgram.SetUniform(RenderContext,"imageSizeAndInvSize", new Vector4(imageSize.X, imageSize.Y, invImageSize.X, invImageSize.Y));
                 RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } }, rectPos, rectSize);
             }
         }

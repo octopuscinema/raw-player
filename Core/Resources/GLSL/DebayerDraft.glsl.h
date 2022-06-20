@@ -25,9 +25,9 @@ void FetchNeighbours(sampler2D source, inout mediump float neighbours[20], highp
 	neighbours[19] = texelFetch(source, integerCoord + ivec2(-2, -1), 0).r;
 }
 
-vec3 DebayerXGGX(sampler2D source, highp vec2 coords, highp vec4 sourceSize)
+vec3 DebayerXGGX(sampler2D source, highp vec2 coords)
 {
-	highp ivec2 integerCoord = ivec2(coords * sourceSize.xy);
+	highp ivec2 integerCoord = ivec2(coords * textureSize(source, 0));
 
 	// Lookup 21 pixels
 	mediump float centre = texelFetch(source, integerCoord, 0).r;

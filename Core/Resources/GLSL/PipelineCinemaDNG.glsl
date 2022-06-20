@@ -2,7 +2,7 @@
 #ifdef VERT
 
 // Interpolated fragment/vertex values
-out highp vec2 textureCoordinates;
+out highp vec2 normalisedCoordinates;
 
 layout(location = 0) in highp vec2 VertexPosition;
 
@@ -15,7 +15,7 @@ void main(void)
 	// Calculate Texture Coordinates from vertex position
 	highp vec2 UV0 = vec2(0.0,1.0);//RectUV.xy;
 	highp vec2 UV1 = vec2(1.0,0.0);//RectUV.zw;
-	textureCoordinates = UV0 + VertexPosition*(UV1-UV0);
+	normalisedCoordinates = UV0 + VertexPosition*(UV1-UV0);
 	
 	// Calculate position
 	vec2 Translate = RectBounds.xy;
@@ -32,11 +32,10 @@ void main(void)
 #ifdef FRAG
 
 // Interpolated fragment/vertex values
-in highp vec2 textureCoordinates;
+in highp vec2 normalisedCoordinates;
 
 #ifndef MONOCHROME
-#include "ProxyDebayer.glsl.h"
-uniform highp vec4 imageSizeAndInvSize;
+#include "DebayerDraft.glsl.h"
 #endif
 
 uniform sampler2D rawImage;
@@ -48,15 +47,15 @@ void main()
 	highp float exposure = 32.0;
 
 #ifdef MONOCHROME
-	mediump float pixel = texture(rawImage,textureCoordinates).r * exposure;
+	mediump float pixel = texture(rawImage,normalisedCoordinates).r * exposure;
 	lowp vec3 rgbOut = vec3(pixel, pixel, pixel);
 #endif
 
 #ifdef BAYER_XGGX
-	lowp vec3 rgbOut = DebayerXGGX(rawImage, textureCoordinates, imageSizeAndInvSize) * exposure;
+	lowp vec3 rgbOut = DebayerXGGX(rawImage, normalisedCoordinates) * exposure;
 #endif
 #ifdef BAYER_GXXG
-	lowp vec3 rgbOut = DebayerGXXG(rawImage, textureCoordinates, imageSizeAndInvSize) * exposure;
+	lowp vec3 rgbOut = DebayerGXXG(rawImage, normalisedCoordinates) * exposure;
 #endif
 
 #ifdef BAYER_BR
