@@ -7,6 +7,26 @@ using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
+// Xamarin.mac uses a baked in old version of OpenTK which doesn't expose GL3+ functions, expose them manually
+#if __MACOS__
+using System.Runtime.InteropServices;
+namespace OpenTK.Graphics.OpenGL
+{
+    public class GL3
+    {
+        internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "glGenVertexArrays", ExactSpelling = true)]
+        internal extern static void GenVertexArrays(Int32 n, [Out] UInt32[] arrays);
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [System.Runtime.InteropServices.DllImport(Library, EntryPoint = "glBindVertexArray", ExactSpelling = true)]
+        internal extern static void BindVertexArray(UInt32 array);
+    }
+}
+#endif
+
 namespace Octopus.Player.GPU.OpenGL.Render
 {
     public class Context : IContext
@@ -48,7 +68,13 @@ namespace Octopus.Player.GPU.OpenGL.Render
             activeTexture = new Dictionary<TextureUnit, Texture>();
 
             // Create default vertex array object
-#if !__MACOS__
+#if __MACOS__
+            uint[] vertexArrays = new uint[1];
+            GL3.GenVertexArrays(1, vertexArrays);
+            DefaultVertexArrayHandle = (int)vertexArrays[0];
+            GL3.BindVertexArray((uint)DefaultVertexArrayHandle);
+            CheckError();
+#else
             DefaultVertexArrayHandle = GL.GenVertexArray();
             GL.BindVertexArray(DefaultVertexArrayHandle);
             CheckError();
@@ -61,7 +87,6 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
 
             Trace.WriteLine("Created OpenGL render context on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-
             Trace.WriteLine("OpenGL version: " + GL.GetString(StringName.Version));
             Trace.WriteLine("GLSL version: " + GL.GetString(StringName.ShadingLanguageVersion));
         }
@@ -212,7 +237,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
         {
             SetVertexBuffer(null);
             Draw2DVertexBuffer.Dispose();
-#if !__MACOS__
+#if __MACOS__
+            var handle = DefaultVertexArrayHandle;
+            GL.DeleteBuffers(1, ref handle);
+#else
             GL.DeleteBuffer(DefaultVertexArrayHandle);
 #endif
             foreach (var texture in textures)

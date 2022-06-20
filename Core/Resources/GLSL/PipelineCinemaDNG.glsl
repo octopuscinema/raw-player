@@ -1,10 +1,10 @@
-// Interpolated fragment/vertex values
-varying highp vec2 textureCoordinates;
-
 // GLSL Vertex shader program
 #ifdef VERT
 
-attribute highp vec2 VertexPosition;
+// Interpolated fragment/vertex values
+out highp vec2 textureCoordinates;
+
+layout(location = 0) in highp vec2 VertexPosition;
 
 //uniform vec4 RectUV;
 uniform highp vec4 RectBounds;
@@ -31,6 +31,9 @@ void main(void)
 // GLSL Fragment/pixel shader program
 #ifdef FRAG
 
+// Interpolated fragment/vertex values
+in highp vec2 textureCoordinates;
+
 #ifndef MONOCHROME
 #include "ProxyDebayer.glsl.h"
 uniform highp vec4 imageSizeAndInvSize;
@@ -38,12 +41,14 @@ uniform highp vec4 imageSizeAndInvSize;
 
 uniform sampler2D rawImage;
 
+out lowp vec4 fragColor;
+
 void main() 
 {
 	highp float exposure = 32.0;
 
 #ifdef MONOCHROME
-	mediump float pixel = texture2D(rawImage,textureCoordinates).r * exposure;
+	mediump float pixel = texture(rawImage,textureCoordinates).r * exposure;
 	lowp vec3 rgbOut = vec3(pixel, pixel, pixel);
 #endif
 
@@ -58,6 +63,6 @@ void main()
 	rgbOut.xz = rgbOut.zx;
 #endif
 
-	gl_FragColor = vec4(rgbOut,1);
+	fragColor = vec4(rgbOut,1);
 }
 #endif

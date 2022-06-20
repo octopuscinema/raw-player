@@ -16,6 +16,10 @@ namespace Octopus.Player.UI.macOS
 {
     public partial class OpenGLLayer : CoreAnimation.CAOpenGLLayer
     {
+        // Not defined in Xamarin.Mac :(
+        const CGLPixelFormatAttribute kCGLPFAOpenGLProfile = (CGLPixelFormatAttribute)99u;
+        const CGLPixelFormatAttribute kCGLOGLPVersion_3_2_Core = (CGLPixelFormatAttribute)0x3200;
+
         PlayerWindow PlayerWindow { get; set; }
         public GPU.OpenGL.Render.Context RenderContext { get; private set; }
 
@@ -67,15 +71,16 @@ namespace Octopus.Player.UI.macOS
 
         public override CGLPixelFormat CopyCGLPixelFormatForDisplayMask (uint mask)
         {
-            // make sure to add a null value
-            // TODO: Disable depth buffer
-            var attribs = new object [] { 
-				CGLPixelFormatAttribute.Accelerated,
+            // Create a 24-bit modern OpenGL context with no depth buffer
+            var attribs = new CGLPixelFormatAttribute[] {
+                kCGLPFAOpenGLProfile, kCGLOGLPVersion_3_2_Core,
+                CGLPixelFormatAttribute.Accelerated,
                 CGLPixelFormatAttribute.DoubleBuffer,
-                CGLPixelFormatAttribute.ColorSize, 24,
-                CGLPixelFormatAttribute.DepthSize, 16 };
+                CGLPixelFormatAttribute.ColorSize, (CGLPixelFormatAttribute)24,
+                CGLPixelFormatAttribute.DepthSize, (CGLPixelFormatAttribute)0 };
 
-            CGLPixelFormat pixelFormat = new CGLPixelFormat(attribs);
+            int pixelFormatIndex;
+            CGLPixelFormat pixelFormat = new CGLPixelFormat(attribs, out pixelFormatIndex);
             return pixelFormat;
         }
     }
