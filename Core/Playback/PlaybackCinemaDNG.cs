@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
@@ -13,20 +14,15 @@ namespace Octopus.Player.Core.Playback
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
 
-        private IList<string> shaderDefines;
-
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
         public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
 		{
-            //var testDll = Decoders.LJ92.TestMethod(1);
-
             // Load GPU program for CinemaDNG pipeline
-            shaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
-            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", shaderDefines);
-            //renderContext.RequestRender();
+            var defaultShaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
+            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", defaultShaderDefines);
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
@@ -62,6 +58,14 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadMetadata;
             Clip = clip;
             ClipOpened?.Invoke(this, new EventArgs());
+
+            // Rebuild the shader if the defines have changed
+            var requiredShaderDefines = ShaderDefinesForClip(clip);
+            if ( GpuPipelineProgram != null && !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
+            {
+                GpuPipelineProgram.Dispose();
+                GpuPipelineProgram = RenderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
+            }
 
             // Create the sequence stream
             Debug.Assert(SequenceStreamDNG == null);

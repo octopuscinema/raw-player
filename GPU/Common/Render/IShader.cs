@@ -9,6 +9,7 @@ namespace Octopus.Player.GPU.Render
     {
         string Name { get; }
         bool Valid { get; }
+        IReadOnlyList<string> Defines { get; }
         void SetUniform(IContext context, string uniformName, int value);
         void SetUniform(IContext context, string uniformName, float value);
         void SetUniform(IContext context, string uniformName, Vector2 value);
