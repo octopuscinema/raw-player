@@ -39,25 +39,26 @@ in highp vec2 normalisedCoordinates;
 uniform mediump mat3 cameraToDisplayColour;
 #endif
 
+uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
 
 out lowp vec4 fragColor;
 
 void main() 
 {
-	highp float exposure = 32.0;
+	highp float exposure = 4.0;
 
 	// Sample monochrome pixel
 #ifdef MONOCHROME
-	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r * exposure;
+	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r;
 #endif
 
 	// Sample and debayer
 #ifdef BAYER_XGGX
-	mediump vec3 cameraRgb = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
+	mediump vec3 cameraRgb = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)));
 #endif
 #ifdef BAYER_GXXG
-	mediump vec3 cameraRgb = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
+	mediump vec3 cameraRgb = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)));
 #endif
 
 #ifdef BAYER_BR
@@ -65,11 +66,40 @@ void main()
 #endif
 
 #ifdef MONOCHROME
+
+	// Apply black and white level
+	cameraMonochrome -= blackWhiteLevel.x;
+	cameraMonochrome /= (blackWhiteLevel.y-blackWhiteLevel.x);
+
+	// Apply exposure
+	cameraRgb *= exposure;
+
 	lowp vec3 rgbOut = vec3(cameraMonochrome, cameraMonochrome, cameraMonochrome);
 #else
+
+	// Apply black and white level
+	cameraRgb -= vec3(blackWhiteLevel.x);
+	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
+
+	// Linearise
+
+	// Highlight recovery
+
+	// Perform highlight/shadow rollof
+
 	// Transform camera to display colour space
 	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
 	lowp vec3 rgbOut = displayRgb;
+
+	// Apply tone mapping operator
+	//Sample = ToneMap(Sample, ToneMappingOperator);
+	
+	// Apply gamut compression
+	//if ( GamutCompression == 1.0 )
+	//	Sample = Gamut709Compression(Sample);
+
+	// Apply gamma
+
 #endif
 
 	fragColor = vec4(rgbOut,1);

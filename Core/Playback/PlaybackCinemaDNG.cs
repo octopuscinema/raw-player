@@ -152,6 +152,11 @@ namespace Octopus.Player.Core.Playback
                     var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();  //Capture::LUT::XYZToTargetColourMatrixD50(pGammaLUT);
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
+
+                    var blackWhiteLevel = new Vector2(((IO.DNG.MetadataCinemaDNG)Clip.Metadata).BlackLevel,
+                         ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).WhiteLevel);
+                    var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
+                    GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel/(float)decodedMaxlevel );
 /*
                     // Calculate camera white in RAW space
 #if HIGHLIGHT_RECOVERY_WB
