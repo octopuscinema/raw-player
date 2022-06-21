@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Octopus.Player.Core.IO.DNG
 {
-    public enum TiffTagsDNG
+    public enum TiffTagDNG
     {
 		ForwardMatrix2 = 50965,
 		ForwardMatrix1 = 50964,
@@ -38,7 +38,7 @@ namespace Octopus.Player.Core.IO.DNG
 		StripOffsets = 273*/
 	}
 
-    public enum TiffTagsCinemaDNG
+    public enum TiffTagCinemaDNG
     {
         FrameRate = 51044,
 		TimeCodes = 51043

@@ -35,12 +35,6 @@ namespace Octopus.Player.Core.IO.DNG
         public ushort[] LinearizationTable { get; private set; }
         public ushort BlackLevel { get; private set; }
         public ushort WhiteLevel { get; private set; }
-        public Matrix3? ColorMatrix1 { get; private set; }
-        public Matrix3? ColorMatrix2 { get; private set; }
-        public Matrix3? ForwardMatrix1 { get; private set; }
-        public Matrix3? ForwardMatrix2 { get; private set; }
-        public bool IsDualIlluminant { get; private set; }
-        public bool HasForwardMatrix { get; private set; }
         public bool Monochrome { get; private set; }
 
         public MetadataCinemaDNG(Reader reader, Playback.ClipCinemaDNG clip)
@@ -58,21 +52,9 @@ namespace Octopus.Player.Core.IO.DNG
             LinearizationTable = reader.LinearizationTable;
             BlackLevel = reader.BlackLevel;
             WhiteLevel = reader.WhiteLevel;
-            IsDualIlluminant = reader.IsDualIlluminant;
-            HasForwardMatrix = reader.HasForwardMatrix;
             Monochrome = reader.Monochrome;
             if (!reader.Monochrome)
-            {
-                ColorMatrix1 = reader.ColorMatrix1;
-                if ( reader.IsDualIlluminant )
-                    ColorMatrix2 = reader.ColorMatrix2;
-                if (reader.HasForwardMatrix)
-                {
-                    ForwardMatrix1 = reader.ForwardMatrix1;
-                    if (reader.IsDualIlluminant)
-                        ForwardMatrix2 = reader.ForwardMatrix2;
-                }
-            }
+                ColorProfile = new Maths.Color.Profile(reader);
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);

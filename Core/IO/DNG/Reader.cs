@@ -40,7 +40,8 @@ namespace Octopus.Player.Core.IO.DNG
         private Matrix3? CachedColorMatrix2 { get; set; }
         private Matrix3? CachedForwardMatrix1 { get; set; }
         private Matrix3? CachedForwardMatrix2 { get; set; }
-
+        private Maths.Color.Illuminant? CachedCalibrationIlluminant1 { get; set; }
+        private Maths.Color.Illuminant? CachedCalibrationIlluminant2 { get; set; }
         private bool? CachedIsDualIlluminant { get; set; }
         private bool? CachedHasForwardMatrix { get; set; }
 
@@ -255,13 +256,13 @@ namespace Octopus.Player.Core.IO.DNG
                     try
                     {
                         // CinemaDNG spec states framerate is signed rational
-                        var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
                         CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
                     }
                     catch
                     {
                         // Handle OCTOPUSCAMERA dng bug where framerate was written out as unsigned rational
-                        var framerate = TagReader.ReadRationalField((TiffTag)TiffTagsCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        var framerate = TagReader.ReadRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
                         CachedFramerate = new Maths.Rational((int)framerate.Numerator, (int)framerate.Denominator);
                     }
                 }
@@ -311,7 +312,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedCFARepeatPatternDimensions.HasValue)
                 {
-                    var repeatpattern = TagReader.ReadShortField((TiffTag)TiffTagsDNG.CFARepeatPatternDim);
+                    var repeatpattern = TagReader.ReadShortField((TiffTag)TiffTagDNG.CFARepeatPatternDim);
                     CachedCFARepeatPatternDimensions = (repeatpattern.Count == 2) ? new Vector2i(repeatpattern[0], repeatpattern[1]) : new Vector2i(0, 0);
                 }
                 return CachedCFARepeatPatternDimensions.Value;
@@ -325,7 +326,7 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedCFAPattern.HasValue)
                 {
                     // Read CFA tag
-                    var pattern = TagReader.ReadShortField((TiffTag)TiffTagsDNG.CFAPattern);
+                    var pattern = TagReader.ReadShortField((TiffTag)TiffTagDNG.CFAPattern);
                     switch (pattern.Count)
                     {
                         case 0:
@@ -429,8 +430,8 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if ( CachedLinearizationTable == null )
                 {
-                    if (Ifd.Contains((TiffTag)TiffTagsDNG.LinearizationTable))
-                        CachedLinearizationTable = TagReader.ReadShortField((TiffTag)TiffTagsDNG.LinearizationTable).ToArray();
+                    if (Ifd.Contains((TiffTag)TiffTagDNG.LinearizationTable))
+                        CachedLinearizationTable = TagReader.ReadShortField((TiffTag)TiffTagDNG.LinearizationTable).ToArray();
                     else
                         CachedLinearizationTable = new ushort[0];
                 }
@@ -443,7 +444,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedBlackLevel.HasValue)
-                    CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagsDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagsDNG.BlackLevel, 1).First() : 0);
+                    CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : 0);
                 return CachedBlackLevel.Value;
             }
         }
@@ -453,7 +454,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedWhiteLevel.HasValue)
-                    CachedWhiteLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagsDNG.WhiteLevel) ? TagReader.ReadLongField((TiffTag)TiffTagsDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
+                    CachedWhiteLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.WhiteLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
                 return CachedWhiteLevel.Value;
             }
         }
@@ -463,7 +464,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if(!CachedColorMatrix1.HasValue)
-                    CachedColorMatrix1 = ReadMatrix3x3(TiffTagsDNG.ColorMatrix1);
+                    CachedColorMatrix1 = ReadMatrix3x3(TiffTagDNG.ColorMatrix1);
                 return CachedColorMatrix1.Value;
             }
         }
@@ -473,7 +474,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedColorMatrix2.HasValue)
-                    CachedColorMatrix2 = ReadMatrix3x3(TiffTagsDNG.ColorMatrix2);
+                    CachedColorMatrix2 = ReadMatrix3x3(TiffTagDNG.ColorMatrix2);
                 return CachedColorMatrix2.Value;
             }
         }
@@ -483,7 +484,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedForwardMatrix1.HasValue)
-                    CachedForwardMatrix1 = ReadMatrix3x3(TiffTagsDNG.ForwardMatrix1);
+                    CachedForwardMatrix1 = ReadMatrix3x3(TiffTagDNG.ForwardMatrix1);
                 return CachedForwardMatrix1.Value;
             }
         }
@@ -493,8 +494,28 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedForwardMatrix2.HasValue)
-                    CachedForwardMatrix2 = ReadMatrix3x3(TiffTagsDNG.ForwardMatrix2);
+                    CachedForwardMatrix2 = ReadMatrix3x3(TiffTagDNG.ForwardMatrix2);
                 return CachedForwardMatrix2.Value;
+            }
+        }
+
+        public Maths.Color.Illuminant CalibrationIlluminant1
+        {
+            get
+            {
+                if (!CachedCalibrationIlluminant1.HasValue)
+                    CachedCalibrationIlluminant1 = (Maths.Color.Illuminant)TagReader.ReadShortField((TiffTag)TiffTagDNG.CalibrationIlluminant1, 1).First();
+                return CachedCalibrationIlluminant1.Value;
+            }
+        }
+
+        public Maths.Color.Illuminant CalibrationIlluminant2
+        {
+            get
+            {
+                if (!CachedCalibrationIlluminant2.HasValue)
+                    CachedCalibrationIlluminant2 = (Maths.Color.Illuminant)TagReader.ReadShortField((TiffTag)TiffTagDNG.CalibrationIlluminant2, 1).First();
+                return CachedCalibrationIlluminant2.Value;
             }
         }
 
@@ -503,7 +524,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedIsDualIlluminant.HasValue)
-                    CachedIsDualIlluminant = Ifd.Contains((TiffTag)TiffTagsDNG.ColorMatrix2);
+                    CachedIsDualIlluminant = Ifd.Contains((TiffTag)TiffTagDNG.ColorMatrix2);
                 return CachedIsDualIlluminant.Value;
             }
         }
@@ -513,12 +534,12 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if ( !CachedHasForwardMatrix.HasValue)
-                    CachedHasForwardMatrix = Ifd.Contains((TiffTag)TiffTagsDNG.ForwardMatrix1);
+                    CachedHasForwardMatrix = Ifd.Contains((TiffTag)TiffTagDNG.ForwardMatrix1);
                 return CachedHasForwardMatrix.Value;
             }
         }
 
-        private Matrix3 ReadMatrix3x3(TiffTagsDNG tag)
+        private Matrix3 ReadMatrix3x3(TiffTagDNG tag)
         {
             var elements = TagReader.ReadSRationalField((TiffTag)tag, 9);
             return new Matrix3(new Vector3((float)elements[0].ToSingle(), (float)elements[1].ToSingle(), (float)elements[2].ToSingle()), 

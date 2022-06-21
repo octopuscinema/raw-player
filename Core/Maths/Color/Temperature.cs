@@ -60,24 +60,24 @@ namespace Octopus.Player.Core.Maths.Color
 			new ruvt( 575, 0.32931, 0.36038, -40.770),
 			new ruvt( 600, 0.33724, 0.36051, -116.4),
 		};
-		public static Vector3 ChromaticityXYtoXYZ(Vector2 ChromaticityXY)
+		public static Vector3 ChromaticityXYtoXYZ(Vector2 chromaticityXY)
 		{
 			// Restrict xy coord to someplace inside the range of real xy coordinates.
 			// This prevents math from doing strange things when users specify
 			// extreme temperature/tint coordinates.
-			ChromaticityXY.X = Math.Clamp(ChromaticityXY.X, 0.000001f, 0.999999f);
-			ChromaticityXY.Y = Math.Clamp(ChromaticityXY.Y, 0.000001f, 0.999999f);
+			chromaticityXY.X = Math.Clamp(chromaticityXY.X, 0.000001f, 0.999999f);
+			chromaticityXY.Y = Math.Clamp(chromaticityXY.Y, 0.000001f, 0.999999f);
 
-			var Sum = ChromaticityXY.X + ChromaticityXY.Y;
+			var Sum = chromaticityXY.X + chromaticityXY.Y;
 
 			if (Sum > 0.999999f)
 			{
 				var Scale = 0.999999f / Sum;
-				ChromaticityXY.X *= Scale;
-				ChromaticityXY.Y *= Scale;
+				chromaticityXY.X *= Scale;
+				chromaticityXY.Y *= Scale;
 			}
 
-			return new Vector3(ChromaticityXY.X / ChromaticityXY.Y, 1.0f, (1.0f - ChromaticityXY.X - ChromaticityXY.Y) / ChromaticityXY.Y);
+			return new Vector3(chromaticityXY.X / chromaticityXY.Y, 1.0f, (1.0f - chromaticityXY.X - chromaticityXY.Y) / chromaticityXY.Y);
 		}
 
 		public static Vector2 D50ChromaticityXY()
@@ -124,7 +124,7 @@ namespace Octopus.Player.Core.Maths.Color
 			return D50ChromaticityXY();
 		}
 
-		public static uint ChromaticityToColourTemperature(Vector2 Chromaticity)
+		public static uint ChromaticityToColourTemperature(Vector2 chromaticity)
 		{
 			const float x_e = 0.3366f;
 			const float y_e = 0.1735f;
@@ -136,23 +136,21 @@ namespace Octopus.Player.Core.Maths.Color
 			const float A3 = 0.00004f;
 			const float t3 = 0.07125f;
 
-			float n = (Chromaticity.X - x_e) / (Chromaticity.Y - y_e);
+			float n = (chromaticity.X - x_e) / (chromaticity.Y - y_e);
 
 			double CCT = A0 + A1 * Math.Exp(-n / t1) + A2 * Math.Exp(-n / t2) + A3 * Math.Exp(-n / t3);
-			if (CCT < 3000 || CCT > 50000)
-				Debug.Assert(false); // ChromaticityToColourTemperature Conversion only accurate within 3000 to 50000K
-
+			Debug.Assert(CCT > 3000 && CCT < 50000, "ChromaticityToColourTemperature Conversion only accurate within 3000 to 50000K");
 
 			return (uint)Math.Floor(CCT + 0.5f);
 		}
 
-		public static Tuple<double,double> ChromaticityToTemperatureTint(Vector2 ChromaticityXY)
+		public static Tuple<double,double> ChromaticityToTemperatureTint(Vector2 chromaticityXY)
 		{
 			ValueTuple<double, double> TemperatureTint = new ValueTuple<double, double>();
 
 			// Convert to uv space.
-			double u = 2.0 * ChromaticityXY.X / (1.5 - ChromaticityXY.X + 6.0 * ChromaticityXY.Y);
-			double v = 3.0 * ChromaticityXY.Y / (1.5 - ChromaticityXY.X + 6.0 * ChromaticityXY.Y);
+			double u = 2.0 * chromaticityXY.X / (1.5 - chromaticityXY.X + 6.0 * chromaticityXY.Y);
+			double v = 3.0 * chromaticityXY.Y / (1.5 - chromaticityXY.X + 6.0 * chromaticityXY.Y);
 
 			// Search for line pair coordinate is between.
 
@@ -248,15 +246,15 @@ namespace Octopus.Player.Core.Maths.Color
 			return TemperatureTint.ToTuple();
 		}
 
-		public static Vector2 ColourTemperatureToChromaticity(double TemperatureKelvin, double Tint = 0.0)
+		public static Vector2 ColourTemperatureToChromaticity(double temperatureKelvin, double tint = 0.0)
 		{
 			Vector2 result = new Vector2();
 
 			// Find inverse temperature to use as index.
-			double r = 1.0E6 / TemperatureKelvin;
+			double r = 1.0E6 / temperatureKelvin;
 
 			// Convert tint to offset is uv space.
-			double offset = Tint * (1.0 / kTintScale);
+			double offset = tint * (1.0 / kTintScale);
 
 			// Search for line pair containing coordinate.
 			for (uint index = 0; index <= 29; index++)

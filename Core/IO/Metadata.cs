@@ -26,6 +26,7 @@ namespace Octopus.Player.Core.IO
         public virtual Rational AspectRatio { get { return new Rational(Dimensions.X, Dimensions.Y); } }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
+        public Core.Maths.Color.Profile? ColorProfile { get; protected set; }
 
         public override string ToString()
         {
@@ -33,7 +34,18 @@ namespace Octopus.Player.Core.IO
             var properties = typeof(Metadata).GetProperties(System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
             foreach (var property in properties)
-                text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";
+            {
+                switch (property.Name)
+                {
+                    case "ColorProfile":
+                        if (ColorProfile.HasValue)
+                            text += "\nColor Profile\n-------------" + ColorProfile;
+                        break;
+                    default:
+                        text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";
+                        break;
+                }
+            }
 
             return text;
         }
