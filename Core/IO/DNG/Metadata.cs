@@ -58,6 +58,8 @@ namespace Octopus.Player.Core.IO.DNG
             LinearizationTable = reader.LinearizationTable;
             BlackLevel = reader.BlackLevel;
             WhiteLevel = reader.WhiteLevel;
+            IsDualIlluminant = reader.IsDualIlluminant;
+            HasForwardMatrix = reader.HasForwardMatrix;
             Monochrome = reader.Monochrome;
             if (!reader.Monochrome)
             {
@@ -100,7 +102,7 @@ namespace Octopus.Player.Core.IO.DNG
                 switch (property.Name)
                 {
                     case "LinearizationTable":
-                        text += "LinearizationTable: " + ((LinearizationTable == null || LinearizationTable.Length==0) ? "None\n" : LinearizationTable.Length + " entries\n");
+                        text += "Linearization Table: " + ((LinearizationTable == null || LinearizationTable.Length==0) ? "None\n" : LinearizationTable.Length + " entries\n");
                         break;
                     default:
                         text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";

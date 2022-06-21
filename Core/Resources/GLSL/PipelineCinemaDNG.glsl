@@ -61,7 +61,7 @@ void main()
 #endif
 
 #ifdef BAYER_BR
-	rgbOut.xz = rgbOut.zx;
+	cameraRgb.xz = cameraRgb.zx;
 #endif
 
 #ifdef MONOCHROME

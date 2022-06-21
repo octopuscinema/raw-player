@@ -21,8 +21,8 @@ namespace Octopus.Player.Core.Playback
             : base(renderContext)
 		{
             // Load GPU program for CinemaDNG pipeline
-            var defaultShaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
-            GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", defaultShaderDefines);
+            //var defaultShaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
+            //GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", defaultShaderDefines);
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
@@ -61,9 +61,10 @@ namespace Octopus.Player.Core.Playback
 
             // Rebuild the shader if the defines have changed
             var requiredShaderDefines = ShaderDefinesForClip(clip);
-            if ( GpuPipelineProgram != null && !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
+            if ( GpuPipelineProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
             {
-                GpuPipelineProgram.Dispose();
+                if (GpuPipelineProgram != null)
+                    GpuPipelineProgram.Dispose();
                 GpuPipelineProgram = RenderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
             }
 
