@@ -8,7 +8,7 @@ namespace Octopus.Player.Core.Maths
     // Needs c# language version 10
     //global using Dimensions = Vector2i;
 
-    public static class Extensions
+    public static partial class Extensions
     {
         public static int Area(this Vector2i vector)
         {

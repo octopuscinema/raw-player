@@ -144,6 +144,56 @@ namespace Octopus.Player.Core.Playback
         {
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)
             {
+                if ( !((IO.DNG.MetadataCinemaDNG)Clip.Metadata).Monochrome )
+                {
+                    Matrix3 cameraToDisplay = Matrix3.Identity;
+                    GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", ref cameraToDisplay);
+
+  /*
+                    // Combine camera to xyz/xyz to display colour matrices
+                    var cameraToXYZD50Matrix = PF::DNG::CalculateCameraToXYZD50(m_pItem->MetaData().ColourCorrectionProfile.value());
+                    const auto&XYZToReviewColourMatrix = Capture::LUT::XYZToTargetColourMatrixD50(pGammaLUT);
+                    const auto&CameraToReviewColourMatrix = PF::DNG::NormalizeColourMatrix(XYZToReviewColourMatrix) * CameraToXYZD50Matrix;
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM5, CameraToReviewColourMatrix);
+                    */
+/*
+                    // Calculate camera white in RAW space
+# ifdef HIGHLIGHT_RECOVERY_WB
+                    const auto&CameraToXYZD50Inv = PM::Matrix3x3::Invert(CameraToXYZD50Matrix);
+                    const auto&WhiteLevelCamera = CameraToXYZD50Inv * CJ3Vector3(1.0f, 1.0f, 1.0f);
+#else
+                    const auto CameraToDisplayInv = PM::Matrix3x3::Invert(CameraToReviewColourMatrix);
+                    const auto&WhiteLevelCamera = CameraToDisplayInv * CJ3Vector3(1.0f, 1.0f, 1.0f);
+#endif
+                    const auto CameraWhiteMin = std::min(std::min(WhiteLevelCamera.X(), WhiteLevelCamera.Y()), WhiteLevelCamera.Z());
+                    const auto CameraWhiteMax = std::max(std::max(WhiteLevelCamera.X(), WhiteLevelCamera.Y()), WhiteLevelCamera.Z());
+                    const CJ3Vector3&CameraWhite = WhiteLevelCamera / CameraWhiteMin;
+                    const CJ3Vector3&CameraWhiteNormalised = WhiteLevelCamera / CameraWhiteMax;
+
+                    // Calculate luminance weights for RAW by pushing the standard rec709 luminance weights back through inverted CamreaTo709
+                    const auto&CameraTo709Inv = PM::Matrix3x3::Invert(PF::DNG::XYZToRec709D50() * CameraToXYZD50Matrix);
+                    const auto&LuminanceWeightUnormalised = CameraTo709Inv * PF::DNG::Rec709LuminanceWeights();
+                    const CJ3Vector3&RAWLuminanceWeight = LuminanceWeightUnormalised / (LuminanceWeightUnormalised.m_X + LuminanceWeightUnormalised.m_Y + LuminanceWeightUnormalised.m_Z);
+
+                    // Send highlight recovery uniforms to shader
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM7, CameraWhite);
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM8, CameraWhiteNormalised);
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM9, RAWLuminanceWeight);
+
+                    // Send linearise log base
+                    float LineariseLogBase = m_pItem->MetaData().LineariseLogBase.has_value() ? *m_pItem->MetaData().LineariseLogBase : 0.0f;
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM10, LineariseLogBase);
+
+                    // Enable/disable gamut compression
+                    const bool GamutCompression = (Capture::LUT::GamutCompression(pGammaLUT) == Capture::LUT::eGamutCompression::On);
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM11, GamutCompression ? 1.0f : 0.0f);
+
+                    // Set highlight/shadow rolloff
+                    const CJ3Vector2I HighlightShadowRollOff((int) m_pItem->MetaData().HighlightRollOff, (int) m_pItem->MetaData().ShadowRollOff);
+                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM12, (CJ3Vector2)HighlightShadowRollOff);
+*/
+                }
+  
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);

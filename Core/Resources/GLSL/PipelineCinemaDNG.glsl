@@ -36,6 +36,7 @@ in highp vec2 normalisedCoordinates;
 
 #ifndef MONOCHROME
 #include "DebayerDraft.glsl.h"
+uniform mediump mat3 cameraToDisplayColour;
 #endif
 
 uniform sampler2D rawImage;
@@ -46,20 +47,29 @@ void main()
 {
 	highp float exposure = 32.0;
 
+	// Sample monochrome pixel
 #ifdef MONOCHROME
-	mediump float pixel = texture(rawImage,normalisedCoordinates).r * exposure;
-	lowp vec3 rgbOut = vec3(pixel, pixel, pixel);
+	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r * exposure;
 #endif
 
+	// Sample and debayer
 #ifdef BAYER_XGGX
-	lowp vec3 rgbOut = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
+	mediump vec3 cameraRgb = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
 #endif
 #ifdef BAYER_GXXG
-	lowp vec3 rgbOut = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
+	mediump vec3 cameraRgb = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0))) * exposure;
 #endif
 
 #ifdef BAYER_BR
 	rgbOut.xz = rgbOut.zx;
+#endif
+
+#ifdef MONOCHROME
+	lowp vec3 rgbOut = vec3(cameraMonochrome, cameraMonochrome, cameraMonochrome);
+#else
+	// Transform camera to display colour space
+	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
+	lowp vec3 rgbOut = displayRgb;
 #endif
 
 	fragColor = vec4(rgbOut,1);

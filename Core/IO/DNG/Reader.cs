@@ -36,6 +36,13 @@ namespace Octopus.Player.Core.IO.DNG
         private ushort[] CachedLinearizationTable { get; set; }
         private ushort? CachedBlackLevel { get; set; }
         private ushort? CachedWhiteLevel { get; set; }
+        private Matrix3? CachedColorMatrix1 { get; set; }
+        private Matrix3? CachedColorMatrix2 { get; set; }
+        private Matrix3? CachedForwardMatrix1 { get; set; }
+        private Matrix3? CachedForwardMatrix2 { get; set; }
+
+        private bool? CachedIsDualIlluminant { get; set; }
+        private bool? CachedHasForwardMatrix { get; set; }
 
         public Reader(string filePath)
         {
@@ -449,6 +456,74 @@ namespace Octopus.Player.Core.IO.DNG
                     CachedWhiteLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagsDNG.WhiteLevel) ? TagReader.ReadLongField((TiffTag)TiffTagsDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
                 return CachedWhiteLevel.Value;
             }
+        }
+
+        public Matrix3 ColorMatrix1
+        {
+            get
+            {
+                if(!CachedColorMatrix1.HasValue)
+                    CachedColorMatrix1 = ReadMatrix3x3(TiffTagsDNG.ColorMatrix1);
+                return CachedColorMatrix1.Value;
+            }
+        }
+
+        public Matrix3 ColorMatrix2
+        {
+            get
+            {
+                if (!CachedColorMatrix2.HasValue)
+                    CachedColorMatrix2 = ReadMatrix3x3(TiffTagsDNG.ColorMatrix2);
+                return CachedColorMatrix2.Value;
+            }
+        }
+
+        public Matrix3 ForwardMatrix1
+        {
+            get
+            {
+                if (!CachedForwardMatrix1.HasValue)
+                    CachedForwardMatrix1 = ReadMatrix3x3(TiffTagsDNG.ForwardMatrix1);
+                return CachedForwardMatrix1.Value;
+            }
+        }
+
+        public Matrix3 ForwardMatrix2
+        {
+            get
+            {
+                if (!CachedForwardMatrix2.HasValue)
+                    CachedForwardMatrix2 = ReadMatrix3x3(TiffTagsDNG.ForwardMatrix2);
+                return CachedForwardMatrix2.Value;
+            }
+        }
+
+        public bool IsDualIlluminant
+        {
+            get
+            {
+                if (!CachedIsDualIlluminant.HasValue)
+                    CachedIsDualIlluminant = Ifd.Contains((TiffTag)TiffTagsDNG.ColorMatrix2);
+                return CachedIsDualIlluminant.Value;
+            }
+        }
+
+        public bool HasForwardMatrix
+        {
+            get
+            {
+                if ( !CachedHasForwardMatrix.HasValue)
+                    CachedHasForwardMatrix = Ifd.Contains((TiffTag)TiffTagsDNG.ForwardMatrix1);
+                return CachedHasForwardMatrix.Value;
+            }
+        }
+
+        private Matrix3 ReadMatrix3x3(TiffTagsDNG tag)
+        {
+            var elements = TagReader.ReadSRationalField((TiffTag)tag, 9);
+            return new Matrix3(new Vector3((float)elements[0].ToSingle(), (float)elements[1].ToSingle(), (float)elements[2].ToSingle()), 
+                new Vector3((float)elements[3].ToSingle(), (float)elements[4].ToSingle(), (float)elements[5].ToSingle()),
+                new Vector3((float)elements[6].ToSingle(), (float)elements[7].ToSingle(), (float)elements[8].ToSingle()));
         }
 
         public void Dispose()

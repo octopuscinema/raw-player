@@ -192,6 +192,17 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Context.CheckError();
         }
 
+        public void SetUniform(IContext context, string uniformName, ref Matrix3 value)
+        {
+            ((Context)context).SetShader(this);
+#if __MACOS__
+            GL.UniformMatrix3(UniformLocation(uniformName), false, ref value);
+#else
+            GL.UniformMatrix3(UniformLocation(uniformName), false, ref value);
+#endif
+            Context.CheckError();
+        }
+
         public void Bind()
         {
             Debug.Assert(valid, "Attempting to bind an invalid shader");

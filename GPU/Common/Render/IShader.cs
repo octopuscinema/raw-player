@@ -14,5 +14,6 @@ namespace Octopus.Player.GPU.Render
         void SetUniform(IContext context, string uniformName, float value);
         void SetUniform(IContext context, string uniformName, Vector2 value);
         void SetUniform(IContext context, string uniformName, Vector4 value);
+        void SetUniform(IContext context, string uniformName, ref Matrix3 value);
     }
 }
