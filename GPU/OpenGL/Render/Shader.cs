@@ -196,11 +196,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void SetUniform(IContext context, string uniformName, in Matrix3 value)
         {
             ((Context)context).SetShader(this);
-#if __MACOS__
             GL.UniformMatrix3(UniformLocation(uniformName), 1, false, value.ToArray());
-#else
-            GL.UniformMatrix3(UniformLocation(uniformName), false, ref value);
-#endif
             Context.CheckError();
         }
 
