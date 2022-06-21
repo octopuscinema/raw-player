@@ -172,9 +172,6 @@ namespace Octopus.Player.Core.Maths.Color
         {
             // If there are forward matrices use camera to xyz based approach (forward matrices)
             var AsShotWhiteXYZ = Temperature.ChromaticityXYtoXYZ(asShotWhiteXY);
-
-
-            var test = Temperature.ChromaticityToTemperatureTint(asShotWhiteXY);
             if (hasForwardMatrix)
             {
                 var ColourTemperature = Temperature.ChromaticityToColourTemperature(asShotWhiteXY);
