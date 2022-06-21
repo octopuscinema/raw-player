@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -192,11 +193,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Context.CheckError();
         }
 
-        public void SetUniform(IContext context, string uniformName, ref Matrix3 value)
+        public void SetUniform(IContext context, string uniformName, in Matrix3 value)
         {
             ((Context)context).SetShader(this);
 #if __MACOS__
-            GL.UniformMatrix3(UniformLocation(uniformName), false, ref value);
+            GL.UniformMatrix3(UniformLocation(uniformName), 1, false, value.ToArray());
 #else
             GL.UniformMatrix3(UniformLocation(uniformName), false, ref value);
 #endif

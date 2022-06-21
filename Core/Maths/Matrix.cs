@@ -20,6 +20,14 @@ namespace Octopus.Player.Core.Maths
             result.Row2 = matrix.Row2.LinearInterpolate(to.Row2, lerp);
 			return result;
         }
+
+        public static float[] ToArray(this Matrix3 matrix)
+        {
+            return new float[] { matrix.Row0[0], matrix.Row0[1], matrix.Row0[2],
+                matrix.Row1[0], matrix.Row1[1], matrix.Row1[2],
+                matrix.Row2[0], matrix.Row2[1], matrix.Row2[2]
+            };
+        }
     }
 
     public static class CreateMatrix3

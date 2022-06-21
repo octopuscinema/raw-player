@@ -42,6 +42,10 @@ namespace Octopus.Player.Core.IO.DNG
         private Matrix3? CachedForwardMatrix2 { get; set; }
         private Maths.Color.Illuminant? CachedCalibrationIlluminant1 { get; set; }
         private Maths.Color.Illuminant? CachedCalibrationIlluminant2 { get; set; }
+        private Vector2? CachedAsShotWhiteXY { get; set; }
+        private Vector3? CachedAsShotNeutral { get; set; }
+        private bool? CachedHasAsShotWhiteXY { get; set; }
+        private bool? CachedHasAsShotNeutral { get; set; }
         private bool? CachedIsDualIlluminant { get; set; }
         private bool? CachedHasForwardMatrix { get; set; }
 
@@ -516,6 +520,60 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedCalibrationIlluminant2.HasValue)
                     CachedCalibrationIlluminant2 = (Maths.Color.Illuminant)TagReader.ReadShortField((TiffTag)TiffTagDNG.CalibrationIlluminant2, 1).First();
                 return CachedCalibrationIlluminant2.Value;
+            }
+        }
+
+        public Vector2 AsShotWhiteXY
+        {
+            get
+            {
+                if(!CachedAsShotWhiteXY.HasValue)
+                {
+                    var asShotWhiteXY = TagReader.ReadRationalField((TiffTag)TiffTagDNG.AsShotWhiteXY, 2);
+                    CachedAsShotWhiteXY = new Vector2(asShotWhiteXY[0].ToSingle(), asShotWhiteXY[1].ToSingle());
+                }
+                return CachedAsShotWhiteXY.Value;
+            }
+        }
+
+        public Vector3 AsShotNeutral
+        {
+            get
+            {
+                if (!CachedAsShotNeutral.HasValue)
+                {
+                    try
+                    {
+                        var asShotNeutral = TagReader.ReadRationalField((TiffTag)TiffTagDNG.AsShotNeutral, 3);
+                        CachedAsShotNeutral = new Vector3(asShotNeutral[0].ToSingle(), asShotNeutral[1].ToSingle(), asShotNeutral[2].ToSingle());
+                    }
+                    catch
+                    {
+                        var asShotNeutral = TagReader.ReadShortField((TiffTag)TiffTagDNG.AsShotNeutral, 3);
+                        CachedAsShotNeutral = new Vector3(asShotNeutral[0], asShotNeutral[1], asShotNeutral[2]);
+                    }
+                }
+                return CachedAsShotNeutral.Value;
+            }
+        }
+
+        public bool HasAsShotWhiteXY
+        {
+            get
+            {
+                if(!CachedHasAsShotWhiteXY.HasValue)
+                    CachedHasAsShotWhiteXY = Ifd.Contains((TiffTag)TiffTagDNG.AsShotWhiteXY);
+                return CachedHasAsShotWhiteXY.Value;
+            }
+        }
+
+        public bool HasAsShotNeutral
+        {
+            get
+            {
+                if (!CachedHasAsShotNeutral.HasValue)
+                    CachedHasAsShotNeutral = Ifd.Contains((TiffTag)TiffTagDNG.AsShotNeutral);
+                return CachedHasAsShotNeutral.Value;
             }
         }
 

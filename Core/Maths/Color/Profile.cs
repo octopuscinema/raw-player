@@ -33,6 +33,11 @@ namespace Octopus.Player.Core.Maths.Color
             }
             if (reader.HasForwardMatrix)
                 forwardMatrix1 = reader.ForwardMatrix1;
+
+            if (reader.HasAsShotWhiteXY)
+                asShotWhiteXY = reader.AsShotWhiteXY;
+            else if (reader.HasAsShotNeutral)
+                asShotWhiteXY = NeutralToXY(reader.AsShotNeutral);
         }
 
         public Matrix3 XYZToCamera(in Vector2 whiteXY)
@@ -167,6 +172,9 @@ namespace Octopus.Player.Core.Maths.Color
         {
             // If there are forward matrices use camera to xyz based approach (forward matrices)
             var AsShotWhiteXYZ = Temperature.ChromaticityXYtoXYZ(asShotWhiteXY);
+
+
+            var test = Temperature.ChromaticityToTemperatureTint(asShotWhiteXY);
             if (hasForwardMatrix)
             {
                 var ColourTemperature = Temperature.ChromaticityToColourTemperature(asShotWhiteXY);

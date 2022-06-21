@@ -53,6 +53,9 @@
     <ProjectReference Include="..\..\UI\Common\Player.UI.csproj">
       <Name>Player.UI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Core\Player.Core.csproj">
+      <Name>Player.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
      <PackageReference Include="OpenTK.Mathematics" version="4.7.4" />

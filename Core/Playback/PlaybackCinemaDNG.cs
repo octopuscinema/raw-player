@@ -19,10 +19,8 @@ namespace Octopus.Player.Core.Playback
 
         public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
             : base(renderContext)
-		{
-            // Load GPU program for CinemaDNG pipeline
-            //var defaultShaderDefines = new List<string>() { "BAYER_XGGX", "BAYER_RB" };
-            //GpuPipelineProgram = renderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", defaultShaderDefines);
+        {
+
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
@@ -145,21 +143,18 @@ namespace Octopus.Player.Core.Playback
         {
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)
             {
-                if ( !((IO.DNG.MetadataCinemaDNG)Clip.Metadata).Monochrome )
+                if ( Clip.Metadata.ColorProfile.HasValue )
                 {
-                    Matrix3 cameraToDisplay = Matrix3.Identity;
-                    GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", ref cameraToDisplay);
+                    var colorProfile = Clip.Metadata.ColorProfile.Value;
 
-  /*
                     // Combine camera to xyz/xyz to display colour matrices
-                    var cameraToXYZD50Matrix = PF::DNG::CalculateCameraToXYZD50(m_pItem->MetaData().ColourCorrectionProfile.value());
-                    const auto&XYZToReviewColourMatrix = Capture::LUT::XYZToTargetColourMatrixD50(pGammaLUT);
-                    const auto&CameraToReviewColourMatrix = PF::DNG::NormalizeColourMatrix(XYZToReviewColourMatrix) * CameraToXYZD50Matrix;
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM5, CameraToReviewColourMatrix);
-                    */
+                    var cameraToXYZD50Matrix = colorProfile.CalculateCameraToXYZD50();
+                    var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();  //Capture::LUT::XYZToTargetColourMatrixD50(pGammaLUT);
+                    var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
+                    GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
 /*
                     // Calculate camera white in RAW space
-# ifdef HIGHLIGHT_RECOVERY_WB
+#if HIGHLIGHT_RECOVERY_WB
                     const auto&CameraToXYZD50Inv = PM::Matrix3x3::Invert(CameraToXYZD50Matrix);
                     const auto&WhiteLevelCamera = CameraToXYZD50Inv * CJ3Vector3(1.0f, 1.0f, 1.0f);
 #else
