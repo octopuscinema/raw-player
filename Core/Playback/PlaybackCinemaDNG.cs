@@ -90,7 +90,10 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(dngMetadata != null);
 
             var defines = new List<string>();
-            
+
+            // Always output Rec709 for now
+            defines.Add("GAMMA_REC709");
+
             switch (dngMetadata.CFAPattern)
             {
                 case IO.CFAPattern.None:
@@ -149,7 +152,7 @@ namespace Octopus.Player.Core.Playback
 
                     // Combine camera to xyz/xyz to display colour matrices
                     var cameraToXYZD50Matrix = colorProfile.CalculateCameraToXYZD50();
-                    var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();  //Capture::LUT::XYZToTargetColourMatrixD50(pGammaLUT);
+                    var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
 

@@ -33,6 +33,37 @@ namespace Octopus.Player.UI
         {
             switch(name)
             {
+                // White balance
+                case "whiteBalanceAsShot":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+                case "whiteBalanceShade":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+                case "whiteBalanceCloud":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+                case "whiteBalanceDaylight":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+                case "whiteBalanceFluorescent":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+                case "whiteBalanceTungsten":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+
+                // Colour space
+                case "colorSpaceRec709":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+
+                // Gamma space
+                case "gammaSpaceRec709":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+
+                // Help
                 case "about":
                     NativeWindow.Alert(AlertType.Blank, "\n\t\t  OCTOPUS RAW Player\n\t\t ------------------------\n\t\t  Pre-release version X.X\n\t\t           MIT License\n\n\n\t\t© 2022 OCTOPUSCINEMA\t\t", "About OCTOPUS RAW Player");
                     break;
@@ -54,16 +85,22 @@ namespace Octopus.Player.UI
                 case "fullscreen":
                     NativeWindow.ToggleFullscreen();
                     break;
+
+                // Open
                 case "openCinemaDNG":
                     var dngPath = NativeWindow.OpenFolderDialogue("Select folder containing CinemaDNG sequence", Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     if (dngPath != null)
                         OpenCinemaDNG(dngPath);
                     break;
+
+                // Clip
                 case "metadata":
                     Debug.Assert(Playback != null && Playback.Clip != null);
                     if (Playback != null && Playback.Clip != null)
                         NativeWindow.Alert(AlertType.Blank, Playback.Clip.Metadata.ToString() + "\n", "Metadata for '" + Playback.Clip.Metadata.Title + "'");
                     break;
+
+                // Debayer
                 case "debayerQualityDraft":
                     break;
                 default:

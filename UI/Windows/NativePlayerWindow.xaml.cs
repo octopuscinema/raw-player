@@ -128,16 +128,48 @@ namespace Octopus.Player.UI.Windows
             Application.Current.Shutdown();
         }
 
-        public void EnableMenuItem(string name, bool enabled)
+        private MenuItem? FindMenuItem(ItemCollection items, string name)
         {
-            var menuItems = PlayerMenu.Items;
-            foreach (var item in menuItems)
+            foreach (var item in items)
             {
                 var menuItem = item as MenuItem;
-                if (menuItem != null && menuItem.Name == name)
+                if (menuItem == null)
+                    continue;
+                if (menuItem.Name == name)
+                    return menuItem;
+                var found = FindMenuItem(menuItem.Items, name);
+                if ( found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        public void EnableMenuItem(string name, bool enable)
+        {
+            var item = FindMenuItem(PlayerMenu.Items, name);
+            if (item != null)
+                item.IsEnabled = enable;
+        }
+
+        public void CheckMenuItem(string name, bool check = true, bool uncheckSiblings = true)
+        {
+            var item = FindMenuItem(PlayerMenu.Items, name);
+            if (item != null)
+            {
+                item.IsChecked = check;
+                if (uncheckSiblings)
                 {
-                    menuItem.IsEnabled = enabled;
-                    return;
+                    var parent = item.Parent as MenuItem;
+                    if (parent != null)
+                    {
+                        foreach (var sibling in parent.Items)
+                        {
+                            var siblingItem = sibling as MenuItem;
+                            if (siblingItem != null && siblingItem != item)
+                                siblingItem.IsChecked = false;
+                        }
+                    }
                 }
             }
         }

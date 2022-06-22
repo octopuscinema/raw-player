@@ -38,6 +38,8 @@ in highp vec2 normalisedCoordinates;
 #include "DebayerDraft.glsl.h"
 uniform mediump mat3 cameraToDisplayColour;
 #endif
+#include "Gamma.glsl.h"
+#include "ToneMap.glsl.h"
 
 uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
@@ -46,11 +48,12 @@ out lowp vec4 fragColor;
 
 void main() 
 {
-	highp float exposure = 4.0;
+	const mediump float exposure = 1.4142;
 
 	// Sample monochrome pixel
 #ifdef MONOCHROME
 	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r;
+	mediump vec3 cameraRgb = vec3(cameraMonochrome, cameraMonochrome, cameraMonochrome);
 #endif
 
 	// Sample and debayer
@@ -60,48 +63,52 @@ void main()
 #ifdef BAYER_GXXG
 	mediump vec3 cameraRgb = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)));
 #endif
-
 #ifdef BAYER_BR
 	cameraRgb.xz = cameraRgb.zx;
 #endif
-
-#ifdef MONOCHROME
-
-	// Apply black and white level
-	cameraMonochrome -= blackWhiteLevel.x;
-	cameraMonochrome /= (blackWhiteLevel.y-blackWhiteLevel.x);
-
-	// Apply exposure
-	cameraRgb *= exposure;
-
-	lowp vec3 rgbOut = vec3(cameraMonochrome, cameraMonochrome, cameraMonochrome);
-#else
 
 	// Apply black and white level
 	cameraRgb -= vec3(blackWhiteLevel.x);
 	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
 
 	// Linearise
+	
 
+#ifdef MONOCHROME
+	// Apply tone mapping
+	mediump vec3 displayRgb = ToneMap(cameraRgb, ToneMappingOperatorSDR);
+
+	// Apply exposure
+	displayRgb *= exposure;
+
+#else
 	// Highlight recovery
 
-	// Perform highlight/shadow rollof
+
+	// Perform highlight/shadow rolloff
 
 	// Transform camera to display colour space
 	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
-	lowp vec3 rgbOut = displayRgb;
+
+	// Apply exposure
+	displayRgb *= exposure;
 
 	// Apply tone mapping operator
-	//Sample = ToneMap(Sample, ToneMappingOperator);
+	displayRgb = ToneMap(displayRgb, ToneMappingOperatorSDR);
 	
 	// Apply gamut compression
-	//if ( GamutCompression == 1.0 )
-	//	Sample = Gamut709Compression(Sample);
-
-	// Apply gamma
+	displayRgb = Gamut709Compression(displayRgb);
 
 #endif
 
-	fragColor = vec4(rgbOut,1);
+	// Apply gamma
+#ifdef GAMMA_REC709
+	lowp vec3 gammaRgb = ApplyGamma709(displayRgb);
+#endif
+#ifdef GAMMA_SRGB
+	lowp vec3 gammaRgb = ApplyGammaSRGB(displayRgb);
+#endif
+
+	fragColor = vec4(gammaRgb, 1.0);
 }
 #endif

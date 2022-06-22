@@ -25,7 +25,7 @@ void FetchNeighbours(sampler2D bayerImage, inout mediump float neighbours[20], h
 	neighbours[19] = texelFetch(bayerImage, coords + ivec2(-2, -1), 0).r;
 }
 
-vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocations[2])
+mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocations[2])
 {
 	// Lookup 21 pixels
 	mediump float centre = texelFetch(bayerImage, coords, 0).r;
@@ -55,13 +55,13 @@ vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocati
 	}
 }
 
-vec3 DebayerXGGX(sampler2D bayerImage, highp ivec2 coords)
+mediump vec3 DebayerXGGX(sampler2D bayerImage, highp ivec2 coords)
 {
 	mediump ivec2 greenLocations[2] = ivec2[](ivec2(0, 1), ivec2(1, 0));
 	return Debayer(bayerImage, coords, greenLocations);
 }
 
-vec3 DebayerGXXG(sampler2D bayerImage, highp ivec2 coords)
+mediump vec3 DebayerGXXG(sampler2D bayerImage, highp ivec2 coords)
 {
 	mediump ivec2 greenLocations[2] = ivec2[]( ivec2(0, 0), ivec2(1, 1) );
 	return Debayer(bayerImage, coords, greenLocations);

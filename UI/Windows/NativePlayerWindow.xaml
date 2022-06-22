@@ -148,12 +148,29 @@
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Clip" IsEnabled="False" Name="clip">
-                <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
+                <MenuItem Header="_White Balance">
+                    <MenuItem Header="_As Shot (5500K +20)" Name="whiteBalanceAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                    <Separator />
+                    <MenuItem Header="_Shade (7500K, Tint: +10)" Name="whiteBalanceShade" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Cloud (6500K, Tint: +10)" Name="whiteBalanceCloud" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Daylight (5500K, Tint: +10)" Name="whiteBalanceDaylight" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Fluorescent (3800K, Tint: +21)" Name="whiteBalanceFluorescent" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Tungsten (3200K, Tint: 0)" Name="whiteBalanceTungsten" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Colour Space">
+                    <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <MenuItem Header="_Gamma">
+                    <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_Debayer Quality">
-                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True"/>
-                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False"/>
+                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
                 </MenuItem>
+                <Separator />
+                <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
