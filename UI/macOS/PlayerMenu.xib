@@ -96,6 +96,49 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Clip" id="g5h-A5-szt">
                         <items>
+                            <menuItem title="White Balance" enabled="NO" id="dK8-Xn-3zd">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="White Balance" id="Ag3-bp-hdQ">
+                                    <items>
+                                        <menuItem title="Item" enabled="NO" id="ErP-Ud-EgS">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="14H-78-4wj"/>
+                            <menuItem title="Colour Space" enabled="NO" id="2xo-Ss-oAQ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Colour Space" id="M6W-lh-LJU">
+                                    <items>
+                                        <menuItem title="Item" enabled="NO" id="Hpt-Er-0fm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Gamma" enabled="NO" id="fzd-aC-qTf">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Gamma" id="EUI-dm-rDn">
+                                    <items>
+                                        <menuItem title="Item" enabled="NO" id="AB4-5t-Ttm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="EOm-GO-jN2"/>
+                            <menuItem title="Debayer Quality" enabled="NO" id="HyW-ya-0rj">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Debayer Quality" id="rJi-tD-DtO">
+                                    <items>
+                                        <menuItem title="Item" enabled="NO" id="e3x-Lp-frU">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="5lW-pJ-xD9"/>
                             <menuItem title="Metadata..." enabled="NO" identifier="metadata" id="4L7-2y-W5k">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>

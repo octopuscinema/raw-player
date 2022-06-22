@@ -101,18 +101,38 @@ namespace Octopus.Player.UI.macOS
 			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
-        public void EnableMenuItem(string name, bool enabled)
+		private NSMenuItem FindMenuItem(NSMenu root, string name)
         {
-			var menu = NSApplication.SharedApplication.MainMenu;
-			foreach (var item in menu.Items)
-			{
+			if (root == null)
+				return null;
+
+			foreach(var item in root.Items)
+            {
 				if (item.Identifier == name)
-				{
-					item.Enabled = enabled;
-					return;
-				}
-			}
+					return item;
+				var found = FindMenuItem(item.Submenu, name);
+				if (found != null)
+					return found;
+            }
+
+			return null;
         }
+
+        public void EnableMenuItem(string name, bool enable)
+        {
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, name);
+			if (item != null)
+				item.Enabled = enable;
+        }
+
+        public void CheckMenuItem(string name, bool check = true, bool uncheckSiblings = true)
+        {
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, name);
+			if (item != null)
+			{
+				item.State = check ? NSCellStateValue.On : NSCellStateValue.Off;
+			}
+		}
     }
 }
 
