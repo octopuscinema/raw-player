@@ -92,54 +92,142 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Clip" enabled="NO" identifier="clip" id="nlY-NV-0CE">
+                <menuItem title="Clip" identifier="clip" id="nlY-NV-0CE">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Clip" id="g5h-A5-szt">
+                    <menu key="submenu" title="Clip" autoenablesItems="NO" id="g5h-A5-szt">
                         <items>
-                            <menuItem title="White Balance" enabled="NO" id="dK8-Xn-3zd">
+                            <menuItem title="White Balance" identifier="whiteBalance" id="dK8-Xn-3zd">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="White Balance" id="Ag3-bp-hdQ">
+                                <menu key="submenu" title="White Balance" autoenablesItems="NO" id="Ag3-bp-hdQ">
                                     <items>
-                                        <menuItem title="Item" enabled="NO" id="ErP-Ud-EgS">
+                                        <menuItem title="As Shot" state="on" identifier="whiteBalanceAsShot" id="ErP-Ud-EgS">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="Sxi-Mc-jcE"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="GEP-bF-xuh"/>
+                                        <menuItem title="Shade" identifier="whiteBalanceShade" id="7xl-fr-Mir">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="Vra-NL-dqp"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Cloud" identifier="whiteBalanceCloud" id="28d-8B-eFf">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="aTS-b4-PSw"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Daylight" identifier="whiteBalanceDaylight" id="cmt-sK-vPF">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="eD0-75-bf3"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Fluorescent" identifier="whiteBalanceFluorescent" id="kPG-Le-xkS">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="I69-mF-evU"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Tungsten" identifier="whiteBalanceTungsten" id="i7I-O0-aoo">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="wn7-Gu-uH6"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Exposure (+/-)" id="4VW-68-263">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Exposure (+/-)" autoenablesItems="NO" id="dBv-j7-BpI">
+                                    <items>
+                                        <menuItem title="As Shot" state="on" identifier="exposureAsShot" id="z6P-NH-R9F">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="DrJ-yn-Ofx"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Lrt-zb-Jbo"/>
+                                        <menuItem title="-2" identifier="exposureMinusTwo" id="VgB-Zs-hGf">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="3rG-H8-lFe"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="-1" identifier="exposureMinusOne" id="Rhx-hk-lPG">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="Flt-iU-J9X"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title=" 0" identifier="exposureZero" id="d3D-HR-RqB">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="nPQ-do-rxH"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="+1" identifier="exposurePlusOne" id="V5L-M2-Vwm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="Bgi-ni-LSu"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="+2" identifier="exposurePlusTwo" id="QgI-HT-n1Y">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="qwm-Qq-oF5"/>
+                                            </connections>
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="14H-78-4wj"/>
-                            <menuItem title="Colour Space" enabled="NO" id="2xo-Ss-oAQ">
+                            <menuItem title="Advanced" id="U2t-Ra-MCz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Colour Space" id="M6W-lh-LJU">
+                                <menu key="submenu" title="Advanced" id="Hq3-64-8Xz">
                                     <items>
-                                        <menuItem title="Item" enabled="NO" id="Hpt-Er-0fm">
+                                        <menuItem title="Colour Space" id="2xo-Ss-oAQ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Colour Space" autoenablesItems="NO" id="M6W-lh-LJU">
+                                                <items>
+                                                    <menuItem title="Rec. 709" state="on" id="Hpt-Er-0fm">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
                                         </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
-                            <menuItem title="Gamma" enabled="NO" id="fzd-aC-qTf">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Gamma" id="EUI-dm-rDn">
-                                    <items>
-                                        <menuItem title="Item" enabled="NO" id="AB4-5t-Ttm">
+                                        <menuItem title="Gamma" id="fzd-aC-qTf">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Gamma" autoenablesItems="NO" id="EUI-dm-rDn">
+                                                <items>
+                                                    <menuItem title="Rec. 709" state="on" id="AB4-5t-Ttm">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
                                         </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="EOm-GO-jN2"/>
-                            <menuItem title="Debayer Quality" enabled="NO" id="HyW-ya-0rj">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Debayer Quality" id="rJi-tD-DtO">
-                                    <items>
-                                        <menuItem title="Item" enabled="NO" id="e3x-Lp-frU">
+                                        <menuItem isSeparatorItem="YES" id="EOm-GO-jN2"/>
+                                        <menuItem title="Debayer Quality" id="HyW-ya-0rj">
                                             <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Debayer Quality" autoenablesItems="NO" id="rJi-tD-DtO">
+                                                <items>
+                                                    <menuItem title="Draft" state="on" identifier="debayerQualityDraft" id="e3x-Lp-frU">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Best (Not Available)" enabled="NO" identifier="debayerQualityBest" id="zW4-2i-ZIb">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
                                         </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="5lW-pJ-xD9"/>
-                            <menuItem title="Metadata..." enabled="NO" identifier="metadata" id="4L7-2y-W5k">
+                            <menuItem title="Metadata..." identifier="metadata" id="4L7-2y-W5k">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="doClick:" target="-1" id="4wF-tA-Fto"/>

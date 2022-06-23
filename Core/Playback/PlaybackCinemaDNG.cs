@@ -72,7 +72,7 @@ namespace Octopus.Player.Core.Playback
 
             // Decode test
             var frame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
-            frame.frameNumber = 0;
+            frame.frameNumber = ((IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata).FirstFrame;
             SequenceStreamDNG.DecodeFrame(frame);
 
             // Test frame texture

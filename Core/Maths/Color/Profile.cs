@@ -40,6 +40,11 @@ namespace Octopus.Player.Core.Maths.Color
                 asShotWhiteXY = NeutralToXY(reader.AsShotNeutral);
         }
 
+        public Tuple<double,double> AsShotWhiteBalance()
+        {
+            return Temperature.ChromaticityToTemperatureTint(asShotWhiteXY);
+        }
+
         public Matrix3 XYZToCamera(in Vector2 whiteXY)
         {
             if (!isDualIlluminant)

@@ -15,6 +15,7 @@ namespace Octopus.Player.UI
         {
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
+            NativeWindow.EnableMenuItem("clip", false);
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -50,6 +51,16 @@ namespace Octopus.Player.UI
                     NativeWindow.CheckMenuItem(name);
                     break;
                 case "whiteBalanceTungsten":
+                    NativeWindow.CheckMenuItem(name);
+                    break;
+
+                // Exposure
+                case "exposureAsShot":
+                case "exposureMinusTwo":
+                case "exposureMinusOne":
+                case "exposureZero":
+                case "exposurePlusOne":
+                case "exposurePlusTwo":
                     NativeWindow.CheckMenuItem(name);
                     break;
 
@@ -143,6 +154,7 @@ namespace Octopus.Player.UI
             // Open the clip
             return Playback.Open(clip);
         }
+
         public void OnClipClosed(object sender, EventArgs e)
         {
             NativeWindow.EnableMenuItem("clip", false);
@@ -155,8 +167,24 @@ namespace Octopus.Player.UI
         {
             NativeWindow.EnableMenuItem("clip", true);
             Debug.Assert(Playback != null && Playback.Clip != null);
-            if ( Playback != null && Playback.Clip != null )
+            if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
+            {
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
+                NativeWindow.SetMenuItemTitle("exposureAsShot", "As Shot (" + Playback.Clip.Metadata.ExposureValue.ToString("F") + ")");
+
+                if (Playback.Clip.Metadata.ColorProfile.HasValue )
+                {
+                    NativeWindow.EnableMenuItem("whiteBalance", true);
+                    var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
+                    if (asShotWhiteBalance.Item2 == 0.0)
+                        NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K)");
+                    else
+                        NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K, Tint: " +
+                            asShotWhiteBalance.Item2.ToString("+#;-#;0") + ")");
+                }
+                else
+                    NativeWindow.EnableMenuItem("whiteBalance", false);
+            }
             RenderContext.BackgroundColor = Theme.ClipBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }

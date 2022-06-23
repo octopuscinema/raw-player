@@ -101,16 +101,16 @@ namespace Octopus.Player.UI.macOS
 			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
-		private NSMenuItem FindMenuItem(NSMenu root, string name)
+		private NSMenuItem FindMenuItem(NSMenu root, string id)
         {
 			if (root == null)
 				return null;
 
 			foreach(var item in root.Items)
             {
-				if (item.Identifier == name)
+				if (item.Identifier == id)
 					return item;
-				var found = FindMenuItem(item.Submenu, name);
+				var found = FindMenuItem(item.Submenu, id);
 				if (found != null)
 					return found;
             }
@@ -118,20 +118,35 @@ namespace Octopus.Player.UI.macOS
 			return null;
         }
 
-        public void EnableMenuItem(string name, bool enable)
+        public void EnableMenuItem(string id, bool enable)
         {
-			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, name);
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
 			if (item != null)
 				item.Enabled = enable;
         }
 
-        public void CheckMenuItem(string name, bool check = true, bool uncheckSiblings = true)
+        public void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true)
         {
-			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, name);
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
 			if (item != null)
 			{
 				item.State = check ? NSCellStateValue.On : NSCellStateValue.Off;
+				if (uncheckSiblings && item.ParentItem != null && item.ParentItem.Submenu != null)
+				{
+					foreach(var sibling in item.ParentItem.Submenu.Items)
+                    {
+						if (sibling != item)
+							sibling.State = NSCellStateValue.Off;
+                    }
+				}
 			}
+		}
+
+		public void SetMenuItemTitle(string id, string name)
+        {
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
+			if (item != null)
+				item.Title = name;
 		}
     }
 }
