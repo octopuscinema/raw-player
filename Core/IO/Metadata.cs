@@ -26,6 +26,7 @@ namespace Octopus.Player.Core.IO
         public virtual Rational AspectRatio { get { return new Rational(Dimensions.X, Dimensions.Y); } }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
+        public float ExposureValue { get; protected set; }
         public Core.Maths.Color.Profile? ColorProfile { get; protected set; }
 
         public override string ToString()

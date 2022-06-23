@@ -17,6 +17,7 @@ namespace Octopus.Player.Core.IO
         Rational AspectRatio { get; }
         uint BitDepth { get; }
         uint DecodedBitDepth { get; }
+        float ExposureValue { get; }
         Core.Maths.Color.Profile? ColorProfile { get; }
     }
 }

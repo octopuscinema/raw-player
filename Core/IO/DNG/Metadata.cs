@@ -55,6 +55,7 @@ namespace Octopus.Player.Core.IO.DNG
             Monochrome = reader.Monochrome;
             if (!reader.Monochrome)
                 ColorProfile = new Maths.Color.Profile(reader);
+            ExposureValue = reader.BaselineExposure;
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);

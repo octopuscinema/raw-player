@@ -48,6 +48,7 @@ namespace Octopus.Player.Core.IO.DNG
         private bool? CachedHasAsShotNeutral { get; set; }
         private bool? CachedIsDualIlluminant { get; set; }
         private bool? CachedHasForwardMatrix { get; set; }
+        private float? CachedBaselineExposure { get; set; }
 
         public Reader(string filePath)
         {
@@ -133,7 +134,7 @@ namespace Octopus.Player.Core.IO.DNG
                 return Error.BadImageData;
             Valid = true;
 
-            switch(Compression)
+            switch (Compression)
             {
                 case Compression.LosslessJPEG:
                     return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
@@ -293,7 +294,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedDecodedBitDepth.HasValue)
                 {
-                    switch(Compression)
+                    switch (Compression)
                     {
                         case Compression.None:
                             CachedDecodedBitDepth = BitDepth > 8u ? 16u : 8u;
@@ -411,7 +412,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 Debug.Assert(IsTiled);
-                if ( !CachedTileCount.HasValue)
+                if (!CachedTileCount.HasValue)
                     CachedTileCount = (uint)TagReader.ReadTileOffsets().Count;
                 return CachedTileCount.Value;
             }
@@ -422,7 +423,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 Debug.Assert(!IsTiled);
-                if ( !CachedStripCount.HasValue)
+                if (!CachedStripCount.HasValue)
                     CachedStripCount = (uint)TagReader.ReadStripOffsets().Count;
                 return CachedStripCount.Value;
             }
@@ -432,7 +433,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if ( CachedLinearizationTable == null )
+                if (CachedLinearizationTable == null)
                 {
                     if (Ifd.Contains((TiffTag)TiffTagDNG.LinearizationTable))
                         CachedLinearizationTable = TagReader.ReadShortField((TiffTag)TiffTagDNG.LinearizationTable).ToArray();
@@ -467,7 +468,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if(!CachedColorMatrix1.HasValue)
+                if (!CachedColorMatrix1.HasValue)
                     CachedColorMatrix1 = ReadMatrix3x3(TiffTagDNG.ColorMatrix1);
                 return CachedColorMatrix1.Value;
             }
@@ -527,7 +528,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if(!CachedAsShotWhiteXY.HasValue)
+                if (!CachedAsShotWhiteXY.HasValue)
                 {
                     var asShotWhiteXY = TagReader.ReadRationalField((TiffTag)TiffTagDNG.AsShotWhiteXY, 2);
                     CachedAsShotWhiteXY = new Vector2(asShotWhiteXY[0].ToSingle(), asShotWhiteXY[1].ToSingle());
@@ -561,7 +562,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if(!CachedHasAsShotWhiteXY.HasValue)
+                if (!CachedHasAsShotWhiteXY.HasValue)
                     CachedHasAsShotWhiteXY = Ifd.Contains((TiffTag)TiffTagDNG.AsShotWhiteXY);
                 return CachedHasAsShotWhiteXY.Value;
             }
@@ -591,9 +592,19 @@ namespace Octopus.Player.Core.IO.DNG
         {
             get
             {
-                if ( !CachedHasForwardMatrix.HasValue)
+                if (!CachedHasForwardMatrix.HasValue)
                     CachedHasForwardMatrix = Ifd.Contains((TiffTag)TiffTagDNG.ForwardMatrix1);
                 return CachedHasForwardMatrix.Value;
+            }
+        }
+
+        public float BaselineExposure
+        {
+            get
+            {
+                if (!CachedBaselineExposure.HasValue)
+                    CachedBaselineExposure = Ifd.Contains((TiffTag)TiffTagDNG.BaselineExposure) ? (float)TagReader.ReadSRationalField((TiffTag)TiffTagDNG.BaselineExposure, 1).First().ToSingle() : 0.0f; 
+                return CachedBaselineExposure.Value;
             }
         }
 
