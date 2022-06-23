@@ -10,9 +10,6 @@ namespace Octopus.Player.Core.Decoders
 
 		[DllImport("Unpack")]
 		public static extern void Unpack14to16Bit([Out] byte[] out16Bit, UIntPtr outOffsetBytes, byte[] in14Bit, UIntPtr sizeBytes);
-
-		[DllImport("Unpack")]
-		public static extern void TestByteArray([Out] byte[] pOut, byte[] pIn, UIntPtr sizeBytes);
 	}
 }
 

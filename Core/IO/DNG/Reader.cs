@@ -63,49 +63,6 @@ namespace Octopus.Player.Core.IO.DNG
             FieldReader = Tiff.CreateFieldReader();
             Ifd = Tiff.ReadImageFileDirectory();
             TagReader = new TiffTagReader(FieldReader, Ifd);
-
-            /*
-            // Get offsets to the strip/tile data
-            TiffValueCollection<ulong> offsets, byteCounts;
-            if (ifd.Contains(TiffTag.TileOffsets))
-            {
-                offsets = tagReader.ReadTileOffsets();
-                byteCounts = tagReader.ReadTileByteCounts();
-            }
-            else if (ifd.Contains(TiffTag.StripOffsets))
-            {
-                offsets = tagReader.ReadStripOffsets();
-                byteCounts = tagReader.ReadStripByteCounts();
-            }
-            else
-            {
-                throw new InvalidDataException("This TIFF file is neither striped or tiled.");
-            }
-            if (offsets.Count != byteCounts.Count)
-            {
-                throw new InvalidDataException();
-            }
-
-            // Extract strip/tile data
-            using var contentReader = tiff.CreateContentReader();
-            int count = offsets.Count;
-            for (int i = 0; i < count; i++)
-            {
-                long offset = (long)offsets[i];
-                int byteCount = (int)byteCounts[i];
-                byte[] data = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
-                try
-                {
-                    contentReader.Read(offset, data.AsMemory(0, byteCount));
-                    using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
-                    fs.Write(data, 0, byteCount);
-                }
-                finally
-                {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(data);
-                }
-            }
-            */
         }
 
         public Error DecodeImageData(byte[] dataOut)
@@ -192,7 +149,7 @@ namespace Octopus.Player.Core.IO.DNG
                             else
                                 Unpack.Unpack14to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
                             packedDataOffset += segmentSizeBytes;
-                            dataOutOffset += (segmentSizeBytes * 16) / (int)BitDepth;
+                            dataOutOffset += (segmentSizeBytes * (int)DecodedBitDepth) / (int)BitDepth;
                         }
                         catch
                         {
@@ -218,9 +175,12 @@ namespace Octopus.Player.Core.IO.DNG
         private Error DecodeCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
         {
             using var contentReader = Tiff.CreateContentReader();
+            var offsetsCount = offsets.Count;
+            var expectedDataOutSize = (Dimensions.Area() * DecodedBitDepth) / 8;
+            Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
+            int dataOutOffset = 0;
 
-            int count = offsets.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < offsetsCount; i++)
             {
                 var offset = (long)offsets[i];
                 int byteCount = (int)byteCounts[i];
@@ -229,17 +189,27 @@ namespace Octopus.Player.Core.IO.DNG
                 try
                 {
                     contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
-                    //using var fs = new FileStream(@$"C:\Test\extracted-{i}.dat", FileMode.Create, FileAccess.Write);
-                    //fs.Write(data, 0, byteCount);
+                    var segmentDimensions = IsTiled ? TileDimensions : (Dimensions / new Vector2i(1, (int)StripCount));
+                    var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                    dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;
+                    if (decodeError != Error.None)
+                        return decodeError;
+                }
+                catch
+                {
+                    return Error.BadImageData;
                 }
                 finally
                 {
                     System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
                 }
-
             }
 
-            return Error.NotImplmeneted;
+            // Sanity check the output size
+            Debug.Assert(dataOutOffset == expectedDataOutSize);
+            if (dataOutOffset != expectedDataOutSize)
+                return Error.BadImageData;
+            return Error.None;
         }
 
         public Vector2i Dimensions
@@ -344,6 +314,8 @@ namespace Octopus.Player.Core.IO.DNG
                                 CachedCFAPattern = CFAPattern.BGGR;
                             else if (pattern.ToArray().SequenceEqual(new ushort[] { 1, 0, 2, 1 }))
                                 CachedCFAPattern = CFAPattern.GRBG;
+                            else if (pattern.ToArray().SequenceEqual(new ushort[] { 1, 2, 0, 1 }))
+                                CachedCFAPattern = CFAPattern.GBRG;
                             else
                                 CachedCFAPattern = CFAPattern.Unknown;
                             break;

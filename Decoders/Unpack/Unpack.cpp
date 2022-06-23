@@ -2,11 +2,6 @@
 
 namespace Octopus::Player::Decoders::Unpack
 {
-    extern "C" int TestUnpackMethod(int param)
-    {
-        return param +1;
-    }
-
 	extern "C" void Unpack12to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p12BitPacked, std::size_t sizeBytes)
 	{
 		const uint8_t *pEnd = p12BitPacked + sizeBytes;
@@ -56,14 +51,6 @@ namespace Octopus::Player::Decoders::Unpack
 
 			// Pixel1: Byte0 bits0-7 | Byte1 bits8-13
 			*p16BitOut++ = (0x3fff & (b1 << 8)) | b0;
-		}
-	}
-
-	extern "C" void TestByteArray(uint8_t* pOut, const uint8_t* pIn, std::size_t sizeBytes)
-	{
-		for (int i = 0; i < sizeBytes; i++)
-		{
-			pOut[i] = pIn[i] * 2;
 		}
 	}
 }

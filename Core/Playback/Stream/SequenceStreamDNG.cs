@@ -58,12 +58,20 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadFrame;
             }
 
-            if (DNGReader.Compression == IO.DNG.Compression.None)
+            switch (DNGReader.Compression)
             {
-                var bytesPerPixel = Clip.Metadata.BitDepth <= 8 ? 1 : 2;
-                Debug.Assert(frame.decodedImage.Length == bytesPerPixel * Clip.Metadata.Dimensions.Area());
-                DNGReader.DecodeImageData(frame.decodedImage);
+                case IO.DNG.Compression.None:
+                case IO.DNG.Compression.LosslessJPEG:
+                    var bytesPerPixel = Clip.Metadata.BitDepth <= 8 ? 1 : 2;
+                    Debug.Assert(frame.decodedImage.Length == bytesPerPixel * Clip.Metadata.Dimensions.Area());
+                    DNGReader.DecodeImageData(frame.decodedImage);
+                    break;
+                default:
+                    DNGReader.Dispose();
+                    DNGReader = null;
+                    return Error.NotImplmeneted;
             }
+
             //DNGReader.Read
             //Clip.Path
 

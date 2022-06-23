@@ -14,6 +14,8 @@ namespace Octopus.Player.Core.Playback
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
 
+        private Stream.SequenceFrame testFrame;
+
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
@@ -38,6 +40,8 @@ namespace Octopus.Player.Core.Playback
                 GpuFrameTest.Dispose();
                 GpuFrameTest = null;
             }
+            if (testFrame.decodedImage != null)
+                testFrame.Dispose();
             State = State.Empty;
             Clip = null;
             ClipClosed?.Invoke(this, new EventArgs());
@@ -56,6 +60,7 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadMetadata;
             Clip = clip;
             ClipOpened?.Invoke(this, new EventArgs());
+            var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata;
 
             // Rebuild the shader if the defines have changed
             var requiredShaderDefines = ShaderDefinesForClip(clip);
@@ -71,15 +76,18 @@ namespace Octopus.Player.Core.Playback
             SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
 
             // Decode test
-            var frame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
-            frame.frameNumber = ((IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata).FirstFrame;
-            SequenceStreamDNG.DecodeFrame(frame);
+            testFrame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
+            testFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
+            SequenceStreamDNG.DecodeFrame(testFrame);
 
-            // Test frame texture
+            // Test frame texture (Non tiled)
             if (GpuFrameTest != null)
                 GpuFrameTest.Dispose();
-            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, TextureFormat.R16, frame.decodedImage, TextureFilter.Nearest, "gpuFrameTest");
-
+            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16,
+                cinemaDNGMetadata.TileCount == 0 ? testFrame.decodedImage : null, TextureFilter.Nearest, "gpuFrameTest");
+            if (cinemaDNGMetadata.TileCount == 0)
+                testFrame.Dispose();
+            
             return Error.NotImplmeneted;
         }
 
@@ -146,6 +154,23 @@ namespace Octopus.Player.Core.Playback
         {
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)
             {
+                // Tiled DNG frame test
+                var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
+                if (testFrame.decodedImage != null && cinemaDNGMetadata.TileCount > 0)
+                {
+                    var frameOffset = 0;
+                    var tileSizeBytes = (cinemaDNGMetadata.TileDimensions.Area() * Clip.Metadata.DecodedBitDepth) / 8;
+                    for (int y = 0; y < Clip.Metadata.Dimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
+                    {
+                        for (int x = 0; x < Clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
+                        {
+                            GpuFrameTest.Modify(RenderContext, new Vector2i(x, y), cinemaDNGMetadata.TileDimensions, testFrame.decodedImage, (uint)frameOffset);
+                            frameOffset += (int)tileSizeBytes;
+                        }
+                    }
+                    testFrame.Dispose();
+                }
+
                 if ( Clip.Metadata.ColorProfile.HasValue )
                 {
                     var colorProfile = Clip.Metadata.ColorProfile.Value;

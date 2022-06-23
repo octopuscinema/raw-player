@@ -35,6 +35,7 @@ namespace Octopus.Player.Core.Playback.Stream
         public void Dispose()
         {
 			GPUContext.DestroyTexture(gpuImage);
+			GPUContext = null;
 			gpuImage = null;
 			decodedImage = null;
 		}

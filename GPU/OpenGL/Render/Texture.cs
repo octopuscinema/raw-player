@@ -67,14 +67,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Dispose()
         {
-            Debug.Assert(valid,"Attempting to dispose invalid texture");
             Action deleteTextureAction = () =>
             {
+                Debug.Assert(Valid,"Attempting to dispose invalid texture");
                 GL.DeleteTexture(Handle);
                 Context.CheckError();
+                valid = false;
             };
             Context.EnqueueRenderAction(deleteTextureAction);
-            valid = false;
         }
 
         public void Modify(IContext context, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0)

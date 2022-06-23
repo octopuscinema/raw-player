@@ -883,20 +883,16 @@ namespace Octopus::Player::Decoders::LJ92
 		}
     }
 
-    extern "C" int TestMethod(int param)
-    {
-        return param + 1;
-    }
-
-    extern "C" Core::eError Decode(uint8_t* pCompressedIn, uint32_t compressedSizeBytes, uint8_t* pOut, uint32_t width, uint32_t height, uint32_t bitDepth)
+    extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
     {
         int actualWidth, actualHeight, actualBitDepth;
         lj92 lj;
-        auto error = LJ92Error(lj92_open(lj, pCompressedIn, compressedSizeBytes, &actualWidth, &actualHeight, &actualBitDepth));
+        auto error = LJ92Error(lj92_open(lj, pInCompressed, compressedSizeBytes, &actualWidth, &actualHeight, &actualBitDepth));
         if ( error == Core::eError::None )
         {
-            if ( actualWidth == width && actualHeight == height && actualBitDepth == bitDepth )
-                error = LJ92Error(lj92_decode(lj, (uint16_t*)pOut, 0, 0, nullptr, 0));
+			// Don't compare width/height directly, lossless jpeg bayer compression may change the width and height to improve compression/predictor efficiency
+            if ( (actualWidth*actualHeight) == (width*height) && actualBitDepth == bitDepth )
+                error = LJ92Error(lj92_decode(lj, (uint16_t*)(pOut16Bit+outOffsetBytes), 0, 0, nullptr, 0));
             else
                 error = Core::eError::BadMetadata;
             lj92_close(lj);

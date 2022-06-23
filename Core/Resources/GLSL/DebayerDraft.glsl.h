@@ -25,7 +25,7 @@ void FetchNeighbours(sampler2D bayerImage, inout mediump float neighbours[20], h
 	neighbours[19] = texelFetch(bayerImage, coords + ivec2(-2, -1), 0).r;
 }
 
-mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocations[2])
+mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocations[2], mediump ivec2 nonGreen1Location)
 {
 	// Lookup 21 pixels
 	mediump float centre = texelFetch(bayerImage, coords, 0).r;
@@ -42,7 +42,7 @@ mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 gre
 			(neighbours[12] + neighbours[13] + neighbours[14] + neighbours[15]) * 0.1875;
 		mediump float nonGreen2 = ((neighbours[2] + neighbours[3]) * 0.5) * 0.25 +
 			(neighbours[16] + neighbours[17] + neighbours[18] + neighbours[19]) * 0.1875;
-		return (bayerIndex == ivec2(1, 0)) ? vec3(nonGreen1, green, nonGreen2) : vec3(nonGreen2, green, nonGreen1);
+		return (bayerIndex == greenLocations[1]) ? vec3(nonGreen1, green, nonGreen2) : vec3(nonGreen2, green, nonGreen1);
 	}
 	else
 	{
@@ -51,20 +51,22 @@ mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 gre
 		mediump float green = (neighbours[0] + neighbours[1] + neighbours[2] + neighbours[3]) * 0.125 +
 			(neighbours[12] + neighbours[13] + neighbours[14] + neighbours[15] + neighbours[16] + neighbours[17] + neighbours[18] + neighbours[19]) * 0.0625;
 		mediump float nonGreen2 = (neighbours[4] + neighbours[5] + neighbours[6] + neighbours[7]) * 0.25;
-		return (bayerIndex == ivec2(0,0)) ? vec3(nonGreen1, green, nonGreen2) : vec3(nonGreen2, green, nonGreen1);
+		return (bayerIndex == nonGreen1Location) ? vec3(nonGreen1, green, nonGreen2) : vec3(nonGreen2, green, nonGreen1);
 	}
 }
 
 mediump vec3 DebayerXGGX(sampler2D bayerImage, highp ivec2 coords)
 {
 	mediump ivec2 greenLocations[2] = ivec2[](ivec2(0, 1), ivec2(1, 0));
-	return Debayer(bayerImage, coords, greenLocations);
+	mediump ivec2 nonGreen1Location = ivec2(0, 0);
+	return Debayer(bayerImage, coords, greenLocations, nonGreen1Location);
 }
 
 mediump vec3 DebayerGXXG(sampler2D bayerImage, highp ivec2 coords)
 {
 	mediump ivec2 greenLocations[2] = ivec2[]( ivec2(0, 0), ivec2(1, 1) );
-	return Debayer(bayerImage, coords, greenLocations);
+	mediump ivec2 nonGreen1Location = ivec2(0, 1);
+	return Debayer(bayerImage, coords, greenLocations, nonGreen1Location).zyx;
 }
 
 #endif

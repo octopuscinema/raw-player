@@ -128,16 +128,16 @@ namespace Octopus.Player.UI.Windows
             Application.Current.Shutdown();
         }
 
-        private MenuItem? FindMenuItem(ItemCollection items, string name)
+        private MenuItem? FindMenuItem(ItemCollection items, string id)
         {
             foreach (var item in items)
             {
                 var menuItem = item as MenuItem;
                 if (menuItem == null)
                     continue;
-                if (menuItem.Name == name)
+                if (menuItem.Name == id)
                     return menuItem;
-                var found = FindMenuItem(menuItem.Items, name);
+                var found = FindMenuItem(menuItem.Items, id);
                 if ( found != null)
                     return found;
             }
@@ -145,16 +145,16 @@ namespace Octopus.Player.UI.Windows
             return null;
         }
 
-        public void EnableMenuItem(string name, bool enable)
+        public void EnableMenuItem(string id, bool enable)
         {
-            var item = FindMenuItem(PlayerMenu.Items, name);
+            var item = FindMenuItem(PlayerMenu.Items, id);
             if (item != null)
                 item.IsEnabled = enable;
         }
 
-        public void CheckMenuItem(string name, bool check = true, bool uncheckSiblings = true)
+        public void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true)
         {
-            var item = FindMenuItem(PlayerMenu.Items, name);
+            var item = FindMenuItem(PlayerMenu.Items, id);
             if (item != null)
             {
                 item.IsChecked = check;
@@ -172,6 +172,12 @@ namespace Octopus.Player.UI.Windows
                     }
                 }
             }
+        }
+        public void SetMenuItemTitle(string id, string name)
+        {
+            var item = FindMenuItem(PlayerMenu.Items, id);
+            if (item != null)
+                item.Header = "_" + name;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -220,6 +226,7 @@ namespace Octopus.Player.UI.Windows
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
             PlayerWindow.OnFramebufferResize(FramebufferSize);
         }
+
 #if WINDOW_ASPECT_RATIO_LOCK
         protected override void OnSourceInitialized(EventArgs e)
         {

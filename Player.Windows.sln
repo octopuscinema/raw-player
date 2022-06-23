@@ -6,6 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.UI.Windows", "UI\Windows\Player.UI.Windows.csproj", "{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Core", "Core\Player.Core.csproj", "{B0011DAE-21A6-45D9-889D-3C51B06B47EA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{23D0C6FB-C097-4894-BD1F-11BBE1971828} = {23D0C6FB-C097-4894-BD1F-11BBE1971828}
+		{670D9676-9A37-4E62-8C84-80AF6F09C968} = {670D9676-9A37-4E62-8C84-80AF6F09C968}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.UI", "UI\Common\Player.UI.csproj", "{72A3E507-3E4D-448A-A61D-52EDEE655F68}"
 EndProject
