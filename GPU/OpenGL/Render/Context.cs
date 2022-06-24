@@ -12,7 +12,7 @@ using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 namespace OpenTK.Graphics.OpenGL
 {
-    public class GL3
+    internal class GL3
     {
         internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
 
@@ -86,6 +86,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Vector2[] rectVerts = new Vector2[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
             Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
 
+            // Apply default state
+            GL.Disable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.Blend);
+
+            // Print GL info
             Trace.WriteLine("Created OpenGL render context on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
             Trace.WriteLine("OpenGL version: " + GL.GetString(StringName.Version));
             Trace.WriteLine("GLSL version: " + GL.GetString(StringName.ShadingLanguageVersion));
@@ -99,6 +104,13 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
         {
             var texture = new Texture(this, dimensions, format, imageData, filter);
+            textures.Add(texture);
+            return texture;
+        }
+
+        public ITexture CreateTexture(uint size, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
+        {
+            var texture = new Texture(this, size, format, imageData, filter);
             textures.Add(texture);
             return texture;
         }
@@ -200,7 +212,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 #endif
         }
 
-        public void SetShader(Shader shader)
+        internal void SetShader(Shader shader)
         {
             if (activeShader == shader)
                 return;
@@ -221,13 +233,16 @@ namespace Octopus.Player.GPU.OpenGL.Render
             activeVertexBuffer = vertexBuffer;
         }
 
-        public void SetTexture(Texture texture, TextureUnit unit = TextureUnit.Texture0)
+        internal void SetTexture(Texture texture, TextureUnit unit = TextureUnit.Texture0)
         {
             if (activeTexture.ContainsKey(unit) && activeTexture[unit] == texture)
                 return;
 
             if (texture == null)
-                Texture.Unbind(unit);
+            {
+                if ( activeTexture.ContainsKey(unit) )
+                    activeTexture[unit]?.Unbind(unit);
+            }
             else
                 texture.Bind(unit);
             activeTexture[unit] = texture;

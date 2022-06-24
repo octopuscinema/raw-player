@@ -35,6 +35,7 @@ namespace Octopus.Player.GPU.Render
 
         ITexture CreateTexture(Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null);
         ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null);
+        ITexture CreateTexture(uint size, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null);
         void DestroyTexture(ITexture texture);
 
         IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IList<string> defines = null);

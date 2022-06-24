@@ -13,6 +13,7 @@ namespace Octopus.Player.Core.Playback
         private SequenceStreamDNG SequenceStreamDNG { get; set; }
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
+        private ITexture LinearizeTableTest { get; set; }
 
         private Stream.SequenceFrame testFrame;
 
@@ -39,6 +40,11 @@ namespace Octopus.Player.Core.Playback
             {
                 GpuFrameTest.Dispose();
                 GpuFrameTest = null;
+            }
+            if(LinearizeTableTest != null)
+            {
+                LinearizeTableTest.Dispose();
+                LinearizeTableTest = null;
             }
             if (testFrame.decodedImage != null)
                 testFrame.Dispose();
@@ -87,6 +93,15 @@ namespace Octopus.Player.Core.Playback
                 cinemaDNGMetadata.TileCount == 0 ? testFrame.decodedImage : null, TextureFilter.Nearest, "gpuFrameTest");
             if (cinemaDNGMetadata.TileCount == 0)
                 testFrame.Dispose();
+
+            // Test linearse table
+            if ( cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
+            {
+                if (LinearizeTableTest != null)
+                    LinearizeTableTest.Dispose();
+                Span<byte> tableData = System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, byte>(cinemaDNGMetadata.LinearizationTable);
+                LinearizeTableTest = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Render.TextureFormat.R16, tableData.ToArray());
+            }
             
             return Error.NotImplmeneted;
         }
@@ -126,6 +141,9 @@ namespace Octopus.Player.Core.Playback
                 default:
                     throw new Exception("Unsupported DNG CFA pattern");
             }
+
+            if ( dngMetadata.LinearizationTable != null && dngMetadata.LinearizationTable.Length > 0 )
+                defines.Add("LINEARIZE");
 
             return defines;
         }
@@ -169,6 +187,14 @@ namespace Octopus.Player.Core.Playback
                         }
                     }
                     testFrame.Dispose();
+                }
+
+                // Linearization table test
+                if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
+                {
+                    var tableInputRange = (1 << (int)cinemaDNGMetadata.BitDepth) - 1;
+                    var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
+                    GpuPipelineProgram.SetUniform(RenderContext, "linearizeTableRange", (float)tableInputRange / (float)decodedMaxlevel);
                 }
 
                 if ( Clip.Metadata.ColorProfile.HasValue )
@@ -226,7 +252,10 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
-                RenderContext.Draw2D(GpuPipelineProgram, new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } }, rectPos, rectSize);
+                var textures = new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } };
+                if (LinearizeTableTest != null)
+                    textures["linearizeTable"] = LinearizeTableTest;
+                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
             }
         }
     }

@@ -44,11 +44,16 @@ uniform mediump mat3 cameraToDisplayColour;
 uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
 
+#ifdef LINEARIZE
+uniform highp float linearizeTableRange;
+uniform sampler1D linearizeTable;
+#endif
+
 out lowp vec4 fragColor;
 
 void main() 
 {
-	const mediump float exposure = 1.4142;
+	const mediump float exposure = 1.4;
 
 	// Sample monochrome pixel
 #ifdef MONOCHROME
@@ -67,12 +72,17 @@ void main()
 	cameraRgb.xz = cameraRgb.zx;
 #endif
 
+	// Linearise
+#ifdef LINEARIZE
+	mediump vec3 linearizeTableIndex = min(vec3(1.0), cameraRgb / linearizeTableRange);
+	cameraRgb.x = texture(linearizeTable, linearizeTableIndex.x).r;
+	cameraRgb.y = texture(linearizeTable, linearizeTableIndex.y).r;
+	cameraRgb.z = texture(linearizeTable, linearizeTableIndex.z).r;
+#endif
+
 	// Apply black and white level
 	cameraRgb -= vec3(blackWhiteLevel.x);
 	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
-
-	// Linearise
-	
 
 #ifdef MONOCHROME
 	// Apply tone mapping

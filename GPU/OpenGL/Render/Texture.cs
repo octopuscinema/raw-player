@@ -14,6 +14,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         int Handle { get; set; }
         private volatile bool valid;
         private Context Context { get; set; }
+        private TextureTarget TextureType { get; set; }
 
         public Texture(Context context, Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)
             : this(context, dimensions, format, null, filter, name)
@@ -27,16 +28,41 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Format = format;
             Context = context;
             Filter = filter;
+            TextureType = TextureTarget.Texture2D;
 
             Action createTextureAction = () =>
             {
                 Handle = GL.GenTexture();
-                GL.BindTexture(TextureTarget.Texture2D, Handle);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)GLTextureMinFilter(Filter));
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLTextureMagFilter(Filter));
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+                GL.BindTexture(TextureType, Handle);
+                GL.TexImage2D(TextureType, 0, GLPixelInternalFormat(format), Dimensions.X, Dimensions.Y, 0, GLPixelFormat(format), GLPixelType(format), imageData);
+                GL.TexParameter(TextureType, TextureParameterName.TextureMinFilter, (int)GLTextureMinFilter(Filter));
+                GL.TexParameter(TextureType, TextureParameterName.TextureMagFilter, (int)GLTextureMagFilter(Filter));
+                GL.TexParameter(TextureType, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+                GL.TexParameter(TextureType, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+                Context.CheckError();
+                valid = true;
+            };
+
+            context.EnqueueRenderAction(createTextureAction);
+        }
+
+        public Texture(Context context, uint size, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
+        {
+            Name = name;
+            Dimensions = new Vector2i((int)size,1);
+            Format = format;
+            Context = context;
+            Filter = filter;
+            TextureType = TextureTarget.Texture1D;
+
+            Action createTextureAction = () =>
+            {
+                Handle = GL.GenTexture();
+                GL.BindTexture(TextureType, Handle);
+                GL.TexImage1D(TextureType, 0, GLPixelInternalFormat(format), Dimensions.X, 0, GLPixelFormat(format), GLPixelType(format), imageData);
+                GL.TexParameter(TextureType, TextureParameterName.TextureMinFilter, (int)GLTextureMinFilter(Filter));
+                GL.TexParameter(TextureType, TextureParameterName.TextureMagFilter, (int)GLTextureMagFilter(Filter));
+                GL.TexParameter(TextureType, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
                 Context.CheckError();
                 valid = true;
             };
@@ -54,14 +80,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
         {
             Debug.Assert(valid, "Attempting to bind an invalid texture");
             GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(TextureType, Handle);
             Context.CheckError();
         }
 
-        static public void Unbind(TextureUnit unit = TextureUnit.Texture0)
+        public void Unbind(TextureUnit unit = TextureUnit.Texture0)
         {
             GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, 0);
+            GL.BindTexture(TextureType, 0);
             Context.CheckError();
         }
 
@@ -85,14 +111,22 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             ((Context)context).SetTexture(this);
 
-            if ( imageDataOffset == 0 )
-                GL.TexSubImage2D(TextureTarget.Texture2D, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), imageData);
+            if (imageDataOffset == 0)
+            {
+                if (TextureType == TextureTarget.Texture1D)
+                    GL.TexSubImage1D(TextureType, 0, origin.X, size.X, GLPixelFormat(Format), GLPixelType(Format), imageData);
+                else
+                    GL.TexSubImage2D(TextureType, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), imageData);
+            }
             else
             {
                 GCHandle pinnedImageData = GCHandle.Alloc(imageData, GCHandleType.Pinned);
                 try
                 {
-                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), IntPtr.Add(pinnedImageData.AddrOfPinnedObject(), (int)imageDataOffset));
+                    if (TextureType == TextureTarget.Texture1D)
+                        GL.TexSubImage1D(TextureType, 0, origin.X, size.X, GLPixelFormat(Format), GLPixelType(Format), IntPtr.Add(pinnedImageData.AddrOfPinnedObject(), (int)imageDataOffset));
+                    else
+                        GL.TexSubImage2D(TextureType, 0, origin.X, origin.Y, size.X, size.Y, GLPixelFormat(Format), GLPixelType(Format), IntPtr.Add(pinnedImageData.AddrOfPinnedObject(), (int)imageDataOffset));
                 }
                 finally
                 {
