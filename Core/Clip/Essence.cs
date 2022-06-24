@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Octopus.Player.Core.Playback
+namespace Octopus.Player.Core
 {
 	public enum Essence
 	{

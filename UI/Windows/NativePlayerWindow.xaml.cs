@@ -173,6 +173,13 @@ namespace Octopus.Player.UI.Windows
                 }
             }
         }
+
+        public bool MenuItemIsChecked(string id)
+        {
+            var item = FindMenuItem(PlayerMenu.Items, id);
+            return (item != null) ? item.IsChecked : false;
+        }
+
         public void SetMenuItemTitle(string id, string name)
         {
             var item = FindMenuItem(PlayerMenu.Items, id);

@@ -19,6 +19,7 @@ namespace Octopus.Player.UI
 #nullable disable
 		void EnableMenuItem(string id, bool enable);
 		void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true);
+		bool MenuItemIsChecked(string id);
 		void SetMenuItemTitle(string id, string name);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);

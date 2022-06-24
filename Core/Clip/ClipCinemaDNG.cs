@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace Octopus.Player.Core.Playback
+namespace Octopus.Player.Core
 {
 	public class ClipCinemaDNG : Clip
 	{
@@ -16,6 +16,7 @@ namespace Octopus.Player.Core.Playback
 		{
             Path = sequenceDir;
             Valid = false;
+            RawParameters = new RawParameters();
         }
 
         public override Error ReadMetadata(uint? frame = null)

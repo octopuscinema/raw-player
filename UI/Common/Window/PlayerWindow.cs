@@ -1,5 +1,6 @@
 ﻿using OpenTK.Mathematics;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Octopus.Player.UI
@@ -30,28 +31,65 @@ namespace Octopus.Player.UI
             
         }
 
-        public void MenuItemClick(string name)
+        private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
         {
-            switch(name)
+            if ( Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
+            {
+                var whiteBalancePresets = new Dictionary<string, Tuple<float, float>>()
+                {
+                    { "whiteBalanceAsShot", null },
+                    { "whiteBalanceShade", new Tuple<float, float>(     7500.0f, 10.0f) },
+                    { "whiteBalanceCloud", new Tuple<float, float>(     6500.0f, 10.0f) },
+                    { "whiteBalanceDaylight", new Tuple<float, float>(  5500.0f, 10.0f) },
+                    { "whiteBalanceFluorescent", new Tuple<float,float>(3800.0f, 21.0f) },
+                    { "whiteBalanceTungsten", new Tuple<float, float>(  3200.0f, 0.0f) }
+                };
+                Debug.Assert(whiteBalancePresets.ContainsKey(whiteBalanceMenuId));
+
+                var rawParameters = Playback.Clip.RawParameters.Value;
+                rawParameters.whiteBalance = whiteBalancePresets[whiteBalanceMenuId];
+                Playback.Clip.RawParameters = rawParameters;
+                NativeWindow.CheckMenuItem(whiteBalanceMenuId);
+                RenderContext.RequestRender();
+            }
+        }
+
+        private void MenuExposureClick(string exposureMenuId)
+        {
+            if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
+            {
+                var exposurePresets = new Dictionary<string, float?>()
+                {
+                    {"exposureAsShot", null },
+                    {"exposureMinusTwo", -2.0f },
+                    {"exposureMinusOne", -1.0f },
+                    {"exposureZero", 0.0f },
+                    {"exposurePlusOne", 1.0f },
+                    {"exposurePlusTwo", 2.0f }
+                };
+                Debug.Assert(exposurePresets.ContainsKey(exposureMenuId));
+
+                var rawParameters = Playback.Clip.RawParameters.Value;
+                rawParameters.exposure = exposurePresets[exposureMenuId];
+                Playback.Clip.RawParameters = rawParameters;
+                NativeWindow.CheckMenuItem(exposureMenuId);
+                RenderContext.RequestRender();
+            }
+        }
+
+        public void MenuItemClick(string id)
+        {
+            switch(id)
             {
                 // White balance
                 case "whiteBalanceAsShot":
-                    NativeWindow.CheckMenuItem(name);
-                    break;
                 case "whiteBalanceShade":
-                    NativeWindow.CheckMenuItem(name);
-                    break;
                 case "whiteBalanceCloud":
-                    NativeWindow.CheckMenuItem(name);
-                    break;
                 case "whiteBalanceDaylight":
-                    NativeWindow.CheckMenuItem(name);
-                    break;
                 case "whiteBalanceFluorescent":
-                    NativeWindow.CheckMenuItem(name);
-                    break;
                 case "whiteBalanceTungsten":
-                    NativeWindow.CheckMenuItem(name);
+                    if (!NativeWindow.MenuItemIsChecked(id))
+                        MenuWhiteBalanceClick(id);
                     break;
 
                 // Exposure
@@ -61,17 +99,18 @@ namespace Octopus.Player.UI
                 case "exposureZero":
                 case "exposurePlusOne":
                 case "exposurePlusTwo":
-                    NativeWindow.CheckMenuItem(name);
+                    if (!NativeWindow.MenuItemIsChecked(id))
+                        MenuExposureClick(id);
                     break;
 
                 // Colour space
                 case "colorSpaceRec709":
-                    NativeWindow.CheckMenuItem(name);
+                    NativeWindow.CheckMenuItem(id);
                     break;
 
                 // Gamma space
                 case "gammaSpaceRec709":
-                    NativeWindow.CheckMenuItem(name);
+                    NativeWindow.CheckMenuItem(id);
                     break;
 
                 // Help
@@ -115,18 +154,18 @@ namespace Octopus.Player.UI
                 case "debayerQualityDraft":
                     break;
                 default:
-                    Debug.Assert(false,"Unhandled menu item: " + name);
+                    Debug.Assert(false,"Unhandled menu item: " + id);
                     break;
             }
         }
 
         private Core.Error OpenCinemaDNG(string dngPath)
         {
-            var dngSequenceClip = new Core.Playback.ClipCinemaDNG(dngPath);
+            var dngSequenceClip = new Core.ClipCinemaDNG(dngPath);
             return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
         }
 
-        private Core.Error OpenClip<T>(Core.Playback.IClip clip) where T : Core.Playback.Playback
+        private Core.Error OpenClip<T>(Core.IClip clip) where T : Core.Playback.Playback
         {
             var dngValidity = clip.Validate();
             if (dngValidity != Core.Error.None)
@@ -166,6 +205,8 @@ namespace Octopus.Player.UI
         public void OnClipOpened(object sender, EventArgs e)
         {
             NativeWindow.EnableMenuItem("clip", true);
+            NativeWindow.CheckMenuItem("exposureAsShot");
+            NativeWindow.CheckMenuItem("whiteBalanceAsShot");
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {

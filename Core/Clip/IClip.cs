@@ -1,5 +1,6 @@
 ﻿using System;
-namespace Octopus.Player.Core.Playback
+
+namespace Octopus.Player.Core
 {
 	public interface IClip
 	{
@@ -10,7 +11,9 @@ namespace Octopus.Player.Core.Playback
 		Error Validate();
 
 		Error ReadMetadata(uint? frame = null);
-        IO.IMetadata Metadata { get; }
+		IO.IMetadata Metadata { get; }
+
+		RawParameters? RawParameters { get; set; }
 	}
 }
 

@@ -37,7 +37,7 @@ namespace Octopus.Player.Core.IO.DNG
         public ushort WhiteLevel { get; private set; }
         public bool Monochrome { get; private set; }
 
-        public MetadataCinemaDNG(Reader reader, Playback.ClipCinemaDNG clip)
+        public MetadataCinemaDNG(Reader reader, ClipCinemaDNG clip)
         {
             // Assign from the reader
             Dimensions = reader.Dimensions;

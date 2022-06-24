@@ -189,11 +189,15 @@ namespace Octopus.Player.Core.Playback
                     testFrame.Dispose();
                 }
 
+                // Calculate black and white levels
+                var blackWhiteLevel = new Vector2(cinemaDNGMetadata.BlackLevel, cinemaDNGMetadata.WhiteLevel);
+                var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
+                GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel / (float)decodedMaxlevel);
+
                 // Linearization table test
                 if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
                 {
                     var tableInputRange = (1 << (int)cinemaDNGMetadata.BitDepth) - 1;
-                    var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
                     GpuPipelineProgram.SetUniform(RenderContext, "linearizeTableRange", (float)tableInputRange / (float)decodedMaxlevel);
                 }
 
@@ -202,15 +206,10 @@ namespace Octopus.Player.Core.Playback
                     var colorProfile = Clip.Metadata.ColorProfile.Value;
 
                     // Combine camera to xyz/xyz to display colour matrices
-                    var cameraToXYZD50Matrix = colorProfile.CalculateCameraToXYZD50();
+                    var cameraToXYZD50Matrix = colorProfile.CalculateCameraToXYZD50(Clip.RawParameters.Value.whiteBalance);
                     var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
-
-                    var blackWhiteLevel = new Vector2(((IO.DNG.MetadataCinemaDNG)Clip.Metadata).BlackLevel,
-                         ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).WhiteLevel);
-                    var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
-                    GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel/(float)decodedMaxlevel );
 /*
                     // Calculate camera white in RAW space
 #if HIGHLIGHT_RECOVERY_WB
@@ -248,7 +247,6 @@ namespace Octopus.Player.Core.Playback
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM12, (CJ3Vector2)HighlightShadowRollOff);
 */
                 }
-  
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
