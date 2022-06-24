@@ -43,6 +43,7 @@ uniform mediump mat3 cameraToDisplayColour;
 
 uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
+uniform mediump float exposure;
 
 #ifdef LINEARIZE
 uniform highp float linearizeTableRange;
@@ -53,8 +54,6 @@ out lowp vec4 fragColor;
 
 void main() 
 {
-	const mediump float exposure = 1.4;
-
 	// Sample monochrome pixel
 #ifdef MONOCHROME
 	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r;

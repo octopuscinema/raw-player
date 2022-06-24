@@ -142,6 +142,14 @@ namespace Octopus.Player.UI.macOS
 			}
 		}
 
+		public bool MenuItemIsChecked(string id)
+		{
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
+			if (item != null)
+				return item.State == NSCellStateValue.On;
+			return false;
+		}
+
 		public void SetMenuItemTitle(string id, string name)
         {
 			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);

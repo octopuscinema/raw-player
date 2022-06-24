@@ -8,6 +8,8 @@ namespace Octopus.Player.Core.Maths.Color
 {
     public struct Profile
     {
+        public static Vector3 Rec709LuminanceWeights { get { return new Vector3(0.2126f, 0.7152f, 0.0722f); } }
+
         public readonly Vector2 asShotWhiteXY;
         public readonly Illuminant calibrationIlluminant1;
         public readonly Illuminant calibrationIlluminant2;

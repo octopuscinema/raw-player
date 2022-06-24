@@ -189,7 +189,11 @@ namespace Octopus.Player.Core.Playback
                     testFrame.Dispose();
                 }
 
-                // Calculate black and white levels
+                // Calculate and apply exposure
+                var exposure = Math.Pow(2.0, Clip.RawParameters.Value.exposure.HasValue ? Clip.RawParameters.Value.exposure.Value : cinemaDNGMetadata.ExposureValue );
+                GpuPipelineProgram.SetUniform(RenderContext, "exposure", (float)exposure);
+
+                // Calculate and apply black/white levels
                 var blackWhiteLevel = new Vector2(cinemaDNGMetadata.BlackLevel, cinemaDNGMetadata.WhiteLevel);
                 var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
                 GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel / (float)decodedMaxlevel);
@@ -210,6 +214,11 @@ namespace Octopus.Player.Core.Playback
                     var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
+
+
+                    // Calculate camera white in RAW space
+                    var cameraToDisplayInv = Matrix3.Invert(cameraToDisplayColourMatrix);
+                    var whiteLevelCamera = cameraToDisplayInv * Vector3.One;
 /*
                     // Calculate camera white in RAW space
 #if HIGHLIGHT_RECOVERY_WB
@@ -219,21 +228,25 @@ namespace Octopus.Player.Core.Playback
                     const auto CameraToDisplayInv = PM::Matrix3x3::Invert(CameraToReviewColourMatrix);
                     const auto&WhiteLevelCamera = CameraToDisplayInv * CJ3Vector3(1.0f, 1.0f, 1.0f);
 #endif
-                    const auto CameraWhiteMin = std::min(std::min(WhiteLevelCamera.X(), WhiteLevelCamera.Y()), WhiteLevelCamera.Z());
-                    const auto CameraWhiteMax = std::max(std::max(WhiteLevelCamera.X(), WhiteLevelCamera.Y()), WhiteLevelCamera.Z());
-                    const CJ3Vector3&CameraWhite = WhiteLevelCamera / CameraWhiteMin;
-                    const CJ3Vector3&CameraWhiteNormalised = WhiteLevelCamera / CameraWhiteMax;
+*/
+
+                    var cameraWhiteMin = Math.Min(Math.Min(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
+                    var cameraWhiteMax = Math.Max(Math.Max(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
+                    Vector3 cameraWhite = whiteLevelCamera / cameraWhiteMin;
+                    Vector3 cameraWhiteNormalised = whiteLevelCamera / cameraWhiteMax;
 
                     // Calculate luminance weights for RAW by pushing the standard rec709 luminance weights back through inverted CamreaTo709
-                    const auto&CameraTo709Inv = PM::Matrix3x3::Invert(PF::DNG::XYZToRec709D50() * CameraToXYZD50Matrix);
-                    const auto&LuminanceWeightUnormalised = CameraTo709Inv * PF::DNG::Rec709LuminanceWeights();
-                    const CJ3Vector3&RAWLuminanceWeight = LuminanceWeightUnormalised / (LuminanceWeightUnormalised.m_X + LuminanceWeightUnormalised.m_Y + LuminanceWeightUnormalised.m_Z);
-
+                    var cameraTo709Inv = Matrix3.Invert(Maths.Color.Matrix.XYZToRec709D50() * cameraToXYZD50Matrix);
+                    
+                    var luminanceWeightUnormalised = cameraTo709Inv * Maths.Color.Profile.Rec709LuminanceWeights;
+                    
+                    Vector3 RAWLuminanceWeight = luminanceWeightUnormalised / (luminanceWeightUnormalised.X + luminanceWeightUnormalised.Y + luminanceWeightUnormalised.Z);
+                    /*
                     // Send highlight recovery uniforms to shader
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM7, CameraWhite);
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM8, CameraWhiteNormalised);
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM9, RAWLuminanceWeight);
-
+                    
                     // Send linearise log base
                     float LineariseLogBase = m_pItem->MetaData().LineariseLogBase.has_value() ? *m_pItem->MetaData().LineariseLogBase : 0.0f;
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM10, LineariseLogBase);

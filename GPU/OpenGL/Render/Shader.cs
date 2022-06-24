@@ -217,7 +217,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         {
             Debug.Assert(valid, "Attempting to dispose invalid shader");
 #if __MACOS__
-            GL.DeleteProgram(Program, null);
+            GL3.DeleteProgram((uint)Program);
 #else
             GL.DeleteProgram(Program);
 #endif

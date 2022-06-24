@@ -23,6 +23,10 @@ namespace OpenTK.Graphics.OpenGL
         [System.Security.SuppressUnmanagedCodeSecurity()]
         [System.Runtime.InteropServices.DllImport(Library, EntryPoint = "glBindVertexArray", ExactSpelling = true)]
         internal extern static void BindVertexArray(UInt32 array);
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [System.Runtime.InteropServices.DllImport(Library, EntryPoint = "glDeleteProgram", ExactSpelling = true)]
+        internal extern static void DeleteProgram(UInt32 program);
     }
 }
 #endif
@@ -272,6 +276,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public void RequestRender()
         {
             ForceRender?.Invoke();
+#if __MACOS__
+            RedrawBackground = GPU.Render.RedrawBackground.Once;
+#endif
         }
     }
 }
