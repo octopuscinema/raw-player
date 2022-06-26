@@ -199,7 +199,7 @@
                 <Separator />
                 <MenuItem Header="_OCTOPUSCINEMA GitHub"/>
                 <Separator />
-                <MenuItem Header="_About..." Name="about" Click="MenuItem_Click"/>
+                <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
             </MenuItem>
         </Menu>
     </Grid>
