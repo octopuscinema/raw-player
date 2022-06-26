@@ -136,16 +136,17 @@ namespace Octopus.Player.Core.IO.DNG
                 case 12:
                 case 14:
                     var packedDataOffset = 0;
+                    var inputOffset = BitDepth == 12 ? (int)Unpack.Unpack12InputOffsetBytes() : 0;
                     for (int i = 0; i < offsetsCount; i++)
                     {
                         var expectedRemainingData = expectedDataSize - packedDataOffset;
                         var segmentSizeBytes = Math.Min((int)expectedRemainingData, (int)byteCounts[i]);
-                        byte[] packedData = System.Buffers.ArrayPool<byte>.Shared.Rent(segmentSizeBytes);
+                        byte[] packedData = System.Buffers.ArrayPool<byte>.Shared.Rent(segmentSizeBytes + inputOffset);
                         try
                         {
-                            contentReader.Read((long)offsets[i], packedData.AsMemory(0, segmentSizeBytes));
+                            contentReader.Read((long)offsets[i], packedData.AsMemory(inputOffset, segmentSizeBytes));
                             if (BitDepth == 12)
-                                Unpack.Unpack12to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
+                                Unpack.Unpack12to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (uint)inputOffset, (UIntPtr)segmentSizeBytes);
                             else
                                 Unpack.Unpack14to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
                             packedDataOffset += segmentSizeBytes;
