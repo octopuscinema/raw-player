@@ -1,28 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <RootNamespace>Octopus.Player.UI.Windows</RootNamespace>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyName>OCTOPUS RAW Player</AssemblyName>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>Octopus.Player.UI.Windows</RootNamespace>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
+		<AssemblyName>OCTOPUS RAW Player</AssemblyName>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="icon.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="OpenTK" Version="4.7.2" />
-    <PackageReference Include="OpenTK.GLWpfControl" Version="4.1.0" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+		<ContentWithTargetPath Include="bin\Release\net6.0-windows\runtimes\win-x64\native\Unpack.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<TargetPath>Unpack.dll</TargetPath>
+		</ContentWithTargetPath>
+		<ContentWithTargetPath Include="bin\Release\net6.0-windows\runtimes\win-x64\native\LJ92.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<TargetPath>LJ92.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj" />
-    <ProjectReference Include="..\Common\Player.UI.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+		<PackageReference Include="OpenTK" Version="4.7.2" />
+		<PackageReference Include="OpenTK.GLWpfControl" Version="4.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj" />
+		<ProjectReference Include="..\Common\Player.UI.csproj" />
+	</ItemGroup>
 
 </Project>

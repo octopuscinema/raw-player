@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.UI.Windows", "UI\Windows\Player.UI.Windows.csproj", "{CCBAFA29-8A6A-4E7B-940A-65B4A79A338B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B0011DAE-21A6-45D9-889D-3C51B06B47EA} = {B0011DAE-21A6-45D9-889D-3C51B06B47EA}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Core", "Core\Player.Core.csproj", "{B0011DAE-21A6-45D9-889D-3C51B06B47EA}"
 	ProjectSection(ProjectDependencies) = postProject
