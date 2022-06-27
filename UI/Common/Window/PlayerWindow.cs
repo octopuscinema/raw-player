@@ -265,6 +265,8 @@ namespace Octopus.Player.UI
             }
 
             NativeWindow.EnableMenuItem("whiteBalance", isColour);
+            NativeWindow.EnableMenuItem("colorSpace", isColour);
+            NativeWindow.EnableMenuItem("debayerQuality", isColour);
             NativeWindow.EnableMenuItem("highlightRecovery", isColour);
             NativeWindow.EnableMenuItem("gamutCompression", isColour);
             NativeWindow.EnableMenuItem("highlightRollOff", isColour);

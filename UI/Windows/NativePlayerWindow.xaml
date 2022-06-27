@@ -144,10 +144,9 @@
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open">
-                    <MenuItem Header="CinemaDNG Sequence..." Name="openCinemaDNG" Click="MenuItem_Click"/>
-                </MenuItem>
-                <MenuItem Header="_Open Recent" IsEnabled="False"/>
+                <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" Click="MenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="_Clear Recent Files" Name="clearRecent" IsEnabled="False"/>
                 <Separator />
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
@@ -178,14 +177,14 @@
                     <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsCheckable="True" IsChecked="True" StaysOpenOnClick="True"/>
                     <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsCheckable="True" IsChecked="True" StaysOpenOnClick="True"/>
                     <Separator />
-                    <MenuItem Header="_Colour Space">
+                    <MenuItem Header="_Colour Space" Name="colorSpace">
                         <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                     </MenuItem>
                     <MenuItem Header="_Gamma">
                         <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Header="_Debayer Quality">
+                    <MenuItem Header="_Debayer Quality" Name="debayerQuality">
                         <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                         <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
                     </MenuItem>
