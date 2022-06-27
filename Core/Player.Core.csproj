@@ -16,7 +16,10 @@
     <None Remove="Resources\GLSL\blit.vert" />
     <None Remove="Resources\GLSL\DebayerDraft.glsl.h" />
     <None Remove="Resources\GLSL\Gamma.glsl.h" />
+    <None Remove="Resources\GLSL\HighlightRecovery.glsl.h" />
+    <None Remove="Resources\GLSL\Luminance.glsl.h" />
     <None Remove="Resources\GLSL\PipelineCinemaDNG.glsl" />
+    <None Remove="Resources\GLSL\RollOff.glsl.h" />
     <None Remove="Resources\GLSL\ToneMap.glsl.h" />
   </ItemGroup>
 
@@ -29,8 +32,11 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\GLSL\DebayerDraft.glsl.h" />
+    <EmbeddedResource Include="Resources\GLSL\Luminance.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\Gamma.glsl.h" />
+    <EmbeddedResource Include="Resources\GLSL\HighlightRecovery.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\PipelineCinemaDNG.glsl" />
+    <EmbeddedResource Include="Resources\GLSL\RollOff.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\ToneMap.glsl.h" />
   </ItemGroup>
   <ItemGroup>

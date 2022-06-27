@@ -13,6 +13,7 @@ namespace Octopus.Player.GPU.Render
         void SetUniform(IContext context, string uniformName, int value);
         void SetUniform(IContext context, string uniformName, float value);
         void SetUniform(IContext context, string uniformName, Vector2 value);
+        void SetUniform(IContext context, string uniformName, Vector3 value);
         void SetUniform(IContext context, string uniformName, Vector4 value);
         void SetUniform(IContext context, string uniformName, in Matrix3 value);
     }

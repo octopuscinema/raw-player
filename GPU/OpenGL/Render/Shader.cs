@@ -72,6 +72,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
 #else
                 GL.GetProgram(Program, GetProgramParameterName.LinkStatus, out programLinkStatus);
 #endif
+                var linkShaderLog = GL.GetProgramInfoLog(Program);
+                if (linkShaderLog.Length > 1)
+                    Trace.WriteLine(linkShaderLog);
                 if (programLinkStatus != 1)
                     throw new Exception(Name != null ? "GLSL shader '" + Name + "' failed to link" : "GLSL shader failed to link");
 
@@ -182,6 +185,18 @@ namespace Octopus.Player.GPU.OpenGL.Render
 #endif
             Context.CheckError();
         }
+
+        public void SetUniform(IContext context, string uniformName, Vector3 value)
+        {
+            ((Context)context).SetShader(this);
+#if __MACOS__
+            GL.Uniform3(UniformLocation(uniformName), value.X, value.Y, value.Z);
+#else
+            GL.Uniform3(UniformLocation(uniformName), value);
+#endif
+            Context.CheckError();
+        }
+
         public void SetUniform(IContext context, string uniformName, Vector4 value)
         {
             ((Context)context).SetShader(this);

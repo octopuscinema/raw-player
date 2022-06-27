@@ -172,6 +172,11 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_Advanced">
+                    <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsCheckable="True" IsChecked="True" StaysOpenOnClick="True"/>
+                    <Separator />
+                    <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsCheckable="True" IsChecked="True" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsCheckable="True" IsChecked="True" StaysOpenOnClick="True"/>
+                    <Separator />
                     <MenuItem Header="_Colour Space">
                         <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                     </MenuItem>

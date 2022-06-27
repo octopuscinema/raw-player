@@ -77,10 +77,42 @@ namespace Octopus.Player.UI
             }
         }
 
+        private void MenuAdvancedRawParameterClick(string id)
+        {
+            if (Playback == null || Playback.Clip == null || !Playback.Clip.RawParameters.HasValue)
+                return;
+
+            var rawParameters = Playback.Clip.RawParameters.Value;
+            switch (id)
+            {
+                case "highlightRecovery":
+                    rawParameters.highlightRecovery = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRecovery.On : Core.HighlightRecovery.Off;
+                    break;
+                case "toneMapping":
+                    rawParameters.toneMappingOperator = NativeWindow.MenuItemIsChecked(id) ? Core.ToneMappingOperator.SDR : Core.ToneMappingOperator.None;
+                    break;
+                case "gamutCompression":
+                    rawParameters.gamutCompression = NativeWindow.MenuItemIsChecked(id) ? Core.GamutCompression.Rec709 : Core.GamutCompression.None;
+                    break;
+                default:
+                    Debug.Assert(false, "Unhandled menu item: " + id);
+                    return;
+            }
+            Playback.Clip.RawParameters = rawParameters;
+            RenderContext.RequestRender();
+        }
+
         public void MenuItemClick(string id)
         {
             switch(id)
             {
+                // Advanced raw paramters
+                case "highlightRecovery":
+                case "toneMapping":
+                case "gamutCompression":
+                    MenuAdvancedRawParameterClick(id);
+                    break;
+
                 // White balance
                 case "whiteBalanceAsShot":
                 case "whiteBalanceShade":
@@ -207,6 +239,9 @@ namespace Octopus.Player.UI
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("whiteBalanceAsShot");
+            NativeWindow.CheckMenuItem("highlightRecovery", true, false);
+            NativeWindow.CheckMenuItem("toneMapping", true, false);
+            NativeWindow.CheckMenuItem("gamutCompression",true, false);
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {

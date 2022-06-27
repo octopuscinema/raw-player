@@ -36,11 +36,17 @@ in highp vec2 normalisedCoordinates;
 
 #ifndef MONOCHROME
 #include "DebayerDraft.glsl.h"
+#include "HighlightRecovery.glsl.h"
+#include "RollOff.glsl.h"
 uniform mediump mat3 cameraToDisplayColour;
+uniform mediump vec3 cameraWhite;
+uniform mediump vec3 cameraWhiteNormalised;
+uniform mediump vec3 rawLuminanceWeight;
 #endif
 #include "Gamma.glsl.h"
 #include "ToneMap.glsl.h"
 
+uniform ToneMappingOperator toneMappingOperator;
 uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
 uniform mediump float exposure;
@@ -84,26 +90,35 @@ void main()
 	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
 
 #ifdef MONOCHROME
+	mediump vec3 displayRgb = cameraRgb;
+	
 	// Apply tone mapping
-	mediump vec3 displayRgb = ToneMap(cameraRgb, ToneMappingOperatorSDR);
+	if ( toneMappingOperator != ToneMappingOperatorNone)
+		displayRgb = ToneMap(displayRgb, toneMappingOperator);
 
 	// Apply exposure
 	displayRgb *= exposure;
 
 #else
 	// Highlight recovery
+	cameraRgb = HighlightRecovery(cameraRgb, cameraWhite);
 
+	// Apply exposure
+	cameraRgb *= exposure;
 
 	// Perform highlight/shadow rolloff
+	mediump float rawLuminance = LuminanceWeight(cameraRgb, rawLuminanceWeight);
+    cameraRgb = HighlightRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
+	//rawLuminance  = LuminanceWeight(cameraRgb, rawLuminanceWeight);
+    //cameraRgb = ShadowRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
 
 	// Transform camera to display colour space
 	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
 
-	// Apply exposure
-	displayRgb *= exposure;
 
 	// Apply tone mapping operator
-	displayRgb = ToneMap(displayRgb, ToneMappingOperatorSDR);
+	if ( toneMappingOperator != ToneMappingOperatorNone)
+		displayRgb = ToneMap(displayRgb, toneMappingOperator);
 	
 	// Apply gamut compression
 	displayRgb = Gamut709Compression(displayRgb);

@@ -1,11 +1,13 @@
 #ifndef TONEMAP_GLSL_H
 #define TONEMAP_GLSL_H
 
+#include "Luminance.glsl.h"
+
 // These need to match the host c#/c++ ToneMappingOperator enum
-#define ToneMappingOperator lowp uint
-const ToneMappingOperator ToneMappingOperatorNone = 0u;
-const ToneMappingOperator ToneMappingOperatorSDR = 1u;
-const ToneMappingOperator ToneMappingOperatorLog = 2u;
+#define ToneMappingOperator lowp int
+const ToneMappingOperator ToneMappingOperatorNone = 0;
+const ToneMappingOperator ToneMappingOperatorSDR = 1;
+const ToneMappingOperator ToneMappingOperatorLog = 2;
 
 // This file should match the algorithm in the Davinci Resolve OCTOPUS CineForm RAW panel Dctl and in the OpenCL algorithm in CLToneMapOperator.h
 #define SDR_TONEMAP_LATTITUDE_BOOST 1.0
@@ -19,18 +21,6 @@ const ToneMappingOperator ToneMappingOperatorLog = 2u;
 #define TONE_SHIFT_SHADOW_PIVOT3 0.14
 #define TONE_SHIFT_SHADOW_PIVOT2_STRENGTH 0.7
 #define TONE_SHIFT_SHADOW_PIVOT3_STRENGTH 0.6
-
-#define LUMINANCE_VEC3 0.2126, 0.7152, 0.0722
-
-mediump float Luminance(mediump vec3 rgbLinear)
-{
-	return dot(rgbLinear, vec3(LUMINANCE_VEC3));
-}
-
-mediump vec3 ModifyLuminance(mediump vec3 rgbLinear, mediump float OldLuminance, mediump float NewLuminance)
-{
-	return rgbLinear * (NewLuminance / OldLuminance);
-}
 
 mediump float ToneMapSDRMono(mediump float monoLinearIn, mediump float latitudeBoostStops)
 {

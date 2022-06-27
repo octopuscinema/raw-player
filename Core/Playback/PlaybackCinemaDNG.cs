@@ -198,6 +198,11 @@ namespace Octopus.Player.Core.Playback
                 var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
                 GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel / (float)decodedMaxlevel);
 
+                // Apply advanced raw parameters
+                GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (int)Clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
+                //GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (uint)Clip.RawParameters.Value.toneMappingOperator);
+                //GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (uint)Clip.RawParameters.Value.toneMappingOperator);
+
                 // Linearization table test
                 if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
                 {
@@ -215,38 +220,24 @@ namespace Octopus.Player.Core.Playback
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraToDisplayColour", cameraToDisplayColourMatrix);
 
-
                     // Calculate camera white in RAW space
                     var cameraToDisplayInv = Matrix3.Invert(cameraToDisplayColourMatrix);
                     var whiteLevelCamera = cameraToDisplayInv * Vector3.One;
-/*
-                    // Calculate camera white in RAW space
-#if HIGHLIGHT_RECOVERY_WB
-                    const auto&CameraToXYZD50Inv = PM::Matrix3x3::Invert(CameraToXYZD50Matrix);
-                    const auto&WhiteLevelCamera = CameraToXYZD50Inv * CJ3Vector3(1.0f, 1.0f, 1.0f);
-#else
-                    const auto CameraToDisplayInv = PM::Matrix3x3::Invert(CameraToReviewColourMatrix);
-                    const auto&WhiteLevelCamera = CameraToDisplayInv * CJ3Vector3(1.0f, 1.0f, 1.0f);
-#endif
-*/
-
                     var cameraWhiteMin = Math.Min(Math.Min(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
                     var cameraWhiteMax = Math.Max(Math.Max(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
                     Vector3 cameraWhite = whiteLevelCamera / cameraWhiteMin;
                     Vector3 cameraWhiteNormalised = whiteLevelCamera / cameraWhiteMax;
+                    GpuPipelineProgram.SetUniform(RenderContext, "cameraWhite", cameraWhite);
 
                     // Calculate luminance weights for RAW by pushing the standard rec709 luminance weights back through inverted CamreaTo709
+                    // Used for highlight rolloff
                     var cameraTo709Inv = Matrix3.Invert(Maths.Color.Matrix.XYZToRec709D50() * cameraToXYZD50Matrix);
-                    
                     var luminanceWeightUnormalised = cameraTo709Inv * Maths.Color.Profile.Rec709LuminanceWeights;
-                    
                     Vector3 RAWLuminanceWeight = luminanceWeightUnormalised / (luminanceWeightUnormalised.X + luminanceWeightUnormalised.Y + luminanceWeightUnormalised.Z);
+                    GpuPipelineProgram.SetUniform(RenderContext, "cameraWhiteNormalised", cameraWhiteNormalised);
+                    GpuPipelineProgram.SetUniform(RenderContext, "rawLuminanceWeight", RAWLuminanceWeight);
+
                     /*
-                    // Send highlight recovery uniforms to shader
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM7, CameraWhite);
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM8, CameraWhiteNormalised);
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM9, RAWLuminanceWeight);
-                    
                     // Send linearise log base
                     float LineariseLogBase = m_pItem->MetaData().LineariseLogBase.has_value() ? *m_pItem->MetaData().LineariseLogBase : 0.0f;
                     pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM10, LineariseLogBase);
