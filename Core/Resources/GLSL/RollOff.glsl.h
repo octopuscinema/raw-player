@@ -15,6 +15,7 @@ struct RolloffParams
 
 // Workaround for lack of GLSL enum support
 #define eRollOff lowp int
+const eRollOff RollOffNone = -1;
 const eRollOff RollOffLow = 0;
 const eRollOff RollOffMedium = 1;
 const eRollOff RollOffHigh = 2;
@@ -29,7 +30,7 @@ RolloffParams HighlightRolloffParams(eRollOff rolloff)
     if ( rolloff == RollOffLow) {
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25);
         params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.5);
-        params.Power = 0.35;
+        params.Power = 0.4;
         params.Strength = 1.0;
     } else if ( rolloff == RollOffHigh) {
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25);

@@ -11,6 +11,14 @@ namespace Octopus.Player.Core
         On
     }
 
+    public enum HighlightRollOff
+    {
+        Off = -1,
+        Low,
+        Medium,
+        High
+    }
+
     public enum ToneMappingOperator
     {
         None,
@@ -19,7 +27,7 @@ namespace Octopus.Player.Core
 
     public enum GamutCompression
     {
-        None,
+        Off,
         Rec709
     }
 
@@ -31,6 +39,7 @@ namespace Octopus.Player.Core
         // Colour only
         public Tuple<float, float> whiteBalance;
         public HighlightRecovery? highlightRecovery;
+        public HighlightRollOff? highlightRollOff;
         public GamutCompression? gamutCompression;
     }
 }

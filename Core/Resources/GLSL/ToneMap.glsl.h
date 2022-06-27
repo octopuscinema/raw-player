@@ -4,10 +4,10 @@
 #include "Luminance.glsl.h"
 
 // These need to match the host c#/c++ ToneMappingOperator enum
-#define ToneMappingOperator lowp int
-const ToneMappingOperator ToneMappingOperatorNone = 0;
-const ToneMappingOperator ToneMappingOperatorSDR = 1;
-const ToneMappingOperator ToneMappingOperatorLog = 2;
+#define eToneMappingOperator lowp int
+const eToneMappingOperator ToneMappingOperatorNone = 0;
+const eToneMappingOperator ToneMappingOperatorSDR = 1;
+const eToneMappingOperator ToneMappingOperatorLog = 2;
 
 // This file should match the algorithm in the Davinci Resolve OCTOPUS CineForm RAW panel Dctl and in the OpenCL algorithm in CLToneMapOperator.h
 #define SDR_TONEMAP_LATTITUDE_BOOST 1.0
@@ -51,14 +51,14 @@ mediump vec3 ToneMapLog(mediump vec3 rgbLinearIn, mediump float white)
 	return rgbLinearIn * white;
 }
 
-mediump float ToneMapMono(mediump float monoLinearIn, ToneMappingOperator toneMapOperator)
+mediump float ToneMapMono(mediump float monoLinearIn, eToneMappingOperator toneMapOperator)
 {
 	if (toneMapOperator == ToneMappingOperatorSDR)
 		return ToneMapSDRMono(monoLinearIn, SDR_TONEMAP_MONO_LATTITUDE_BOOST);
 	return monoLinearIn;
 }
 
-mediump vec3 ToneMap(mediump vec3 rgbLinearIn, ToneMappingOperator toneMapOperator)
+mediump vec3 ToneMap(mediump vec3 rgbLinearIn, eToneMappingOperator toneMapOperator)
 {
 	if (toneMapOperator == ToneMappingOperatorSDR)
 		return ToneMapSDR(rgbLinearIn, SDR_TONEMAP_LATTITUDE_BOOST);
@@ -85,6 +85,10 @@ mediump vec3 ToneShift(mediump vec3 rgbLinearIn, mediump float pivot, mediump fl
 		(rgbLinearIn.y < pivot) ? newBelowValue.y : newAboveValue.y,
 		(rgbLinearIn.z < pivot) ? newBelowValue.z : newAboveValue.z);
 }
+
+#define eGamutCompression lowp int
+const eGamutCompression GamutCompressionOff = 0;
+const eGamutCompression GamutCompressionRec709 = 1;
 
 mediump vec3 Gamut709Compression(mediump vec3 rgb)
 {

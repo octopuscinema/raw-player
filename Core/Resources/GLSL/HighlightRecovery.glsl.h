@@ -3,6 +3,10 @@
 
 #include "Luminance.glsl.h"
 
+#define eHighlightRecovery lowp int 
+const eHighlightRecovery HighlightRecoveryOff = 0;
+const eHighlightRecovery HighlightRecoveryOn = 1;
+
 #define RAW_WHITE_LEVEL_NORMALISED (1.0)
 
 // Clip level slightly under than 1 to account for gaussian smoothing sum floating point inaccuracies
@@ -15,11 +19,11 @@
 #define HIGHLIGHT_RECOVERY_BLEND_STOPS_UNDER (RAW_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-1.0))
 
 // Workaround for lack of GLSL enum support
-#define eRGBChannel uint
-const eRGBChannel RGBChannelUnset = -1u;
-const eRGBChannel RGBChannelRed = 0u;
-const eRGBChannel RGBChannelGreen = 1u;
-const eRGBChannel RGBChannelBlue = 2u;
+#define eRGBChannel lowp int
+const eRGBChannel RGBChannelUnset = -1;
+const eRGBChannel RGBChannelRed = 0;
+const eRGBChannel RGBChannelGreen = 1;
+const eRGBChannel RGBChannelBlue = 2;
 
 mediump vec3 SynthesiseThreeChannels(mediump vec3 cameraWhite)
 {
@@ -178,6 +182,14 @@ mediump vec3 HighlightRecovery(mediump vec3 rgbLinear, mediump vec3 cameraWhite)
 		rgbLinear = SynthesiseThreeChannels(cameraWhite);
 
 	return rgbLinear;
+}
+
+mediump vec3 HighlightCorrect(mediump vec3 rgbLinear, mediump vec3 cameraWhiteNormalised)
+{
+	// Blend towards white
+	mediump vec3 whiteBlendRGB = smoothstep(vec3(HIGHLIGHT_CORRECTION_STOPS_UNDER), vec3(RAW_CLIP_LEVEL_NORMALISED), rgbLinear);
+	mediump float whiteBlend = max(max(whiteBlendRGB.x, whiteBlendRGB.y), whiteBlendRGB.z);
+	return mix(rgbLinear, cameraWhiteNormalised, whiteBlend);
 }
 
 #endif

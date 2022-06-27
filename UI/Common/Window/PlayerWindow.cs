@@ -88,11 +88,14 @@ namespace Octopus.Player.UI
                 case "highlightRecovery":
                     rawParameters.highlightRecovery = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRecovery.On : Core.HighlightRecovery.Off;
                     break;
+                case "highlightRollOff":
+                    rawParameters.highlightRollOff = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRollOff.Low : Core.HighlightRollOff.Off;
+                    break;
                 case "toneMapping":
                     rawParameters.toneMappingOperator = NativeWindow.MenuItemIsChecked(id) ? Core.ToneMappingOperator.SDR : Core.ToneMappingOperator.None;
                     break;
                 case "gamutCompression":
-                    rawParameters.gamutCompression = NativeWindow.MenuItemIsChecked(id) ? Core.GamutCompression.Rec709 : Core.GamutCompression.None;
+                    rawParameters.gamutCompression = NativeWindow.MenuItemIsChecked(id) ? Core.GamutCompression.Rec709 : Core.GamutCompression.Off;
                     break;
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
@@ -108,6 +111,7 @@ namespace Octopus.Player.UI
             {
                 // Advanced raw paramters
                 case "highlightRecovery":
+                case "highlightRollOff":
                 case "toneMapping":
                 case "gamutCompression":
                     MenuAdvancedRawParameterClick(id);
@@ -156,7 +160,7 @@ namespace Octopus.Player.UI
                     NativeWindow.OpenUrl("https://www.youtube.com/channel/UCq7Bk-mekVLJS63I6XUpyLw");
                     break;
                 case "visitWebsite":
-                    NativeWindow.OpenUrl("http://www.octopuscinema.com/wiki/index.php?title=HI!");
+                    NativeWindow.OpenUrl("\"http://www.octopuscinema.com/wiki/index.php?title=HI!\"");
                     break;
                 case "visitGithub":
                     NativeWindow.OpenUrl("https://github.com/octopuscinema");
@@ -238,29 +242,36 @@ namespace Octopus.Player.UI
         {
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
-            NativeWindow.CheckMenuItem("whiteBalanceAsShot");
-            NativeWindow.CheckMenuItem("highlightRecovery", true, false);
             NativeWindow.CheckMenuItem("toneMapping", true, false);
-            NativeWindow.CheckMenuItem("gamutCompression",true, false);
+
             Debug.Assert(Playback != null && Playback.Clip != null);
+            bool isColour = false;
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
                 NativeWindow.SetMenuItemTitle("exposureAsShot", "As Shot (" + Playback.Clip.Metadata.ExposureValue.ToString("F") + ")");
 
-                if (Playback.Clip.Metadata.ColorProfile.HasValue )
+                if (Playback.Clip.Metadata.ColorProfile.HasValue)
                 {
-                    NativeWindow.EnableMenuItem("whiteBalance", true);
+                    isColour = true;
                     var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
                     if (asShotWhiteBalance.Item2 == 0.0)
                         NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K)");
                     else
                         NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K, Tint: " +
                             asShotWhiteBalance.Item2.ToString("+#;-#;0") + ")");
+                    NativeWindow.CheckMenuItem("whiteBalanceAsShot");
                 }
-                else
-                    NativeWindow.EnableMenuItem("whiteBalance", false);
             }
+
+            NativeWindow.EnableMenuItem("whiteBalance", isColour);
+            NativeWindow.EnableMenuItem("highlightRecovery", isColour);
+            NativeWindow.EnableMenuItem("gamutCompression", isColour);
+            NativeWindow.EnableMenuItem("highlightRollOff", isColour);
+            NativeWindow.CheckMenuItem("highlightRecovery", isColour, false);
+            NativeWindow.CheckMenuItem("highlightRollOff", isColour, false);
+            NativeWindow.CheckMenuItem("gamutCompression", isColour, false);
+
             RenderContext.BackgroundColor = Theme.ClipBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
         }

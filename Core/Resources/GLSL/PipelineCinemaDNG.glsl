@@ -34,6 +34,9 @@ void main(void)
 // Interpolated fragment/vertex values
 in highp vec2 normalisedCoordinates;
 
+#include "Gamma.glsl.h"
+#include "ToneMap.glsl.h"
+
 #ifndef MONOCHROME
 #include "DebayerDraft.glsl.h"
 #include "HighlightRecovery.glsl.h"
@@ -42,11 +45,12 @@ uniform mediump mat3 cameraToDisplayColour;
 uniform mediump vec3 cameraWhite;
 uniform mediump vec3 cameraWhiteNormalised;
 uniform mediump vec3 rawLuminanceWeight;
+uniform eHighlightRecovery highlightRecovery;
+uniform eRollOff highlightRollOff;
+uniform eGamutCompression gamutCompression;
 #endif
-#include "Gamma.glsl.h"
-#include "ToneMap.glsl.h"
 
-uniform ToneMappingOperator toneMappingOperator;
+uniform eToneMappingOperator toneMappingOperator;
 uniform highp vec2 blackWhiteLevel;
 uniform sampler2D rawImage;
 uniform mediump float exposure;
@@ -101,27 +105,33 @@ void main()
 
 #else
 	// Highlight recovery
-	cameraRgb = HighlightRecovery(cameraRgb, cameraWhite);
+	if ( highlightRecovery == HighlightRecoveryOn )
+		cameraRgb = HighlightRecovery(cameraRgb, cameraWhite);
+	else
+		cameraRgb = HighlightCorrect(cameraRgb, cameraWhiteNormalised);
 
 	// Apply exposure
 	cameraRgb *= exposure;
 
 	// Perform highlight/shadow rolloff
-	mediump float rawLuminance = LuminanceWeight(cameraRgb, rawLuminanceWeight);
-    cameraRgb = HighlightRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
+	if ( highlightRollOff != RollOffNone )
+	{
+		mediump float rawLuminance = LuminanceWeight(cameraRgb, rawLuminanceWeight);
+		cameraRgb = HighlightRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, highlightRollOff);
+	}
 	//rawLuminance  = LuminanceWeight(cameraRgb, rawLuminanceWeight);
-    //cameraRgb = ShadowRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
+	//cameraRgb = ShadowRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
 
 	// Transform camera to display colour space
 	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
-
 
 	// Apply tone mapping operator
 	if ( toneMappingOperator != ToneMappingOperatorNone)
 		displayRgb = ToneMap(displayRgb, toneMappingOperator);
 	
 	// Apply gamut compression
-	displayRgb = Gamut709Compression(displayRgb);
+	if ( gamutCompression == GamutCompressionRec709 )
+		displayRgb = Gamut709Compression(displayRgb);
 
 #endif
 

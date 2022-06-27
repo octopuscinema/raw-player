@@ -200,8 +200,6 @@ namespace Octopus.Player.Core.Playback
 
                 // Apply advanced raw parameters
                 GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (int)Clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
-                //GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (uint)Clip.RawParameters.Value.toneMappingOperator);
-                //GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (uint)Clip.RawParameters.Value.toneMappingOperator);
 
                 // Linearization table test
                 if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
@@ -237,19 +235,10 @@ namespace Octopus.Player.Core.Playback
                     GpuPipelineProgram.SetUniform(RenderContext, "cameraWhiteNormalised", cameraWhiteNormalised);
                     GpuPipelineProgram.SetUniform(RenderContext, "rawLuminanceWeight", RAWLuminanceWeight);
 
-                    /*
-                    // Send linearise log base
-                    float LineariseLogBase = m_pItem->MetaData().LineariseLogBase.has_value() ? *m_pItem->MetaData().LineariseLogBase : 0.0f;
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM10, LineariseLogBase);
-
-                    // Enable/disable gamut compression
-                    const bool GamutCompression = (Capture::LUT::GamutCompression(pGammaLUT) == Capture::LUT::eGamutCompression::On);
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM11, GamutCompression ? 1.0f : 0.0f);
-
-                    // Set highlight/shadow rolloff
-                    const CJ3Vector2I HighlightShadowRollOff((int) m_pItem->MetaData().HighlightRollOff, (int) m_pItem->MetaData().ShadowRollOff);
-                    pOutputShader->SetUniformData(CJ3PixelShader::UNIFORM_CUSTOM12, (CJ3Vector2)HighlightShadowRollOff);
-*/
+                    // Apply advanced raw parameters
+                    GpuPipelineProgram.SetUniform(RenderContext, "highlightRecovery", (int)Clip.RawParameters.Value.highlightRecovery.GetValueOrDefault(HighlightRecovery.On));
+                    GpuPipelineProgram.SetUniform(RenderContext, "highlightRollOff", (int)Clip.RawParameters.Value.highlightRollOff.GetValueOrDefault(HighlightRollOff.Low));
+                    GpuPipelineProgram.SetUniform(RenderContext, "gamutCompression",(int)Clip.RawParameters.Value.gamutCompression.GetValueOrDefault(GamutCompression.Rec709));
                 }
                 Vector2i rectPos;
                 Vector2i rectSize;

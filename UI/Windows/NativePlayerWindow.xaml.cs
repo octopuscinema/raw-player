@@ -115,7 +115,6 @@ namespace Octopus.Player.UI.Windows
         public string? OpenFolderDialogue(string title, string defaultDirectory)
         {
             using var dialog = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
-            dialog.InitialDirectory = defaultDirectory;
             dialog.IsFolderPicker = true;
             dialog.EnsurePathExists = true;
             dialog.Multiselect = false;
