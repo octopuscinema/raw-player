@@ -128,6 +128,9 @@
       <Project>{E4E15C79-CA11-4C9D-851C-36B27F5DCA46}</Project>
       <Name>Player.GPU.OpenGL.macOS</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Core\Player.Core.csproj">
+      <Name>Player.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\..\Decoders\LJ92\DerivedData\LJ92.macOS\Build\Products\Release\libLJ92.dylib">
