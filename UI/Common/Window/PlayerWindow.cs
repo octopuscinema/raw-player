@@ -244,6 +244,7 @@ namespace Octopus.Player.UI
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+            NativeWindow.UnlockAspect();
         }
 
         public void OnClipOpened(object sender, EventArgs e)
@@ -270,6 +271,7 @@ namespace Octopus.Player.UI
                             asShotWhiteBalance.Item2.ToString("+#;-#;0") + ")");
                     NativeWindow.CheckMenuItem("whiteBalanceAsShot");
                 }
+                NativeWindow.LockAspect(Playback.Clip.Metadata.AspectRatio);
             }
 
             NativeWindow.EnableMenuItem("whiteBalance", isColour);

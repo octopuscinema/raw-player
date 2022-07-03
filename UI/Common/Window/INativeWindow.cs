@@ -12,6 +12,8 @@ namespace Octopus.Player.UI
 
 	public interface INativeWindow
 	{
+		void LockAspect(Core.Maths.Rational ratio);
+		void UnlockAspect();
 		void SetWindowTitle(string text);
 		void ToggleFullscreen();
 #nullable enable

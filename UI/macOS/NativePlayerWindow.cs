@@ -18,8 +18,6 @@ namespace Octopus.Player.UI.macOS
 		{
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
-
-			//AspectRatio = new CoreGraphics.CGSize(0, 0);
 		}
 
 		// Called when created directly from a XIB file
@@ -28,13 +26,19 @@ namespace Octopus.Player.UI.macOS
 		{
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
-
-			//AspectRatio = new CoreGraphics.CGSize(640, 480);
-			//Aspe
 		}
 
-		// Native window implementations
-        public void SetWindowTitle(string text)
+		public void LockAspect(Core.Maths.Rational ratio)
+        {
+			ContentAspectRatio = new CoreGraphics.CGSize(ratio.Numerator, ratio.Denominator);
+		}
+
+		public void UnlockAspect()
+		{
+			ResizeIncrements = new CoreGraphics.CGSize(1.0f, 1.0f);
+		}
+		
+		public void SetWindowTitle(string text)
         {
 			Title = text;
         }
