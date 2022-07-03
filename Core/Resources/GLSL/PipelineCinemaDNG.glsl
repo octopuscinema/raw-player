@@ -110,8 +110,9 @@ void main()
 	else
 		cameraRgb = HighlightCorrect(cameraRgb, cameraWhiteNormalised);
 
-	// Apply exposure
-	cameraRgb *= exposure;
+	// Apply exposure pre-rolloff
+	if ( exposure > 1.0 )
+		cameraRgb *= exposure;
 
 	// Perform highlight/shadow rolloff
 	if ( highlightRollOff != RollOffNone )
@@ -121,6 +122,10 @@ void main()
 	}
 	//rawLuminance  = LuminanceWeight(cameraRgb, rawLuminanceWeight);
 	//cameraRgb = ShadowRolloff(cameraRgb, cameraWhiteNormalised, rawLuminance, rawLuminanceWeight, RollOffLow);
+
+	// Apply exposure post-rolloff
+	if ( exposure < 1.0 )
+		cameraRgb *= exposure;
 
 	// Transform camera to display colour space
 	mediump vec3 displayRgb = cameraRgb * cameraToDisplayColour;
