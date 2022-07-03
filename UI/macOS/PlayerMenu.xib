@@ -66,28 +66,17 @@
                 <menuItem title="File" id="83">
                     <menu key="submenu" title="File" id="81">
                         <items>
-                            <menuItem title="Open" id="72">
-                                <menu key="submenu" id="Uxe-Eb-rDP">
-                                    <items>
-                                        <menuItem title="CinemaDNG Sequence..." identifier="openCinemaDNG" id="4Ld-fG-0SO">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
+                            <menuItem title="Open CinemaDNG Sequence..." identifier="openCinemaDNG" id="4Ld-fG-0SO">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
+                                </connections>
                             </menuItem>
-                            <menuItem title="Open Recent" id="124">
-                                <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="125">
-                                    <items>
-                                        <menuItem title="Clear Menu" id="126">
-                                            <connections>
-                                                <action selector="clearRecentDocuments:" target="-1" id="127"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
+                            <menuItem isSeparatorItem="YES" id="VUG-9U-ceB"/>
+                            <menuItem title="Clear Recent Files" enabled="NO" id="126">
+                                <connections>
+                                    <action selector="clearRecentDocuments:" target="-1" id="127"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>
@@ -187,9 +176,35 @@
                             <menuItem isSeparatorItem="YES" id="14H-78-4wj"/>
                             <menuItem title="Advanced" id="U2t-Ra-MCz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Advanced" id="Hq3-64-8Xz">
+                                <menu key="submenu" title="Advanced" autoenablesItems="NO" id="Hq3-64-8Xz">
                                     <items>
-                                        <menuItem title="Colour Space" id="2xo-Ss-oAQ">
+                                        <menuItem title="Highlight Recovery" state="on" identifier="highlightRecovery" id="0RH-ef-GfV">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="OtX-mV-fON"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Highlight Roll-Off" state="on" identifier="highlightRollOff" id="siQ-HV-G6N">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="f6x-EH-Bjh"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="xbm-xX-IAi"/>
+                                        <menuItem title="Rec. 709 Tone Mapping" state="on" identifier="toneMapping" id="gg4-7T-KrU">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="ipt-CK-TT3"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Rec. 709 Gamut Compression" state="on" identifier="gamutCompression" id="Bb8-Ff-p8d">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="RV7-Xp-YVs"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Pi5-6R-WX8"/>
+                                        <menuItem title="Colour Space" identifier="colorSpace" id="2xo-Ss-oAQ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Colour Space" autoenablesItems="NO" id="M6W-lh-LJU">
                                                 <items>
@@ -210,7 +225,7 @@
                                             </menu>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="EOm-GO-jN2"/>
-                                        <menuItem title="Debayer Quality" id="HyW-ya-0rj">
+                                        <menuItem title="Debayer Quality" identifier="debayerQuality" id="HyW-ya-0rj">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Debayer Quality" autoenablesItems="NO" id="rJi-tD-DtO">
                                                 <items>

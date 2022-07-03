@@ -150,6 +150,12 @@ namespace Octopus.Player.UI.macOS
 			return false;
 		}
 
+		public void ToggleMenuItemChecked(string id)
+        {
+			bool check = !MenuItemIsChecked(id);
+			CheckMenuItem(id, check, false);
+		}
+
 		public void SetMenuItemTitle(string id, string name)
         {
 			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
