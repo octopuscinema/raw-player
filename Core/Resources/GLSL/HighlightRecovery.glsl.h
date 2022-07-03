@@ -18,6 +18,9 @@ const eHighlightRecovery HighlightRecoveryOn = 1;
 #define HIGHLIGHT_RECOVERY_STOPS_UNDER (RAW_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.0))
 #define HIGHLIGHT_RECOVERY_BLEND_STOPS_UNDER (RAW_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-1.0))
 
+// Feather in stops to interpolate between highest/lowest channels
+#define HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS (1.0)
+
 // Workaround for lack of GLSL enum support
 #define eRGBChannel lowp int
 const eRGBChannel RGBChannelUnset = -1;
@@ -80,8 +83,12 @@ mediump vec3 SynthesiseOneChannel(mediump vec3 rgb, mediump vec3 cameraWhite, eR
 	// Scale camera white based on lowest channel
 	mediump vec3 cameraWhiteScaled = cameraWhite * (cameraWhite[lowestChannel] / rgb[lowestChannel]);
 
-	// Use the 2 channel synthesis on the highest two channels
-	mediump vec3 synthesisedHighestChannels = SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, midChannel, lowestChannel);
+	 // Use the 2 channel synthesis on the highest two channels
+    // Interpolate based on which channel of the two is higher
+    mediump float channelDiffStops = log2(rgb[firstUnclipped] / rgb[secondUnclipped]);
+    mediump float channelDiffLerp = smoothstep(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * -0.5, HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * 0.5, channelDiffStops);
+    mediump vec3 synthesisedHighestChannels = mix(SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, secondUnclipped, firstUnclipped),
+        SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, firstUnclipped, secondUnclipped), channelDiffLerp);
 
 	// Interpolate between the 2 channel synthesis and the scaled camera white
 	mediump float lowPoint = min(rgb[midChannel], cameraWhiteScaled[midChannel]);
