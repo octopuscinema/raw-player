@@ -58,6 +58,7 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadFrame;
             }
 
+            // Read the data
             switch (DNGReader.Compression)
             {
                 case IO.DNG.Compression.None:
@@ -72,13 +73,10 @@ namespace Octopus.Player.Core.Playback
                     return Error.NotImplmeneted;
             }
 
-            //DNGReader.Read
-            //Clip.Path
-
-            //throw new NotImplementedException();
+            // Done
             DNGReader.Dispose();
             DNGReader = null;
-            return Error.NotImplmeneted;
+            return Error.None;
         }
     }
 }

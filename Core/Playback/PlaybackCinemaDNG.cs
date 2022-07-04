@@ -153,21 +153,6 @@ namespace Octopus.Player.Core.Playback
             return (clip.GetType() == typeof(ClipCinemaDNG) && SupportedEssence.Contains(clip.Essence));
         }
 
-        public override void Stop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Play()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Pause()
-        {
-            throw new NotImplementedException();
-        }
-
         public override void OnRenderFrame(double timeInterval)
         {
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)

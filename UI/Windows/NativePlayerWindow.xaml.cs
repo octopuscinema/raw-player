@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Octopus.Player.Core.Maths;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
@@ -179,6 +180,12 @@ namespace Octopus.Player.UI.Windows
             return (item != null) ? item.IsChecked : false;
         }
 
+        public void ToggleMenuItemChecked(string id)
+        {
+            bool check = !MenuItemIsChecked(id);
+            CheckMenuItem(id, check, false);
+        }
+
         public void SetMenuItemTitle(string id, string name)
         {
             var item = FindMenuItem(PlayerMenu.Items, id);
@@ -231,6 +238,16 @@ namespace Octopus.Player.UI.Windows
         {
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
             PlayerWindow.OnFramebufferResize(FramebufferSize);
+        }
+
+        public void LockAspect(Rational ratio)
+        {
+            
+        }
+
+        public void UnlockAspect()
+        {
+            
         }
 
 #if WINDOW_ASPECT_RATIO_LOCK
