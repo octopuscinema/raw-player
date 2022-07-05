@@ -7,10 +7,15 @@ namespace Octopus.Player.Core.Playback
 {
 	public abstract class Playback : IPlayback
 	{
-        protected Timer FrameTimer { get; set; }
+        protected Timer FrameTimer { get; private set; }
+        
+        static readonly protected uint bufferDurationFrames = 8;
+
+        protected uint requestFrame;
 
         public Playback(GPU.Render.IContext renderContext)
 		{
+            requestFrame = 0;
             State = State.Empty;
             RenderContext = renderContext;
         }
@@ -41,7 +46,7 @@ namespace Octopus.Player.Core.Playback
         public void Stop()
         {
             Debug.Assert(State != State.Stopped && State != State.Empty && FrameTimer != null);
-            FrameTimer.Elapsed -= OnFrameElapsed;
+            FrameTimer.Elapsed -= OnFrameTimer;
             FrameTimer.Stop();
             FrameTimer.Dispose();
             FrameTimer = null;
@@ -54,16 +59,30 @@ namespace Octopus.Player.Core.Playback
             // Start frame timer
             if (FrameTimer == null)
             {
-                FrameTimer = new Timer(Clip.Metadata.Framerate.ToDouble());
-                FrameTimer.Elapsed += OnFrameElapsed;
+                var frameDuration = TimeSpan.FromSeconds(1.0 / Clip.Metadata.Framerate.ToDouble());
+                FrameTimer = new Timer(frameDuration.TotalMilliseconds);
+                FrameTimer.Elapsed += OnFrameTimer;
             }
             FrameTimer.Start();
             State = State.Playing;
         }
 
-        private void OnFrameElapsed(object sender, ElapsedEventArgs e)
+        private void OnFrameTimer(object sender, ElapsedEventArgs e)
         {
-            
+            var displayDelay = bufferDurationFrames * Clip.Metadata.Framerate.ToDouble();
+            RequestFrame(requestFrame);
+            var displayFrame = requestFrame;
+
+            var displayTimer = new Timer(displayDelay);
+            displayTimer.Elapsed += (s, e) => 
+            {
+                DisplayFrame(displayFrame);
+                displayTimer.Dispose();
+            };
+            displayTimer.AutoReset = false;
+            displayTimer.Start();
+
+            requestFrame++;
         }
 
         public void Pause()

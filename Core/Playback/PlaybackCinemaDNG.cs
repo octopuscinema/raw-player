@@ -30,6 +30,8 @@ namespace Octopus.Player.Core.Playback
 
         public override void Close()
         {
+            if (State != State.Stopped)
+                Stop();
             Debug.Assert(IsOpen() && SequenceStreamDNG != null);
             if (SequenceStreamDNG != null)
             {
@@ -55,6 +57,7 @@ namespace Octopus.Player.Core.Playback
 
         public override Error Open(IClip clip)
         {
+            Debug.Assert(State == State.Empty);
             Debug.Assert(!IsOpen());
             if (IsOpen())
                 Close();
@@ -81,6 +84,9 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(SequenceStreamDNG == null);
             SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
 
+            // State is now stopped
+            State = State.Stopped;
+
             // Decode test
             testFrame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
             testFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
@@ -103,7 +109,7 @@ namespace Octopus.Player.Core.Playback
                 LinearizeTableTest = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Render.TextureFormat.R16, tableData.ToArray());
             }
             
-            return Error.NotImplmeneted;
+            return Error.None;
         }
 
         private IList<string> ShaderDefinesForClip(IClip clip)
@@ -233,6 +239,22 @@ namespace Octopus.Player.Core.Playback
                     textures["linearizeTable"] = LinearizeTableTest;
                 RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
             }
+        }
+
+        public override Error RequestFrame(uint frameNumber)
+        {
+            Trace.WriteLine("Request frame: " + frameNumber);
+            return Error.NotImplmeneted;
+        }
+
+        public override Error DisplayFrame(uint frameNumber)
+        {
+            Trace.WriteLine("Display frame: " + frameNumber);
+
+            // Trigger a redraw
+            //RenderContext.RequestRender();
+
+            return Error.NotImplmeneted;
         }
     }
 }

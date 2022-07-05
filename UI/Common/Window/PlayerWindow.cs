@@ -22,18 +22,18 @@ namespace Octopus.Player.UI
         public void LeftMouseDown(uint clickCount)
         {
             // Double click to go full screen
-            if ( clickCount == 2 )
+            if (clickCount == 2)
                 NativeWindow.ToggleFullscreen();
         }
 
         public void RightMouseDown(uint clickCount)
         {
-            
+
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
         {
-            if ( Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
+            if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
             {
                 var whiteBalancePresets = new Dictionary<string, Tuple<float, float>>()
                 {
@@ -115,7 +115,7 @@ namespace Octopus.Player.UI
 
         public void MenuItemClick(string id)
         {
-            switch(id)
+            switch (id)
             {
                 // Advanced raw paramters
                 case "highlightRecovery":
@@ -198,7 +198,25 @@ namespace Octopus.Player.UI
                 case "debayerQualityDraft":
                     break;
                 default:
-                    Debug.Assert(false,"Unhandled menu item: " + id);
+                    Debug.Assert(false, "Unhandled menu item: " + id);
+                    break;
+            }
+        }
+
+        public void ButtonClick(string id)
+        {
+            switch (id)
+            {
+                case "playButton":
+                    if (Playback != null)
+                    {
+                        if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused)
+                            Playback.Play();
+                        if (Playback.State == Core.Playback.State.Playing)
+                            Playback.Pause();
+                    }
+                    break;
+                default:
                     break;
             }
         }
@@ -230,7 +248,7 @@ namespace Octopus.Player.UI
                 Playback = Activator.CreateInstance(typeof(T), RenderContext) as T;
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
-            } 
+            }
             else
                 Playback.Close();
 

@@ -250,6 +250,14 @@ namespace Octopus.Player.UI.Windows
             
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Button));
+            var button = (Button)sender;
+            if (button != null)
+                PlayerWindow.ButtonClick(button.Name);
+        }
+
 #if WINDOW_ASPECT_RATIO_LOCK
         protected override void OnSourceInitialized(EventArgs e)
         {
