@@ -89,7 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
-    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PlayerMenu.xib.designer.cs">

@@ -40,4 +40,3 @@ namespace Octopus.Player.UI.macOS
 		}
 	}
 }
-
