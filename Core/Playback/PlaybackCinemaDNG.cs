@@ -10,6 +10,8 @@ namespace Octopus.Player.Core.Playback
 {
 	public class PlaybackCinemaDNG : Playback
 	{
+        private static readonly uint bufferDurationFrames = 8;
+
         private SequenceStreamDNG SequenceStreamDNG { get; set; }
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
@@ -21,12 +23,23 @@ namespace Octopus.Player.Core.Playback
         public override event EventHandler ClipClosed;
 
         public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
-            : base(renderContext)
+            : base(renderContext, bufferDurationFrames)
         {
 
         }
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
+
+        public override void Play()
+        {
+            // CinemaDNG might not start from frame index 0
+            if (!displayFrame.HasValue)
+                displayFrame = ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame;
+            if (!requestFrame.HasValue)
+                requestFrame = ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame;
+
+            base.Play();
+        }
 
         public override void Close()
         {

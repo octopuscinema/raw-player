@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 
 namespace Octopus.Player.Core.Playback.Stream
 {
@@ -13,31 +14,34 @@ namespace Octopus.Player.Core.Playback.Stream
 		Empty
     }
 
-    public struct SequenceFrame : IDisposable
+    public class SequenceFrame// : IDisposable
     {
 		public volatile uint frameNumber;
 		public volatile SequenceFrameState state;
-		public GPU.Render.ITexture gpuImage;
+		//public GPU.Render.ITexture gpuImage;
 		public byte[] decodedImage;
 
-		private IContext GPUContext { get; set; }
+		//private IContext GPUContext { get; set; }
+
+
+		public CancellationToken cancellationToken;
 
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
-			GPUContext = gpuContext;
+
 			Debug.Assert(clip.Metadata != null, "Attempting to create sequence frame for clip without clip metadata");
-			gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
+			//GPUContext = gpuContext;
+			//gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
 			state = SequenceFrameState.Empty;
-			frameNumber = 0;
 			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 		}
-
-        public void Dispose()
+		
+        /*public void Dispose()
         {
-			GPUContext.DestroyTexture(gpuImage);
-			GPUContext = null;
-			gpuImage = null;
+			//GPUContext.DestroyTexture(gpuImage);
+			//GPUContext = null;
+			//gpuImage = null;
 			decodedImage = null;
-		}
+		}*/
     }
 }

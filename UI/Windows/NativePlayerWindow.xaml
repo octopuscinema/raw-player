@@ -137,6 +137,7 @@
 
         <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
         <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,55" IsTabStop="False" Grid.Row="1"/>
+        <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,55" IsTabStop="False" Grid.Row="1"/>
         <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,55" IsTabStop="False" Grid.Row="1"/>
         <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,55" IsTabStop="False" Grid.Row="1"/>
 

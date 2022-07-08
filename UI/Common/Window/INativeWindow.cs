@@ -24,6 +24,7 @@ namespace Octopus.Player.UI
 		bool MenuItemIsChecked(string id);
 		void ToggleMenuItemChecked(string id);
 		void SetMenuItemTitle(string id, string name);
+		void SetButtonVisibility(string id, bool visible);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
 		void Exit();

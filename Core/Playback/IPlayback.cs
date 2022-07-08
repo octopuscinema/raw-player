@@ -19,6 +19,7 @@ namespace Octopus.Player.Core.Playback
 		List<Essence> SupportedEssence { get; }
 		State State { get; }
 		IClip Clip { get; }
+		event EventHandler StateChanged;
 
 		// Playback controls
 		void Stop();

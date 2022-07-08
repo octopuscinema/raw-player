@@ -212,6 +212,11 @@ namespace Octopus.Player.UI
                     {
                         if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused)
                             Playback.Play();
+                    }
+                    break;
+                case "pauseButton":
+                    if ( Playback != null )
+                    {
                         if (Playback.State == Core.Playback.State.Playing)
                             Playback.Pause();
                     }
@@ -239,6 +244,7 @@ namespace Octopus.Player.UI
                 Playback.Close();
                 Playback.ClipOpened -= OnClipOpened;
                 Playback.ClipClosed -= OnClipClosed;
+                Playback.StateChanged -= OnPlaybackStateChanged;
                 Playback = null;
             }
 
@@ -248,12 +254,34 @@ namespace Octopus.Player.UI
                 Playback = Activator.CreateInstance(typeof(T), RenderContext) as T;
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
+                Playback.StateChanged += OnPlaybackStateChanged;
             }
             else
                 Playback.Close();
 
             // Open the clip
             return Playback.Open(clip);
+        }
+
+        private void OnPlaybackStateChanged(object sender, EventArgs e)
+        {
+            Debug.Assert(Playback != null);
+            switch (Playback.State)
+            {
+                case Core.Playback.State.Stopped:
+                case Core.Playback.State.Paused:
+                    NativeWindow.SetButtonVisibility("pauseButton", false);
+                    NativeWindow.SetButtonVisibility("playButton", true);
+                    break;
+                case Core.Playback.State.Empty:
+                    NativeWindow.SetButtonVisibility("pauseButton", false);
+                    NativeWindow.SetButtonVisibility("playButton", false);
+                    break;
+                case Core.Playback.State.Playing:
+                    NativeWindow.SetButtonVisibility("pauseButton", true);
+                    NativeWindow.SetButtonVisibility("playButton", false);
+                    break;
+            }
         }
 
         public void OnClipClosed(object sender, EventArgs e)

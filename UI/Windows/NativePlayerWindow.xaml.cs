@@ -193,6 +193,25 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
+        Button? FindButton(string id)
+        {
+            var buttons = new List<Button>() { playButton, skipBackButton, skipAheadButton, pauseButton };
+            foreach (var button in buttons)
+            {
+                if (button.Name == id)
+                    return button;
+            }
+
+            return null;
+        }
+
+        public void SetButtonVisibility(string id, bool visible)
+        {
+            var button = FindButton(id);
+            if (button != null)
+                button.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
+        }
+
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(MenuItem));

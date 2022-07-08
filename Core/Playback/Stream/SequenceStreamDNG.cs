@@ -12,8 +12,8 @@ namespace Octopus.Player.Core.Playback
     {
         private Core.IO.DNG.Reader DNGReader { get; set; }
 
-        public SequenceStreamDNG(ClipCinemaDNG clip, GPU.Render.IContext gpuContext) 
-            : base(clip, gpuContext, clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8, TimeSpan.FromSeconds(0.25f))
+        public SequenceStreamDNG(ClipCinemaDNG clip, GPU.Render.IContext gpuContext, uint bufferDurationFrames) 
+            : base(clip, gpuContext, clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8, bufferDurationFrames)
         {
 
         }
@@ -25,6 +25,16 @@ namespace Octopus.Player.Core.Playback
                 DNGReader.Dispose();
                 DNGReader = null;
             }
+        }
+
+        public override FrameRequestResult RequestFrame(uint frameNumber)
+        {
+            // Sanity check range
+            var dngMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
+            if (frameNumber < dngMetadata.FirstFrame || frameNumber > dngMetadata.LastFrame)
+                return FrameRequestResult.ErrorFrameOutOfRange;
+
+            return base.RequestFrame(frameNumber);
         }
 
         public override Error DecodeFrame(SequenceFrame frame)
