@@ -30,18 +30,6 @@
                                 <rect key="frame" x="239" y="20" width="480" height="80"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <button autoresizesSubviews="NO" wantsLayer="YES" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9">
-                                        <rect key="frame" x="226" y="32" width="27.5" height="40"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="play.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="10">
-                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                            <font key="font" metaFont="system" size="40"/>
-                                        </buttonCell>
-                                        <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <connections>
-                                            <action selector="toggle:" target="8" id="11"/>
-                                        </connections>
-                                    </button>
                                     <slider verticalHuggingPriority="750" id="QCu-tS-Z3a">
                                         <rect key="frame" x="20" y="7" width="440" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -56,7 +44,7 @@
                                         </buttonCell>
                                         <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
-                                            <action selector="toggle:" target="8" id="yWD-NK-cDr"/>
+                                            <action selector="ButtonClick:" target="8" id="BiL-GE-kJ2"/>
                                         </connections>
                                     </button>
                                     <button autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
@@ -68,7 +56,31 @@
                                         </buttonCell>
                                         <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
-                                            <action selector="toggle:" target="8" id="At9-ub-iBj"/>
+                                            <action selector="ButtonClick:" target="8" id="6t9-W5-jaR"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="playButton" autoresizesSubviews="NO" wantsLayer="YES" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9">
+                                        <rect key="frame" x="226" y="32" width="28.5" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="play.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="10">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="TmO-vu-s0h"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="pauseButton" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JQb-Rp-6dC">
+                                        <rect key="frame" x="226" y="32.5" width="28" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="pause.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="Yba-nA-8HD">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="Q1S-kP-jMN"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -82,12 +94,13 @@
                     </customView>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="139" y="138.5"/>
+            <point key="canvasLocation" x="139" y="138"/>
         </window>
     </objects>
     <resources>
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
+        <image name="pause.fill" catalog="system" width="11" height="13"/>
         <image name="play.fill" catalog="system" width="12" height="13"/>
     </resources>
 </document>

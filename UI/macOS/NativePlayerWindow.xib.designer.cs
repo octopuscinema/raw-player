@@ -27,7 +27,7 @@ namespace Octopus.Player.UI.macOS
 	public partial class PlayerView {
 		
 		#pragma warning disable 0169
-		[Foundation.Export("toggle:")]
-		partial void toggle (AppKit.NSButton sender);
-}
+		[Foundation.Export("ButtonClick:")]
+		partial void ButtonClick (AppKit.NSButton sender);
+	}
 }

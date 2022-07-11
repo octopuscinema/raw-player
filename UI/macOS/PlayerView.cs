@@ -86,9 +86,10 @@ namespace Octopus.Player.UI.macOS
                 GLLayer.ContentsScale = Window.BackingScaleFactor;
         }
 
-        partial void toggle(NSButton sender)
+        partial void ButtonClick(NSButton sender)
         {
-            
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.ButtonClick(sender.Identifier);
         }
     }
 }

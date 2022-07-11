@@ -166,6 +166,30 @@ namespace Octopus.Player.UI.macOS
 			if (item != null)
 				item.Title = name;
 		}
+
+		private NSButton FindButton(NSView root, string id)
+        {
+			if (root == null)
+				return null;
+
+			foreach (var item in root.Subviews)
+			{
+				if (item.Identifier == id)
+					return (NSButton)item;
+				var found = FindButton(item, id);
+				if (found != null)
+					return found;
+			}
+
+			return null;
+		}
+
+        public void SetButtonVisibility(string id, bool visible)
+        {
+			var button = FindButton(ContentView, id);
+			if (button != null)
+				button.Hidden = !visible;
+		}
     }
 }
 
