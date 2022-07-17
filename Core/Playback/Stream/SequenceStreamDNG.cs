@@ -12,7 +12,7 @@ namespace Octopus.Player.Core.Playback
     {
         private Core.IO.DNG.Reader DNGReader { get; set; }
 
-        public SequenceStreamDNG(ClipCinemaDNG clip, GPU.Render.IContext gpuContext, uint bufferDurationFrames) 
+        public SequenceStreamDNG(ClipCinemaDNG clip, GPU.Render.IContext gpuContext, uint bufferDurationFrames = 8) 
             : base(clip, gpuContext, clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8, bufferDurationFrames)
         {
 

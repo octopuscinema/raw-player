@@ -14,7 +14,7 @@ namespace Octopus.Player.Core.Playback.Stream
 		Empty
     }
 
-    public class SequenceFrame// : IDisposable
+    public class SequenceFrame : IDisposable
     {
 		public volatile uint frameNumber;
 		public volatile SequenceFrameState state;
@@ -22,9 +22,6 @@ namespace Octopus.Player.Core.Playback.Stream
 		public byte[] decodedImage;
 
 		//private IContext GPUContext { get; set; }
-
-
-		public CancellationToken cancellationToken;
 
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
@@ -36,12 +33,12 @@ namespace Octopus.Player.Core.Playback.Stream
 			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 		}
 		
-        /*public void Dispose()
+        public void Dispose()
         {
 			//GPUContext.DestroyTexture(gpuImage);
 			//GPUContext = null;
 			//gpuImage = null;
 			decodedImage = null;
-		}*/
+		}
     }
 }
