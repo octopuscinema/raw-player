@@ -1,23 +1,13 @@
 ﻿using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
-using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
 
-namespace Octopus.Player.Core.Playback.Stream
+namespace Octopus.Player.Core.Playback
 {
-	public enum SequenceFrameState
-    {
-		Empty
-    }
-
-    public class SequenceFrame : IDisposable
+    public abstract class SequenceFrame : IDisposable
     {
 		public volatile uint frameNumber;
-		public volatile SequenceFrameState state;
 		//public GPU.Render.ITexture gpuImage;
 		public byte[] decodedImage;
 
@@ -29,7 +19,6 @@ namespace Octopus.Player.Core.Playback.Stream
 			Debug.Assert(clip.Metadata != null, "Attempting to create sequence frame for clip without clip metadata");
 			//GPUContext = gpuContext;
 			//gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
-			state = SequenceFrameState.Empty;
 			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 		}
 		
@@ -40,5 +29,7 @@ namespace Octopus.Player.Core.Playback.Stream
 			//gpuImage = null;
 			decodedImage = null;
 		}
+
+		public abstract Error Decode(IClip clip);
     }
 }

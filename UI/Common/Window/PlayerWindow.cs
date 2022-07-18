@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Octopus.Player.UI
 {
-    public class PlayerWindow
+    public class PlayerWindow : IDisposable
     {
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
@@ -351,6 +351,16 @@ namespace Octopus.Player.UI
             RenderContext.OnRenderFrame(timeInterval);
             if (Playback != null)
                 Playback.OnRenderFrame(timeInterval);
+        }
+
+        public void Dispose()
+        {
+            if (Playback != null)
+            {
+                Debug.Assert(Playback.IsOpen());
+                Playback.Close();
+                Playback = null;
+            }
         }
     }
 }

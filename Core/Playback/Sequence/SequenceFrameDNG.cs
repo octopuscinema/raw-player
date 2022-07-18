@@ -1,56 +1,34 @@
 ﻿using Octopus.Player.Core.Maths;
-using Octopus.Player.Core.Playback.Stream;
-using System;
-using System.Collections.Generic;
+using Octopus.Player.GPU.Render;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Octopus.Player.Core.Playback
 {
-    public class SequenceStreamDNG : SequenceStream
+    public class SequenceFrameDNG : SequenceFrame
     {
         private Core.IO.DNG.Reader DNGReader { get; set; }
 
-        public SequenceStreamDNG(ClipCinemaDNG clip, GPU.Render.IContext gpuContext, uint bufferDurationFrames = 8) 
-            : base(clip, gpuContext, clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8, bufferDurationFrames)
+        public SequenceFrameDNG(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
+            : base(gpuContext, clip, gpuFormat)
         {
 
         }
 
-        public override void Dispose()
-        {
-            if (DNGReader != null)
-            {
-                DNGReader.Dispose();
-                DNGReader = null;
-            }
-        }
-
-        public override FrameRequestResult RequestFrame(uint frameNumber)
-        {
-            // Sanity check range
-            var dngMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
-            if (frameNumber < dngMetadata.FirstFrame || frameNumber > dngMetadata.LastFrame)
-                return FrameRequestResult.ErrorFrameOutOfRange;
-
-            return base.RequestFrame(frameNumber);
-        }
-
-        public override Error DecodeFrame(SequenceFrame frame)
+        public override Error Decode(IClip clip)
         {
             // Cast to DNG clip/metadata
-            var dngClip = (ClipCinemaDNG)Clip;
+            var dngClip = (ClipCinemaDNG)clip;
             var dngMetadata = (IO.DNG.MetadataCinemaDNG)dngClip.Metadata;
             Debug.Assert(dngClip != null && dngMetadata != null);
 
             // Sanity check the frame number is valid
-            if (frame.frameNumber > dngMetadata.LastFrame || frame.frameNumber < dngMetadata.FirstFrame)
+            if (frameNumber > dngMetadata.LastFrame || frameNumber < dngMetadata.FirstFrame)
                 return Error.BadFrameIndex;
 
             // Get and check the dng frame path
             string framePath;
-            var getFrameResult = dngClip.GetFramePath(frame.frameNumber, out framePath);
+            var getFrameResult = dngClip.GetFramePath(frameNumber, out framePath);
             if (getFrameResult != Error.None)
                 return getFrameResult;
             if (!File.Exists(framePath))
@@ -73,9 +51,9 @@ namespace Octopus.Player.Core.Playback
             {
                 case IO.DNG.Compression.None:
                 case IO.DNG.Compression.LosslessJPEG:
-                    var bytesPerPixel = Clip.Metadata.BitDepth <= 8 ? 1 : 2;
-                    Debug.Assert(frame.decodedImage.Length == bytesPerPixel * Clip.Metadata.Dimensions.Area());
-                    DNGReader.DecodeImageData(frame.decodedImage);
+                    var bytesPerPixel = clip.Metadata.BitDepth <= 8 ? 1 : 2;
+                    Debug.Assert(decodedImage.Length == bytesPerPixel * clip.Metadata.Dimensions.Area());
+                    DNGReader.DecodeImageData(decodedImage);
                     break;
                 default:
                     DNGReader.Dispose();

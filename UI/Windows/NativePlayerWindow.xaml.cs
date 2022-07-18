@@ -46,6 +46,7 @@ namespace Octopus.Player.UI.Windows
             
             // Create cross platform Window
             PlayerWindow = new PlayerWindow(this);
+            Closed += OnClose;
 
             // Save the startup window state
             NonFullscreenWindowState = WindowState;
@@ -58,6 +59,13 @@ namespace Octopus.Player.UI.Windows
                 RenderContinuously = false 
             };
             GLControl.Start(mainSettings);
+        }
+
+        private void OnClose(object? sender, EventArgs e)
+        {
+            Debug.Assert(PlayerWindow != null);
+            if (PlayerWindow != null) 
+                PlayerWindow.Dispose();
         }
 
         private void GLControl_OnRender(TimeSpan delta)

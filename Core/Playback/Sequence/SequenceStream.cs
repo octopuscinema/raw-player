@@ -1,75 +1,16 @@
-﻿using Octopus.Player.Core.Playback.Stream;
-using Octopus.Player.GPU.Render;
+﻿using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Octopus.Player.Core.Playback
 {
-    public abstract class SequenceStream : ISequenceStream
+    public class SequenceStream<T> : ISequenceStream where T : SequenceFrame
     {
-        // Worker thread
-        private class SequenceStreamWorker : IDisposable
-        {
-            public bool Paused { get; private set; }
-            private Thread Thread { get; set; }
-            private Func<FrameRequestResult> Work { get; set; }
-            private ManualResetEvent ManualResetEvent { get; set; }
-            private volatile bool terminate = false;
-
-            public SequenceStreamWorker(Func<FrameRequestResult> work, bool paused = true)
-            {
-                Paused = paused;
-                Work = work;
-                ManualResetEvent = new ManualResetEvent(!Paused);
-                Thread = new Thread(WorkLoop);
-            }
-
-            public void Dispose()
-            {
-                terminate = true;
-                if (Paused)
-                    Resume();
-                Thread.Join();
-                ManualResetEvent.Dispose();
-                Thread = null;
-                ManualResetEvent = null;
-            }
-
-            public void Pause()
-            {
-                Debug.Assert(!Paused);
-                ManualResetEvent.Reset();
-                Paused = true;
-            }
-
-            public void Resume()
-            {
-                Debug.Assert(Paused);
-                ManualResetEvent.Set();
-                Paused = false;
-            }
-
-            private void WorkLoop()
-            {
-                while(!terminate)
-                {
-                    var workResult = Work();
-                    if (workResult == FrameRequestResult.NoRequests && !Paused)
-                        Pause();
-                    ManualResetEvent.WaitOne();
-                }
-            }
-        }
-
-
         public IClip Clip { get; protected set; }
-        public Vector2i Dimensions { get { Debug.Assert(Clip != null && Clip.Metadata != null); return Clip.Metadata.Dimensions; } }
 
         ConcurrentBag<SequenceFrame> Pool { get; set; }
         ConcurrentDictionary<uint,SequenceFrame> DisplayFrames { get; set; }
@@ -80,7 +21,7 @@ namespace Octopus.Player.Core.Playback
 
         List<SequenceStreamWorker> Workers { get; set; }
 
-        protected SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint? workerThreadCount = null)
+        public SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint? workerThreadCount = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
@@ -116,7 +57,7 @@ namespace Octopus.Player.Core.Playback
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
-                var decodeResult = DecodeFrame(frame);
+                var decodeResult = frame.Decode(Clip);
 
                 // Frame ready to be displayed
                 if (!DisplayFrames.TryAdd(frame.frameNumber, frame))
@@ -135,9 +76,9 @@ namespace Octopus.Player.Core.Playback
             for (uint i = 0; i < workerThreadCount.Value; i++)
                 Workers.Add(new SequenceStreamWorker(processFrameRequests));
 
-            // Allocate pool storage
+            // Allocate frame pool
             for (int i = 0; i < bufferDurationFrames; i++)
-                Pool.Add(new SequenceFrame(gpuContext, clip, gpuFormat));
+                Pool.Add(Activator.CreateInstance(typeof(T), gpuContext, clip, gpuFormat) as T);
         }
 
         public virtual void Dispose()
@@ -206,15 +147,8 @@ namespace Octopus.Player.Core.Playback
                 FrameRequestsMutex.ReleaseMutex();
             }
 
-            // Wake a worker
-            foreach(var worker in Workers)
-            {
-                if ( worker.Paused )
-                {
-                    worker.Resume();
-                    break;
-                }
-            }
+            // Wake workers
+            Workers.ForEach(i => i.Resume());
 
             return FrameRequestResult.Success;
         }
@@ -233,7 +167,5 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(foundFrame);
             Pool.Add(frame);
         }
-
-        public abstract Error DecodeFrame(SequenceFrame frame);
     }
 }

@@ -21,6 +21,5 @@ namespace Octopus.Player.Core.Playback
     public interface ISequenceStream : IDisposable
     {
         FrameRequestResult RequestFrame(uint frameNumber);
-        Vector2i Dimensions { get; }
     }
 }

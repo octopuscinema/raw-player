@@ -12,12 +12,12 @@ namespace Octopus.Player.Core.Playback
 	{
         private static readonly uint bufferDurationFrames = 8;
 
-        private SequenceStreamDNG SequenceStreamDNG { get; set; }
+        private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
         private ITexture GpuFrameTest { get; set; }
         private ITexture LinearizeTableTest { get; set; }
 
-        private Stream.SequenceFrame testFrame;
+        private SequenceFrame testFrame;
 
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
@@ -45,11 +45,11 @@ namespace Octopus.Player.Core.Playback
         {
             if (State != State.Stopped)
                 Stop();
-            Debug.Assert(IsOpen() && SequenceStreamDNG != null);
-            if (SequenceStreamDNG != null)
+            Debug.Assert(IsOpen() && SequenceStream != null);
+            if (SequenceStream != null)
             {
-                SequenceStreamDNG.Dispose();
-                SequenceStreamDNG = null;
+                SequenceStream.Dispose();
+                SequenceStream = null;
             }
             if (GpuFrameTest != null)
             {
@@ -94,16 +94,17 @@ namespace Octopus.Player.Core.Playback
             }
 
             // Create the sequence stream
-            Debug.Assert(SequenceStreamDNG == null);
-            SequenceStreamDNG = new SequenceStreamDNG((ClipCinemaDNG)clip, RenderContext);
+            Debug.Assert(SequenceStream == null);
+            var gpuFormat = clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8;
+            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, BufferDurationFrames);
 
             // State is now stopped
             State = State.Stopped;
 
             // Decode test
-            testFrame = new Stream.SequenceFrame(RenderContext, clip, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16);
+            testFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
             testFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
-            SequenceStreamDNG.DecodeFrame(testFrame);
+            testFrame.Decode(clip);
 
             // Test frame texture (Non tiled)
             if (GpuFrameTest != null)
