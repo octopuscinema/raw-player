@@ -7,10 +7,10 @@ namespace Octopus.Player.Core.Playback
 {
     public abstract class Playback : IPlayback
     {
+        public virtual uint FirstFrame { get { return 0; } }
+        public virtual uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
+        
         protected uint BufferDurationFrames { get; private set; }
-
-        virtual protected uint FirstFrame { get { return 0; } }
-        virtual protected uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
 
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
@@ -49,6 +49,8 @@ namespace Octopus.Player.Core.Playback
         public IClip Clip { get; protected set; }
         public bool IsPlaying { get { return State == State.Playing; } }
         public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
+
+        public event EventHandler<uint> FrameDisplayed;
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -159,6 +161,7 @@ namespace Octopus.Player.Core.Playback
             if (State == State.Playing || (State == State.PausedEnd && displayFrame <= LastFrame))
             {
                 DisplayFrame(displayFrame.Value);
+                FrameDisplayed?.Invoke(this, displayFrame.Value);
 
                 // Last frame displayed, disable the frame display timer
                 if (displayFrame >= LastFrame)

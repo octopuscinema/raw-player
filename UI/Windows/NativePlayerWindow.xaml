@@ -141,7 +141,7 @@
         <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,55" IsTabStop="False" Grid.Row="1"/>
         <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,55" IsTabStop="False" Grid.Row="1"/>
 
-        <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,30" IsTabStop="False" Background="{x:Null}" Grid.Row="1"/>
+        <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,30" IsTabStop="False" Background="{x:Null}" Grid.Row="1"/>
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0">
             <MenuItem Header="_File">

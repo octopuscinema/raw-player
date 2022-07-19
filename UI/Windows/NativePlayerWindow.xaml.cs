@@ -223,6 +223,28 @@ namespace Octopus.Player.UI.Windows
             });
         }
 
+        Slider? FindSlider(string id)
+        {
+            var sliders = new List<Slider>() { seekBar };
+            foreach (var slider in sliders)
+            {
+                if (slider.Name == id)
+                    return slider;
+            }
+
+            return null;
+        }
+
+        public void SetSliderValue(string id, float value)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var slider = FindSlider(id);
+                if (slider != null)
+                    slider.Value = value * slider.Maximum;
+            });
+        }
+
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(MenuItem));

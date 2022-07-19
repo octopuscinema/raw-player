@@ -30,8 +30,8 @@ namespace Octopus.Player.Core.Playback
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
 
-        protected override uint FirstFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame; } }
-        protected override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
+        public override uint FirstFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame; } }
+        public override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
 
         public override void Close()
         {

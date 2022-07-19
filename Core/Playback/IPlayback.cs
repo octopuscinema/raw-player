@@ -17,6 +17,9 @@ namespace Octopus.Player.Core.Playback
 
 	public interface IPlayback : IDisposable
 	{
+		uint FirstFrame { get; }
+		uint LastFrame { get; }
+
 		List<Essence> SupportedEssence { get; }
 		State State { get; }
 		IClip Clip { get; }
@@ -28,6 +31,7 @@ namespace Octopus.Player.Core.Playback
 		void Pause();
 		bool IsPlaying { get; }
 		bool IsPaused { get; }
+		event EventHandler<uint> FrameDisplayed;
 
 		// Clip control
 		Error Open(IClip clip);

@@ -245,6 +245,7 @@ namespace Octopus.Player.UI
                 Playback.ClipOpened -= OnClipOpened;
                 Playback.ClipClosed -= OnClipClosed;
                 Playback.StateChanged -= OnPlaybackStateChanged;
+                Playback.FrameDisplayed -= OnFrameDisplayed;
                 Playback.Dispose();
                 Playback = null;
             }
@@ -256,6 +257,7 @@ namespace Octopus.Player.UI
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;
+                Playback.FrameDisplayed += OnFrameDisplayed;
             }
             else
                 Playback.Close();
@@ -284,6 +286,13 @@ namespace Octopus.Player.UI
                     NativeWindow.SetButtonVisibility("playButton", false);
                     break;
             }
+        }
+
+        public void OnFrameDisplayed(object sender, uint frame)
+        {
+            // Update seek bar
+            var playhead = (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
+            NativeWindow.SetSliderValue("seekBar", playhead);
         }
 
         public void OnClipClosed(object sender, EventArgs e)
