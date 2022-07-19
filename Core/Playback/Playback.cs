@@ -5,36 +5,36 @@ using System.Threading;
 
 namespace Octopus.Player.Core.Playback
 {
-	public abstract class Playback : IPlayback
-	{
-        protected Timer FrameRequestTimer { get; private set; }
-        protected Timer FrameDisplayTimer { get; private set; }
+    public abstract class Playback : IPlayback
+    {
         protected uint BufferDurationFrames { get; private set; }
+
+        virtual protected uint FirstFrame { get { return 0; } }
+        virtual protected uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
+
+        Timer FrameRequestTimer { get; set; }
+        Timer FrameDisplayTimer { get; set; }
 
         protected uint? requestFrame;
         protected uint? displayFrame;
+        protected Mutex playbackControlMutex;
 
         public Playback(GPU.Render.IContext renderContext, uint bufferDurationFrames)
-		{
+        {
             requestFrame = null;
             displayFrame = null;
             State = State.Empty;
             RenderContext = renderContext;
             BufferDurationFrames = bufferDurationFrames;
+            playbackControlMutex = new Mutex();
         }
 
-        ~Playback()
-        {
-            Debug.Assert(!IsOpen());
-            if (IsOpen())
-                Close();
-        }
         protected GPU.Render.IContext RenderContext { get; private set; }
 
         public virtual List<Essence> SupportedEssence { get; }
         private State state;
-        public State State 
-        { 
+        public State State
+        {
             get { return state; }
             protected set
             {
@@ -48,7 +48,7 @@ namespace Octopus.Player.Core.Playback
         public event EventHandler StateChanged;
         public IClip Clip { get; protected set; }
         public bool IsPlaying { get { return State == State.Playing; } }
-        public bool IsPaused { get { return State == State.Paused; } }
+        public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -62,61 +62,156 @@ namespace Octopus.Player.Core.Playback
         public abstract bool SupportsClip(IClip clip);
         public void Stop()
         {
-            Debug.Assert(State != State.Stopped && State != State.Empty);
+            try
+            {
+                playbackControlMutex.WaitOne();
+                Debug.Assert(State != State.Stopped && State != State.Empty);
+                State = State.Stopped;
 
-            if (FrameRequestTimer != null)
-                FrameRequestTimer.Dispose();
-            FrameRequestTimer = null;
-            if (FrameDisplayTimer != null)
-                FrameDisplayTimer.Dispose();
-            FrameDisplayTimer = null;
+                // Dispose the frame request timer
+                if (FrameRequestTimer != null)
+                {
+                    using (var waitHandle = new ManualResetEvent(false))
+                    {
+                        FrameRequestTimer.Dispose(waitHandle);
+                        waitHandle.WaitOne();
+                    }
+                    FrameRequestTimer = null;
+                }
 
-            requestFrame = null;
-            displayFrame = null;
-            State = State.Stopped;
+                // Dispose the frame displaytimer
+                if (FrameDisplayTimer != null)
+                {
+                    using (var waitHandle = new ManualResetEvent(false))
+                    {
+                        FrameDisplayTimer.Dispose(waitHandle);
+                        waitHandle.WaitOne();
+                    }
+                    FrameDisplayTimer = null;
+                }
+
+                requestFrame = null;
+                displayFrame = null;
+            }
+            finally
+            {
+                playbackControlMutex.ReleaseMutex();
+            }
         }
 
         public virtual void Play()
         {
-            Debug.Assert(State == State.Stopped || State == State.Paused);
-            Debug.Assert(FrameRequestTimer == null && FrameDisplayTimer == null);
+            // Stop first if we're paused at the end
+            if (State == State.PausedEnd)
+                Stop();
 
-            // Set starting frame if necessary
-            // Video formats which don't start from frame index '0' should override Play() and set this.requestFrame before base.Play()
-            if (!requestFrame.HasValue)
-                requestFrame = 0;
-            displayFrame = requestFrame;
+            try
+            {
+                playbackControlMutex.WaitOne();
+                Debug.Assert(State == State.Stopped || State == State.Paused);
+                Debug.Assert(FrameRequestTimer == null && FrameDisplayTimer == null);
 
-            // Start frame request/display timer
-            var frameDuration = TimeSpan.FromSeconds(1.0 / Clip.Metadata.Framerate.ToDouble());
-            FrameRequestTimer = new Timer(new TimerCallback(OnFrameRequest), null, TimeSpan.Zero, frameDuration);
-            FrameDisplayTimer = new Timer(new TimerCallback(OnFrameDisplay), null, TimeSpan.FromSeconds(BufferDurationFrames / Clip.Metadata.Framerate.ToDouble()), frameDuration);
-            State = State.Playing;
+                // Set starting frame if necessary
+                if (!requestFrame.HasValue)
+                    requestFrame = FirstFrame;
+                displayFrame = requestFrame;
+
+                // Start frame request/display timer
+                var frameDuration = TimeSpan.FromSeconds(1.0 / Clip.Metadata.Framerate.ToDouble());
+                FrameRequestTimer = new Timer(new TimerCallback(OnFrameRequest), null, TimeSpan.Zero, frameDuration);
+                FrameDisplayTimer = new Timer(new TimerCallback(OnFrameDisplay), null, TimeSpan.FromSeconds(BufferDurationFrames / Clip.Metadata.Framerate.ToDouble()), frameDuration);
+
+                State = State.Playing;
+            }
+            finally
+            {
+                playbackControlMutex.ReleaseMutex();
+            }
         }
 
         private void OnFrameRequest(object obj)
         {
+            if (State != State.Playing)
+                return;
+
             RequestFrame(requestFrame.Value);
-            requestFrame++;
+
+            // Last frame requested, disable the timer and set state to paused at end
+            if (requestFrame >= LastFrame)
+            {
+                try
+                {
+                    playbackControlMutex.WaitOne();
+                    FrameRequestTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    State = State.PausedEnd;
+                }
+                finally
+                {
+                    playbackControlMutex.ReleaseMutex();
+                }
+            }
+            else
+                requestFrame++;
         }
 
         private void OnFrameDisplay(object obj)
         {
-            DisplayFrame(displayFrame.Value);
-            displayFrame++;
+            if (State == State.Playing || (State == State.PausedEnd && displayFrame <= LastFrame))
+            {
+                DisplayFrame(displayFrame.Value);
+
+                // Last frame displayed, disable the frame display timer
+                if (displayFrame >= LastFrame)
+                {
+                    try
+                    {
+                        playbackControlMutex.WaitOne();
+                        FrameDisplayTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    }
+                    finally
+                    {
+                        playbackControlMutex.ReleaseMutex();
+                    }
+                }
+                else
+                    displayFrame++;
+            }
         }
 
         public void Pause()
         {
-            Debug.Assert(State == State.Playing);
+            try
+            {
+                playbackControlMutex.WaitOne();
+                Debug.Assert(State == State.Playing);
+                State = State.Paused;
 
-            FrameRequestTimer.Dispose();
-            FrameRequestTimer = null;
+                // Dispose the frame request timer
+                if (FrameRequestTimer != null)
+                {
+                    using (var waitHandle = new ManualResetEvent(false))
+                    {
+                        FrameRequestTimer.Dispose(waitHandle);
+                        waitHandle.WaitOne();
+                    }
+                    FrameRequestTimer = null;
+                }
 
-            FrameDisplayTimer.Dispose();
-            FrameDisplayTimer = null;
-
-            State = State.Paused;
+                // Dispose the frame displaytimer
+                if (FrameDisplayTimer != null)
+                {
+                    using (var waitHandle = new ManualResetEvent(false))
+                    {
+                        FrameDisplayTimer.Dispose(waitHandle);
+                        waitHandle.WaitOne();
+                    }
+                    FrameDisplayTimer = null;
+                }
+            }
+            finally 
+            { 
+                playbackControlMutex.ReleaseMutex(); 
+            }
         }
 
         public abstract Error RequestFrame(uint frameNumber);
@@ -124,6 +219,14 @@ namespace Octopus.Player.Core.Playback
         public abstract Error DisplayFrame(uint frameNumber);
 
         public abstract void OnRenderFrame(double timeInterval);
+
+        public void Dispose()
+        {
+            if (IsOpen())
+                Close();
+            playbackControlMutex.Dispose();
+            playbackControlMutex = null;
+        }
     }
 }
 

@@ -215,9 +215,12 @@ namespace Octopus.Player.UI.Windows
 
         public void SetButtonVisibility(string id, bool visible)
         {
-            var button = FindButton(id);
-            if (button != null)
-                button.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var button = FindButton(id);
+                if (button != null)
+                    button.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
+            });
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)

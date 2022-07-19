@@ -10,11 +10,12 @@ namespace Octopus.Player.Core.Playback
 		Buffering,
 		Playing,
 		Paused,
+		PausedEnd,
 		PausedSeeking,
 		End
 	};
 
-	public interface IPlayback
+	public interface IPlayback : IDisposable
 	{
 		List<Essence> SupportedEssence { get; }
 		State State { get; }

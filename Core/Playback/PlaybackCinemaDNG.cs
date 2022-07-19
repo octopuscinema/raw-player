@@ -30,16 +30,8 @@ namespace Octopus.Player.Core.Playback
 
         public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
 
-        public override void Play()
-        {
-            // CinemaDNG might not start from frame index 0
-            if (!displayFrame.HasValue)
-                displayFrame = ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame;
-            if (!requestFrame.HasValue)
-                requestFrame = ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame;
-
-            base.Play();
-        }
+        protected override uint FirstFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame; } }
+        protected override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
 
         public override void Close()
         {

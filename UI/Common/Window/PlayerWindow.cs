@@ -210,7 +210,7 @@ namespace Octopus.Player.UI
                 case "playButton":
                     if (Playback != null)
                     {
-                        if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused)
+                        if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused || Playback.State == Core.Playback.State.PausedEnd)
                             Playback.Play();
                     }
                     break;
@@ -245,6 +245,7 @@ namespace Octopus.Player.UI
                 Playback.ClipOpened -= OnClipOpened;
                 Playback.ClipClosed -= OnClipClosed;
                 Playback.StateChanged -= OnPlaybackStateChanged;
+                Playback.Dispose();
                 Playback = null;
             }
 
@@ -270,6 +271,7 @@ namespace Octopus.Player.UI
             {
                 case Core.Playback.State.Stopped:
                 case Core.Playback.State.Paused:
+                case Core.Playback.State.PausedEnd:
                     NativeWindow.SetButtonVisibility("pauseButton", false);
                     NativeWindow.SetButtonVisibility("playButton", true);
                     break;
@@ -358,7 +360,9 @@ namespace Octopus.Player.UI
             if (Playback != null)
             {
                 Debug.Assert(Playback.IsOpen());
-                Playback.Close();
+                if (Playback.IsOpen())
+                    Playback.Close();
+                Playback.Dispose();
                 Playback = null;
             }
         }
