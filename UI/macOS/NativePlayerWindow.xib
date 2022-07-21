@@ -30,10 +30,10 @@
                                 <rect key="frame" x="239" y="20" width="480" height="80"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <slider verticalHuggingPriority="750" id="QCu-tS-Z3a">
+                                    <slider identifier="seekBar" verticalHuggingPriority="750" id="QCu-tS-Z3a">
                                         <rect key="frame" x="20" y="7" width="440" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <sliderCell key="cell" controlSize="mini" state="on" alignment="left" maxValue="100" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
+                                        <sliderCell key="cell" controlSize="mini" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
                                     </slider>
                                     <button autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
                                         <rect key="frame" x="261" y="32" width="27.5" height="40"/>
