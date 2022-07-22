@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="20037"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -63,8 +64,9 @@
                                         <rect key="frame" x="226" y="32" width="28.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="play.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="10">
-                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <behavior key="behavior" lightByContents="YES"/>
                                             <font key="font" metaFont="system" size="40"/>
+                                            <imageReference key="alternateImage" image="play.fill" catalog="system" symbolScale="large"/>
                                         </buttonCell>
                                         <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
@@ -75,8 +77,9 @@
                                         <rect key="frame" x="226" y="32.5" width="28" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="pause.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="Yba-nA-8HD">
-                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <behavior key="behavior" lightByContents="YES"/>
                                             <font key="font" metaFont="system" size="40"/>
+                                            <imageReference key="alternateImage" image="pause.fill" catalog="system" symbolScale="large"/>
                                         </buttonCell>
                                         <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
@@ -100,7 +103,7 @@
     <resources>
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
-        <image name="pause.fill" catalog="system" width="11" height="13"/>
+        <image name="pause.fill" catalog="system" width="14" height="17"/>
         <image name="play.fill" catalog="system" width="12" height="13"/>
     </resources>
 </document>
