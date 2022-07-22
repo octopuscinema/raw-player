@@ -273,6 +273,10 @@ namespace Octopus.Player.UI
             switch (Playback.State)
             {
                 case Core.Playback.State.Stopped:
+                    NativeWindow.SetSliderValue("seekBar", 0.0f);
+                    NativeWindow.SetButtonVisibility("pauseButton", false);
+                    NativeWindow.SetButtonVisibility("playButton", true);
+                    break;
                 case Core.Playback.State.Paused:
                 case Core.Playback.State.PausedEnd:
                     NativeWindow.SetButtonVisibility("pauseButton", false);
@@ -309,6 +313,7 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
+            NativeWindow.SetSliderValue("seekBar", 0.0f);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);

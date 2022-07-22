@@ -16,7 +16,7 @@ namespace Octopus.Player.Core.Playback
 
         }
 
-        public override Error Decode(IClip clip)
+        Error TryDecode(IClip clip)
         {
             // Cast to DNG clip/metadata
             var dngClip = (ClipCinemaDNG)clip;
@@ -66,6 +66,14 @@ namespace Octopus.Player.Core.Playback
             DNGReader.Dispose();
             DNGReader = null;
             return Error.None;
+        }
+
+        public override Error Decode(IClip clip)
+        {
+            var result = TryDecode(clip);
+            if (result != Error.None)
+                System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImage[0], 0, (uint)decodedImage.Length);
+            return result;
         }
 
         public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage)
