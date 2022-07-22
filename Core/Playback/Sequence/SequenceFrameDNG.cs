@@ -1,5 +1,6 @@
 ﻿using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
+using OpenTK.Mathematics;
 using System.Diagnostics;
 using System.IO;
 
@@ -64,6 +65,37 @@ namespace Octopus.Player.Core.Playback
             // Done
             DNGReader.Dispose();
             DNGReader = null;
+            return Error.None;
+        }
+
+        public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage)
+        {
+            // Copy to staging array
+            Debug.Assert(decodedImage.Length == stagingImage.Length);
+            decodedImage.CopyTo(stagingImage, 0);
+
+            renderContext.EnqueueRenderAction(() =>
+            {
+
+                // Tiled DNG
+                var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+                if (cinemaDNGMetadata.TileCount > 0)
+                {
+                    var frameOffset = 0;
+                    var tileSizeBytes = (cinemaDNGMetadata.TileDimensions.Area() * clip.Metadata.DecodedBitDepth) / 8;
+                    for (int y = 0; y < clip.Metadata.Dimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
+                    {
+                        for (int x = 0; x < clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
+                        {
+                            gpuImage.Modify(renderContext, new Vector2i(x, y), cinemaDNGMetadata.TileDimensions, stagingImage, (uint)frameOffset);
+                            frameOffset += (int)tileSizeBytes;
+                        }
+                    }
+                }
+                else
+                    gpuImage.Modify(renderContext, Vector2i.Zero, gpuImage.Dimensions, stagingImage);
+            });
+
             return Error.None;
         }
     }

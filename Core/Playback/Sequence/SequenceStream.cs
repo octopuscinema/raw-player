@@ -54,7 +54,7 @@ namespace Octopus.Player.Core.Playback
                 SequenceFrame frame;
                 if (!Pool.TryTake(out frame))
                     return FrameRequestResult.ErrorBufferFull;
-                Trace.WriteLine("Pool size: " + Pool.Count);
+                //Trace.WriteLine("Pool size: " + Pool.Count);
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
@@ -72,7 +72,7 @@ namespace Octopus.Player.Core.Playback
 
             // Create worker threads
             if (workerThreadCount == null)
-                workerThreadCount = (uint)Environment.ProcessorCount;
+                workerThreadCount = Math.Min((uint)bufferDurationFrames, (uint)Environment.ProcessorCount);
             Workers = new List<SequenceStreamWorker>((int)workerThreadCount.Value);
             for (uint i = 0; i < workerThreadCount.Value; i++)
                 Workers.Add(new SequenceStreamWorker(processFrameRequests));

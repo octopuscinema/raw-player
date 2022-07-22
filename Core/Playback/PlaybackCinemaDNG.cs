@@ -10,8 +10,8 @@ namespace Octopus.Player.Core.Playback
 {
 	public class PlaybackCinemaDNG : Playback
 	{
-        private static readonly uint bufferDurationFrames = 8;
-        private static readonly uint bufferSizeFrames = 16;
+        private static readonly uint bufferDurationFrames = 6;
+        private static readonly uint bufferSizeFrames = 12;
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
@@ -23,16 +23,19 @@ namespace Octopus.Player.Core.Playback
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
+        public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
+
+        public override uint FirstFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame; } }
+        public override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
+
+        byte[] displayFrameStaging;
+        //ITexture displayFrameGPU;
+
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
             : base(playerWindow, renderContext, bufferDurationFrames)
         {
 
         }
-
-        public override List<Essence> SupportedEssence { get { return new List<Essence>() { Essence.Sequence }; } }
-
-        public override uint FirstFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).FirstFrame; } }
-        public override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
 
         public override void Close()
         {
@@ -56,9 +59,11 @@ namespace Octopus.Player.Core.Playback
             }
             if (testFrame.decodedImage != null)
                 testFrame.Dispose();
+            displayFrameStaging = null;
             State = State.Empty;
             Clip = null;
             ClipClosed?.Invoke(this, new EventArgs());
+            GC.Collect();
         }
 
         public override Error Open(IClip clip)
@@ -93,6 +98,9 @@ namespace Octopus.Player.Core.Playback
 
             // State is now stopped
             State = State.Stopped;
+
+            // Allocate display frame
+            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 
             // Decode test
             testFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
@@ -269,7 +277,7 @@ namespace Octopus.Player.Core.Playback
 
         public override Error RequestFrame(uint frameNumber)
         {
-            Trace.WriteLine("Request frame: " + frameNumber);
+            //Trace.WriteLine("Request frame: " + frameNumber);
 
             SequenceStream.RequestFrame(frameNumber);
 
@@ -283,11 +291,8 @@ namespace Octopus.Player.Core.Playback
 
         public override Error DisplayFrame(uint frameNumber)
         {
-            Trace.WriteLine("Display frame: " + frameNumber);
+            //Trace.WriteLine("Display frame: " + frameNumber);
 
-            // Trigger a redraw
-            //RenderContext.RequestRender();
-            
             // Attempt to get the frame for display
             var frame = SequenceStream.RetrieveFrame(frameNumber);
 
@@ -310,10 +315,14 @@ namespace Octopus.Player.Core.Playback
                     frame = SequenceStream.RetrieveFrame(nearestFrame.Value);
             }
 
-            // We got a frame
+            // We got a frame, 'display' it
             if ( frame != null )
             {
-                Trace.WriteLine("actual frame displayed: " + frame.frameNumber);
+                if ( GpuFrameTest != null )
+                    frame.CopyToGPU(Clip, RenderContext, GpuFrameTest, displayFrameStaging);
+                RenderContext.RequestRender();
+
+                //Trace.WriteLine("actual frame displayed: " + frame.frameNumber);
             }
 
             // Play direction is forward, reclaim or cancel any frames up to the intended display frame

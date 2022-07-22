@@ -310,6 +310,14 @@ namespace Octopus.Player.UI.Windows
                 PlayerWindow.ButtonClick(button.Name);
         }
 
+        public void InvokeOnUIThread(Action action, bool async = true)
+        {
+            if (async)
+                Application.Current.Dispatcher.BeginInvoke(action);
+            else
+                Application.Current.Dispatcher.Invoke(action);
+        }
+
 #if WINDOW_ASPECT_RATIO_LOCK
         protected override void OnSourceInitialized(EventArgs e)
         {

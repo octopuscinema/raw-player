@@ -15,8 +15,8 @@ namespace Octopus.Player.Core.Playback
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
 
-        protected uint? requestFrame;
-        protected uint? displayFrame;
+        private uint? requestFrame;
+        private uint? displayFrame;
 
         public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {

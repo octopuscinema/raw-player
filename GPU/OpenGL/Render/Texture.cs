@@ -109,7 +109,10 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Debug.Assert(size.X <= Dimensions.X && size.Y <= Dimensions.Y, "Size cannot be larger than texture dimensions");
             Debug.Assert(origin.X <= Dimensions.X && origin.Y <= Dimensions.Y, "Origin cannot be larger than texture dimensions");
 
-            ((Context)context).SetTexture(this);
+            var defaultTextureUnit = TextureUnit.Texture0;
+            ((Context)context).SetTexture(this, defaultTextureUnit);
+            if (((Context)Context).ActiveTextureUnit != defaultTextureUnit)
+                ((Context)Context).SetActiveTextureUnit(defaultTextureUnit);
 
             if (imageDataOffset == 0)
             {

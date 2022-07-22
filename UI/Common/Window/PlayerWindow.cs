@@ -294,7 +294,7 @@ namespace Octopus.Player.UI
         public void OnFrameDisplayed(object sender, uint frame)
         {
             // Update seek bar
-            var playhead = (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
+            var playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
             NativeWindow.SetSliderValue("seekBar", playhead);
         }
 

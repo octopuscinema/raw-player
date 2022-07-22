@@ -51,6 +51,8 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private List<Action> RenderActions { get; set; }
         public UI.INativeWindow NativeWindow { get; private set; }
 
+        internal TextureUnit ActiveTextureUnit { get; private set; }
+
         private VertexBuffer Draw2DVertexBuffer { get; set; }
         private VertexBuffer activeVertexBuffer;
         private Shader activeShader;
@@ -70,6 +72,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             // Setup active texture tracking dictionary
             activeTexture = new Dictionary<TextureUnit, Texture>();
+            ActiveTextureUnit = TextureUnit.Texture0;
 
             // Create default vertex array object
 #if __MACOS__
@@ -244,12 +247,24 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             if (texture == null)
             {
-                if ( activeTexture.ContainsKey(unit) )
+                if (activeTexture.ContainsKey(unit))
                     activeTexture[unit]?.Unbind(unit);
             }
             else
+            {
                 texture.Bind(unit);
+                ActiveTextureUnit = unit;
+            }
             activeTexture[unit] = texture;
+        }
+
+        internal void SetActiveTextureUnit(TextureUnit unit)
+        {
+            if (ActiveTextureUnit == unit)
+                return;
+
+            GL.ActiveTexture(unit);
+            ActiveTextureUnit = unit;
         }
 
         public void Dispose()

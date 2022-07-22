@@ -8,19 +8,12 @@ namespace Octopus.Player.Core.Playback
     public abstract class SequenceFrame : IDisposable
     {
 		public volatile uint frameNumber;
-		//public GPU.Render.ITexture gpuImage;
 		public byte[] decodedImage;
 
-		//private IContext GPUContext { get; set; }
-
-		static int count = 0;
+		private volatile static int count = 0;
 
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
-
-			Debug.Assert(clip.Metadata != null, "Attempting to create sequence frame for clip without clip metadata");
-			//GPUContext = gpuContext;
-			//gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
 			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 
 			count++;
@@ -29,9 +22,6 @@ namespace Octopus.Player.Core.Playback
 		
         public void Dispose()
         {
-			//GPUContext.DestroyTexture(gpuImage);
-			//GPUContext = null;
-			//gpuImage = null;
 			decodedImage = null;
 
 			count--;
@@ -39,5 +29,7 @@ namespace Octopus.Player.Core.Playback
 		}
 
 		public abstract Error Decode(IClip clip);
+
+		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage);
     }
 }
