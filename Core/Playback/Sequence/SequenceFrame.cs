@@ -13,6 +13,8 @@ namespace Octopus.Player.Core.Playback
 
 		//private IContext GPUContext { get; set; }
 
+		static int count = 0;
+
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
 
@@ -20,6 +22,9 @@ namespace Octopus.Player.Core.Playback
 			//GPUContext = gpuContext;
 			//gpuImage = gpuContext.CreateTexture(clip.Metadata.Dimensions, gpuFormat);
 			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
+
+			count++;
+			Trace.WriteLine("Sequence frame created, count: " + count);
 		}
 		
         public void Dispose()
@@ -28,6 +33,9 @@ namespace Octopus.Player.Core.Playback
 			//GPUContext = null;
 			//gpuImage = null;
 			decodedImage = null;
+
+			count--;
+			Trace.WriteLine("Sequence frame disposed, count: " + count);
 		}
 
 		public abstract Error Decode(IClip clip);

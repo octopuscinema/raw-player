@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using System;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.UI
 {
@@ -30,6 +31,7 @@ namespace Octopus.Player.UI
 		void OpenUrl(string url);
 		void Exit();
 		Vector2i FramebufferSize { get; }
+		void InvokeOnUIThread(Action action, bool async = true);
 	}
 }
 

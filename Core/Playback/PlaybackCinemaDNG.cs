@@ -11,6 +11,7 @@ namespace Octopus.Player.Core.Playback
 	public class PlaybackCinemaDNG : Playback
 	{
         private static readonly uint bufferDurationFrames = 8;
+        private static readonly uint bufferSizeFrames = 16;
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
@@ -22,8 +23,8 @@ namespace Octopus.Player.Core.Playback
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
-        public PlaybackCinemaDNG(GPU.Render.IContext renderContext)
-            : base(renderContext, bufferDurationFrames)
+        public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
+            : base(playerWindow, renderContext, bufferDurationFrames)
         {
 
         }
@@ -88,7 +89,7 @@ namespace Octopus.Player.Core.Playback
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
             var gpuFormat = clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8;
-            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, BufferDurationFrames);
+            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames);
 
             // State is now stopped
             State = State.Stopped;
@@ -116,6 +117,25 @@ namespace Octopus.Player.Core.Playback
             }
             
             return Error.None;
+        }
+
+        public override void Stop()
+        {
+            base.Stop();
+            SequenceStream.CancelAllRequests();
+            SequenceStream.ReclaimReadyFrames();
+        }
+
+        public override void Play()
+        {
+            base.Play();
+        }
+
+        public override void Pause()
+        {
+            base.Pause();
+            SequenceStream.CancelAllRequests();
+            SequenceStream.ReclaimReadyFrames();
         }
 
         private IList<string> ShaderDefinesForClip(IClip clip)
@@ -250,7 +270,15 @@ namespace Octopus.Player.Core.Playback
         public override Error RequestFrame(uint frameNumber)
         {
             Trace.WriteLine("Request frame: " + frameNumber);
+
+            SequenceStream.RequestFrame(frameNumber);
+
             return Error.NotImplmeneted;
+        }
+
+        private uint FrameDistance(uint frame1, uint frame2)
+        {
+            return (uint)Math.Abs((int)frame1 - (int)frame2);
         }
 
         public override Error DisplayFrame(uint frameNumber)
@@ -259,7 +287,39 @@ namespace Octopus.Player.Core.Playback
 
             // Trigger a redraw
             //RenderContext.RequestRender();
+            
+            // Attempt to get the frame for display
+            var frame = SequenceStream.RetrieveFrame(frameNumber);
 
+            // Frame not ready
+            if ( frame == null )
+            {
+                // Find the nearest frame which is ready
+                uint? nearestFrame = null;
+                var readyFrames = SequenceStream.ReadyFrames();
+                foreach(var readyFrame in readyFrames)
+                {
+                    if (readyFrame > frameNumber)
+                        continue;
+                    if (!nearestFrame.HasValue || FrameDistance(frameNumber, readyFrame) < FrameDistance(frameNumber, nearestFrame.Value))
+                        nearestFrame = readyFrame;
+                }
+
+                // Use the nearest frame
+                if (nearestFrame.HasValue)
+                    frame = SequenceStream.RetrieveFrame(nearestFrame.Value);
+            }
+
+            // We got a frame
+            if ( frame != null )
+            {
+                Trace.WriteLine("actual frame displayed: " + frame.frameNumber);
+            }
+
+            // Play direction is forward, reclaim or cancel any frames up to the intended display frame
+            SequenceStream.ReclaimReadyFramesUpTo(frameNumber);
+            SequenceStream.CancelRequestsUpTo(frameNumber);
+            
             return Error.NotImplmeneted;
         }
     }

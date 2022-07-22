@@ -1,11 +1,12 @@
-﻿using OpenTK.Mathematics;
+﻿using Octopus.Player.Core;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Octopus.Player.UI
 {
-    public class PlayerWindow : IDisposable
+    public class PlayerWindow : IDisposable, IPlayerWindow
     {
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
@@ -253,7 +254,7 @@ namespace Octopus.Player.UI
             // Create the playback if necessary
             if (Playback == null)
             {
-                Playback = Activator.CreateInstance(typeof(T), RenderContext) as T;
+                Playback = Activator.CreateInstance(typeof(T), this, RenderContext) as T;
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;
@@ -282,6 +283,8 @@ namespace Octopus.Player.UI
                     NativeWindow.SetButtonVisibility("playButton", false);
                     break;
                 case Core.Playback.State.Playing:
+                case Core.Playback.State.Buffering:
+                case Core.Playback.State.PlayingFromBuffer:
                     NativeWindow.SetButtonVisibility("pauseButton", true);
                     NativeWindow.SetButtonVisibility("playButton", false);
                     break;
@@ -374,6 +377,11 @@ namespace Octopus.Player.UI
                 Playback.Dispose();
                 Playback = null;
             }
+        }
+
+        public void InvokeOnUIThread(Action action, bool async = true)
+        {
+            NativeWindow.InvokeOnUIThread(action, async);
         }
     }
 }

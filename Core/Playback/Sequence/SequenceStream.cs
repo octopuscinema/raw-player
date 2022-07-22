@@ -54,6 +54,7 @@ namespace Octopus.Player.Core.Playback
                 SequenceFrame frame;
                 if (!Pool.TryTake(out frame))
                     return FrameRequestResult.ErrorBufferFull;
+                Trace.WriteLine("Pool size: " + Pool.Count);
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
@@ -87,6 +88,11 @@ namespace Octopus.Player.Core.Playback
 
             Workers.ForEach(i => i.Dispose());
             Workers.Clear();
+
+            ReclaimReadyFrames();
+            foreach (var frame in Pool)
+                frame.Dispose();
+            Pool.Clear();
         }
 
         public void CancelAllRequests()
@@ -99,6 +105,33 @@ namespace Octopus.Player.Core.Playback
             finally
             {
                 FrameRequestsMutex.ReleaseMutex();
+            }
+        }
+
+        public void ReclaimReadyFrames()
+        {
+            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            foreach(var frame in displayFramesCopy)
+                OnFrameDisplayed(frame.Key);
+        }
+
+        public void ReclaimReadyFramesUpTo(uint upToFrame)
+        {
+            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            foreach (var frame in displayFramesCopy)
+            {
+                if ( frame.Key <= upToFrame)
+                    OnFrameDisplayed(frame.Key);
+            }
+        }
+
+        public void ReclaimReadyFramesFrom(uint fromFrame)
+        {
+            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            foreach (var frame in displayFramesCopy)
+            {
+                if (frame.Key >= fromFrame)
+                    OnFrameDisplayed(frame.Key);
             }
         }
 
@@ -115,17 +148,54 @@ namespace Octopus.Player.Core.Playback
             }
         }
 
-        public bool FrameInQueue(uint frameNumber)
+        public void CancelRequestsFrom(uint fromFrame)
         {
             try
             {
                 FrameRequestsMutex.WaitOne();
-                return FrameRequests.Contains(frameNumber);
+                var requests = new List<uint>(FrameRequests);
+                foreach (var request in requests)
+                {
+                    if ( request >= fromFrame)
+                        FrameRequests.Remove(request);
+                }
             }
             finally
             {
                 FrameRequestsMutex.ReleaseMutex();
             }
+        }
+
+        public void CancelRequestsUpTo(uint upToFrame)
+        {
+            try
+            {
+                FrameRequestsMutex.WaitOne();
+                var requests = new List<uint>(FrameRequests);
+                foreach (var request in requests)
+                {
+                    if (request <= upToFrame)
+                        FrameRequests.Remove(request);
+                }
+            }
+            finally
+            {
+                FrameRequestsMutex.ReleaseMutex();
+            }
+        }
+
+        public bool FrameReady(uint frameNumber)
+        {
+            return DisplayFrames.ContainsKey(frameNumber);
+        }
+
+        public List<uint> ReadyFrames()
+        {
+            List<uint> frames = new List<uint>();
+            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            foreach (var frame in displayFramesCopy)
+                frames.Add(frame.Key);
+            return frames;
         }
 
         public virtual FrameRequestResult RequestFrame(uint frameNumber)
@@ -153,7 +223,7 @@ namespace Octopus.Player.Core.Playback
             return FrameRequestResult.Success;
         }
 
-        public SequenceFrame RetreieveFrame(uint frameNumber)
+        public SequenceFrame RetrieveFrame(uint frameNumber)
         {
             SequenceFrame frame;
             return DisplayFrames.TryGetValue(frameNumber, out frame) ? frame : null;

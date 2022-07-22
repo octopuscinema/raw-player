@@ -213,6 +213,14 @@ namespace Octopus.Player.UI.macOS
 					slider.FloatValue = value;
 			});
         }
-    }
+
+		public void InvokeOnUIThread(Action action, bool async = true)
+		{
+			if (async)
+				BeginInvokeOnMainThread(action);
+			else
+				InvokeOnMainThread(action);
+		}
+	}
 }
 

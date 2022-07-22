@@ -9,6 +9,7 @@ namespace Octopus.Player.Core.Playback
 		Stopped,
 		Buffering,
 		Playing,
+		PlayingFromBuffer,
 		Paused,
 		PausedEnd,
 		PausedSeeking,
