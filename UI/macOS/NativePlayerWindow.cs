@@ -184,21 +184,26 @@ namespace Octopus.Player.UI.macOS
 			return null;
 		}
 
-		private NSButton FindButton(NSView root, string id)
-        {
-			return (NSButton)FindView(root, id);
+		private T FindControl<T>(NSView root, string id) where T : NSView
+		{
+			return (T)FindView(root, id);
 		}
 
-		private NSSlider FindSlider(NSView root, string id)
-        {
-			return (NSSlider)FindView(root, id);
+		public void SetLabelContent(string id, string content)
+		{
+			InvokeOnMainThread(() =>
+			{
+				var label = FindControl<NSTextField>(ContentView, id);
+				if (label != null)
+					label.StringValue = content;
+			});
 		}
 
-        public void SetButtonVisibility(string id, bool visible)
+		public void SetButtonVisibility(string id, bool visible)
         {
 			InvokeOnMainThread(() =>
 			{
-				var button = FindButton(ContentView, id);
+				var button = FindControl<NSButton>(ContentView, id);
 				if (button != null)
 					button.Hidden = !visible;
 			});
@@ -208,7 +213,7 @@ namespace Octopus.Player.UI.macOS
         {
 			InvokeOnMainThread(() =>
 			{
-				var slider = FindSlider(ContentView, id);
+				var slider = FindControl<NSSlider>(ContentView, id);
 				if (slider != null)
 					slider.FloatValue = value;
 			});
