@@ -138,11 +138,14 @@
 
         <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="1">
             <Grid>
+                <Label x:Name="timeCodeLabel" FontSize="14" Content="00:00:00:00" Foreground="White" Margin="15,15,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <Label x:Name="durationLabel" FontSize="14" Content="00:00:59:23" Foreground="White" Margin="0,15,15,0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+
                 <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
                 <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="1"/>
                 <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="1"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,35" IsTabStop="False" Grid.Row="1"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,35" IsTabStop="False" Grid.Row="1"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" IsTabStop="False" Grid.Row="1"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" IsTabStop="False" Grid.Row="1"/>
 
                 <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}" Grid.Row="1"/>
             </Grid>

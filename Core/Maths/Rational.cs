@@ -16,7 +16,11 @@ namespace Octopus.Player.Core.Maths
             Denominator = denominator;
         }
 
-        public double ToSingle()
+        public bool IsInfinity { get { return Numerator != 0 && Denominator == 0; } }
+
+        public bool IsZero { get { return Numerator == 0; } }
+
+    public double ToSingle()
         {
             return Numerator / (double)Denominator;
         }

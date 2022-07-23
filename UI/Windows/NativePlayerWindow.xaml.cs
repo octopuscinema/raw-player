@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -181,6 +182,18 @@ namespace Octopus.Player.UI.Windows
         {
             Application.Current.Shutdown();
         }
+        
+        private T? FindControl<T>(string name) where T : Control
+        {
+            foreach (var field in GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(field => field.FieldType == typeof(T)))
+            {
+                var control = (T?)field.GetValue(this);
+                if (control != null && control.Name == name)
+                    return control;
+            }
+
+            return null;
+        }
 
         private MenuItem? FindMenuItem(ItemCollection items, string id)
         {
@@ -247,45 +260,28 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
-        Button? FindButton(string id)
+        public void SetLabelContent(string id, string content)
         {
-            var buttons = new List<Button>() { playButton, skipBackButton, skipAheadButton, pauseButton };
-            foreach (var button in buttons)
-            {
-                if (button.Name == id)
-                    return button;
-            }
-
-            return null;
+            var label = FindControl<Label>(id);
+            if (label != null)
+                label.Content = Content;
         }
 
         public void SetButtonVisibility(string id, bool visible)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var button = FindButton(id);
+                var button = FindControl<Button>(id);
                 if (button != null)
                     button.Visibility = visible ? Visibility.Visible : Visibility.Hidden;
             });
-        }
-
-        Slider? FindSlider(string id)
-        {
-            var sliders = new List<Slider>() { seekBar };
-            foreach (var slider in sliders)
-            {
-                if (slider.Name == id)
-                    return slider;
-            }
-
-            return null;
         }
 
         public void SetSliderValue(string id, float value)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                var slider = FindSlider(id);
+                var slider = FindControl<Slider>(id);
                 if (slider != null)
                     slider.Value = value * slider.Maximum;
             });
