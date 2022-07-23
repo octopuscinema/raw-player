@@ -6,6 +6,7 @@
         xmlns:glWpfControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl"
         xmlns:local="clr-namespace:Octopus.Player.UI.Windows"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         Title="OCTOPUS RAW Player" Height="450" Width="800">
 
     <Window.Resources>
@@ -121,6 +122,7 @@
             <Setter Property="FontStyle" Value="Normal"/>
             <Setter Property="FontWeight" Value="Normal"/>
         </Style>
+        <SolidColorBrush x:Key="PlaybackControlsBackground" Color="Black" Opacity="0.5" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -133,15 +135,18 @@
             MouseDown="GLControl_MouseDown"
             SizeChanged="GLControl_SizeChanged"
             SnapsToDevicePixels="True" Grid.Row="1"/>
-        <Border HorizontalAlignment="Center" Height="80" VerticalAlignment="Bottom" Width="520" Background="Black" Opacity="0.5" BorderThickness="0" CornerRadius="8" Margin="0,0,0,20"  Grid.Row="1"/>
 
-        <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
-        <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,55" IsTabStop="False" Grid.Row="1"/>
-        <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,55" IsTabStop="False" Grid.Row="1"/>
-        <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,55" IsTabStop="False" Grid.Row="1"/>
-        <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,55" IsTabStop="False" Grid.Row="1"/>
+        <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="1">
+            <Grid>
+                <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="1"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="1"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,35" IsTabStop="False" Grid.Row="1"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,35" IsTabStop="False" Grid.Row="1"/>
 
-        <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,30" IsTabStop="False" Background="{x:Null}" Grid.Row="1"/>
+                <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}" Grid.Row="1"/>
+            </Grid>
+        </Border>
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0">
             <MenuItem Header="_File">

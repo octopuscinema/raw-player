@@ -26,6 +26,7 @@ namespace Octopus.Player.UI.Windows
     {
         public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
         public Vector3 EmptyBackground { get { return new Vector3(SystemColors.MenuBarColor.R, SystemColors.MenuBarColor.G, SystemColors.MenuBarColor.B) / 255.0f; } }
+        public float PlaybackControlsMargin { get { return 20.0f; } }
     }
 
     /// <summary>
@@ -39,6 +40,8 @@ namespace Octopus.Player.UI.Windows
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
         public Vector2i FramebufferSize { get; private set; }
+
+        private ITheme Theme { get { return PlayerWindow.Theme; } }
 
         public NativePlayerWindow()
         {
@@ -59,6 +62,9 @@ namespace Octopus.Player.UI.Windows
                 RenderContinuously = false 
             };
             GLControl.Start(mainSettings);
+
+            // Centre the playback controls at the bottom
+            playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth/2, 0, 0, Theme.PlaybackControlsMargin);
         }
 
         private void OnClose(object? sender, EventArgs e)
@@ -92,6 +98,46 @@ namespace Octopus.Player.UI.Windows
                     break;
                 default:
                     break;
+            }
+        }
+
+        Point? playbackControlsDragStart;
+        Point? playbackControlsPosition;
+
+        private void PlaybackControls_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            playbackControls.CaptureMouse();
+            if ( e.ChangedButton == MouseButton.Left )
+            {
+                playbackControlsDragStart = e.GetPosition(this);
+                playbackControlsPosition = new Point(playbackControls.Margin.Left, playbackControls.Margin.Bottom);
+            }
+        }
+
+        private void PlaybackControls_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (playbackControlsDragStart.HasValue && playbackControlsPosition.HasValue)
+            {
+                var delta = e.GetPosition(this) - playbackControlsDragStart.Value;
+
+                var margin = playbackControls.Margin;
+                margin.Left = Math.Max(Theme.PlaybackControlsMargin, playbackControlsPosition.Value.X + delta.X);
+                margin.Bottom = Math.Max(Theme.PlaybackControlsMargin, playbackControlsPosition.Value.Y - delta.Y);
+                
+                margin.Left = Math.Min(margin.Left, GLControl.ActualWidth - (playbackControls.ActualWidth + Theme.PlaybackControlsMargin));
+                margin.Bottom = Math.Min(margin.Bottom, GLControl.ActualHeight - (playbackControls.ActualHeight + Theme.PlaybackControlsMargin));
+
+                playbackControls.Margin = margin;
+            }
+        }
+
+        private void PlaybackControls_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            playbackControls.ReleaseMouseCapture();
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                playbackControlsDragStart = null;
+                playbackControlsPosition = null;
             }
         }
 
@@ -290,6 +336,9 @@ namespace Octopus.Player.UI.Windows
         {
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
             PlayerWindow.OnFramebufferResize(FramebufferSize);
+
+            // Force playback controls to bottom centre when resizing
+            playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth / 2, 0, 0, Theme.PlaybackControlsMargin);
         }
 
         public void LockAspect(Rational ratio)
@@ -316,6 +365,14 @@ namespace Octopus.Player.UI.Windows
                 Application.Current.Dispatcher.BeginInvoke(action);
             else
                 Application.Current.Dispatcher.Invoke(action);
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var clientAreaWidth = ActualWidth - GLControl.ActualWidth;
+            var clientAreaHeight = ActualHeight- GLControl.ActualHeight;
+            SetValue(MinWidthProperty, clientAreaWidth + playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2);
+            SetValue(MinHeightProperty, clientAreaHeight + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
         }
 
 #if WINDOW_ASPECT_RATIO_LOCK
