@@ -36,6 +36,7 @@ namespace Octopus.Player.Core.IO.DNG
         public ushort BlackLevel { get; private set; }
         public ushort WhiteLevel { get; private set; }
         public bool Monochrome { get; private set; }
+        public string UniqueCameraModel { get; private set; }
 
         public MetadataCinemaDNG(Reader reader, ClipCinemaDNG clip)
         {
@@ -56,6 +57,7 @@ namespace Octopus.Player.Core.IO.DNG
             if (!reader.Monochrome)
                 ColorProfile = new Maths.Color.Profile(reader);
             ExposureValue = reader.BaselineExposure;
+            UniqueCameraModel = reader.UniqueCameraModel;
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);

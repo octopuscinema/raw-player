@@ -49,6 +49,7 @@ namespace Octopus.Player.Core.IO.DNG
         private bool? CachedIsDualIlluminant { get; set; }
         private bool? CachedHasForwardMatrix { get; set; }
         private float? CachedBaselineExposure { get; set; }
+        private string CachedUniqueCameraModel { get; set; }
 
         public Reader(string filePath)
         {
@@ -578,6 +579,16 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedBaselineExposure.HasValue)
                     CachedBaselineExposure = Ifd.Contains((TiffTag)TiffTagDNG.BaselineExposure) ? (float)TagReader.ReadSRationalField((TiffTag)TiffTagDNG.BaselineExposure, 1).First().ToSingle() : 0.0f; 
                 return CachedBaselineExposure.Value;
+            }
+        }
+
+        public string UniqueCameraModel
+        {
+            get
+            {
+                if (CachedUniqueCameraModel == null)
+                    CachedUniqueCameraModel = Ifd.Contains((TiffTag)TiffTagDNG.UniqueCameraModel) ? TagReader.ReadASCIIFieldFirstString((TiffTag)TiffTagDNG.UniqueCameraModel) : "";
+                return CachedUniqueCameraModel;
             }
         }
 
