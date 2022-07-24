@@ -327,7 +327,11 @@ namespace Octopus.Player.UI
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {
-                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Clip.Metadata.Framerate);
+                // Show warning about missing framerate
+                if (!Playback.Clip.Metadata.Framerate.HasValue)
+                    NativeWindow.Alert(AlertType.Warning, "Clip is missing framerate metadata.\nPlayback framerate will default to: " + Playback.Framerate.ToString(true) + "fps.", "Missing framerate information");
+
+                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate);
                 NativeWindow.SetLabelContent("durationLabel", duration.ToString());
 
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);

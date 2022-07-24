@@ -54,5 +54,10 @@ namespace Octopus.Player.Core.Maths
         {
             return Numerator.ToString() + "/" + Denominator.ToString() + " (" + ToSingle().ToString("n2") + ")";
         }
+
+        public string ToString(bool minimal)
+        {
+            return minimal ? ToSingle().ToString("n3") : ToString();
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffTagReader TagReader { get; set; }
 
         private Vector2i? CachedDimensions { get; set; }
+        private bool? CachedContainsFramerate { get; set; }
         private Rational? CachedFramerate { get; set; }
         private uint? CachedBitDepth { get; set; }
         private uint? CachedDecodedBitDepth { get; set; }
@@ -50,6 +51,8 @@ namespace Octopus.Player.Core.IO.DNG
         private bool? CachedHasForwardMatrix { get; set; }
         private float? CachedBaselineExposure { get; set; }
         private string CachedUniqueCameraModel { get; set; }
+        private SMPTETimeCode? CachedTimeCode { get; set; }
+        private bool? CachedContainsTimeCode { get; set; }
 
         public Reader(string filePath)
         {
@@ -224,25 +227,37 @@ namespace Octopus.Player.Core.IO.DNG
             }
         }
 
-        public Maths.Rational Framerate
+        public bool ContainsFramerate
+        {
+            get
+            {
+                if (!CachedContainsFramerate.HasValue)
+                    CachedContainsFramerate = Ifd.Contains((TiffTag)TiffTagCinemaDNG.FrameRate);
+                return CachedContainsFramerate.Value;
+            }
+        }
+
+        public Rational Framerate
         {
             get
             {
                 if (!CachedFramerate.HasValue)
                 {
+                    
                     try
                     {
                         // CinemaDNG spec states framerate is signed rational
                         var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
-                        CachedFramerate = new Maths.Rational(framerate.Numerator, framerate.Denominator);
+                        CachedFramerate = new Rational(framerate.Numerator, framerate.Denominator);
                     }
                     catch
                     {
                         // Handle OCTOPUSCAMERA dng bug where framerate was written out as unsigned rational
                         var framerate = TagReader.ReadRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
-                        CachedFramerate = new Maths.Rational((int)framerate.Numerator, (int)framerate.Denominator);
+                        CachedFramerate = new Rational((int)framerate.Numerator, (int)framerate.Denominator);
                     }
                 }
+
                 return CachedFramerate.Value;
             }
         }
@@ -589,6 +604,32 @@ namespace Octopus.Player.Core.IO.DNG
                 if (CachedUniqueCameraModel == null)
                     CachedUniqueCameraModel = Ifd.Contains((TiffTag)TiffTagDNG.UniqueCameraModel) ? TagReader.ReadASCIIFieldFirstString((TiffTag)TiffTagDNG.UniqueCameraModel) : "";
                 return CachedUniqueCameraModel;
+            }
+        }
+
+        public SMPTETimeCode TimeCode
+        {
+            get
+            {
+                if(!CachedTimeCode.HasValue)
+                {
+                    var timeCodes = TagReader.ReadByteField((TiffTag)TiffTagCinemaDNG.TimeCodes, 8).ToArray<byte>();
+                    GCHandle handle = GCHandle.Alloc(timeCodes, GCHandleType.Pinned);
+                    CachedTimeCode = (SMPTETimeCode)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(SMPTETimeCode));
+                    handle.Free();
+                }
+
+                return CachedTimeCode.Value;
+            }
+        }
+
+        public bool ContainsTimeCode
+        {
+            get
+            {
+                if (!CachedContainsTimeCode.HasValue)
+                    CachedContainsTimeCode = Ifd.Contains((TiffTag)TiffTagCinemaDNG.TimeCodes);
+                return CachedContainsTimeCode.Value;
             }
         }
 

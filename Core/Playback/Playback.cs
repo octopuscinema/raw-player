@@ -9,6 +9,7 @@ namespace Octopus.Player.Core.Playback
     {
         public virtual uint FirstFrame { get { return 0; } }
         public virtual uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
+        public Maths.Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
 
         protected uint BufferDurationFrames { get; private set; }
 
@@ -17,6 +18,8 @@ namespace Octopus.Player.Core.Playback
 
         private uint? requestFrame;
         private uint? displayFrame;
+
+        static private readonly Maths.Rational defaultFramerate = new Maths.Rational(24000,1001);
 
         public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {
@@ -113,9 +116,9 @@ namespace Octopus.Player.Core.Playback
             displayFrame = requestFrame;
 
             // Start frame request/display timer
-            var frameDuration = TimeSpan.FromSeconds(1.0 / Clip.Metadata.Framerate.ToDouble());
+            var frameDuration = TimeSpan.FromSeconds(1.0 / Framerate.ToDouble());
             FrameRequestTimer = new Timer(new TimerCallback(OnFrameRequest), null, TimeSpan.Zero, frameDuration);
-            FrameDisplayTimer = new Timer(new TimerCallback(OnFrameDisplay), null, TimeSpan.FromSeconds(BufferDurationFrames / Clip.Metadata.Framerate.ToDouble()), frameDuration);
+            FrameDisplayTimer = new Timer(new TimerCallback(OnFrameDisplay), null, TimeSpan.FromSeconds(BufferDurationFrames / Framerate.ToDouble()), frameDuration);
 
             State = State.Buffering;
         }

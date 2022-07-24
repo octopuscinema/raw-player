@@ -22,7 +22,8 @@ namespace Octopus.Player.Core.IO
         public string Title { get; protected set; }
         public uint DurationFrames { get; protected set; }
         public Vector2i Dimensions { get; protected set; }
-        public Maths.Rational Framerate { get; protected set; }
+        public Maths.Rational? Framerate { get; protected set; }
+        public SMPTETimeCode? StartTimeCode { get; protected set; }
         public virtual Rational AspectRatio { get { return new Rational(Dimensions.X, Dimensions.Y); } }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }

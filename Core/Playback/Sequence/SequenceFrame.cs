@@ -9,6 +9,7 @@ namespace Octopus.Player.Core.Playback
     {
 		public volatile uint frameNumber;
 		public byte[] decodedImage;
+		public TimeCode? timeCode;
 
 		private volatile static int count = 0;
 

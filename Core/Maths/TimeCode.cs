@@ -129,8 +129,9 @@ namespace Octopus.Player.Core.Maths
                         - 2 * (Minute - (Minute / 10));
                     return (ulong)frameNumber;
 
-                    // Drop frame for 59.94
                 }
+
+                // Drop frame for 59.94
                 else if (framerate == new Rational(60000, 1001))
                 {
                     var frameNumber = 3600 * Minute

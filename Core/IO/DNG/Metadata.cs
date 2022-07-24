@@ -42,7 +42,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             // Assign from the reader
             Dimensions = reader.Dimensions;
-            Framerate = reader.Framerate;
+            Framerate = reader.ContainsFramerate ? reader.Framerate : (Maths.Rational?)null;
             BitDepth = reader.BitDepth;
             DecodedBitDepth = reader.DecodedBitDepth;
             CFAPattern = reader.CFAPattern;
@@ -58,12 +58,14 @@ namespace Octopus.Player.Core.IO.DNG
                 ColorProfile = new Maths.Color.Profile(reader);
             ExposureValue = reader.BaselineExposure;
             UniqueCameraModel = reader.UniqueCameraModel;
+            if (reader.ContainsTimeCode)
+                StartTimeCode = reader.TimeCode;
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
-            var dngSortedFrames = System.IO.Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
+            var dngSortedFrames = Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
             uint firstFrameNumber;
             uint lastFrameNumber;
             if (clip.GetFrameNumber(dngSortedFrames.First(), out firstFrameNumber) == Error.None && clip.GetFrameNumber(dngSortedFrames.Last(), out lastFrameNumber) == Error.None)

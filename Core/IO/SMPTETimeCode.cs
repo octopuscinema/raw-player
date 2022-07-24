@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 
 namespace Octopus.Player.Core.IO
 {
@@ -6,70 +7,49 @@ namespace Octopus.Player.Core.IO
     public struct SMPTETimeCode
     {
         [FieldOffset(0)]
-        private readonly ulong data;
-
-        // Byte 0
-        [FieldOffset(0)]
-        private readonly byte frameUnits;
+        private readonly uint lowInteger;
         [FieldOffset(4)]
-        private readonly byte frameTens;
-        [FieldOffset(6)]
-        private readonly byte dropFlag;
-        [FieldOffset(7)]
-        private readonly byte unused;
-        public uint FrameUnits { get { return Mask(frameUnits, 4); } }
-        public uint FrameTens { get { return Mask(frameTens, 2); } }
-        public bool DropFlag { get { return Mask(dropFlag, 1)!=0; } }
+		private readonly uint highInteger;
 
-        // Byte 1
-        [FieldOffset(8)]
-        private readonly byte secondUnits;
-        [FieldOffset(12)]
-        private readonly byte secondTens;
-        [FieldOffset(15)]
-        private readonly byte flag1;
-        public uint SecondUnits { get { return Mask(secondUnits, 4); } }
-        public uint SecondTens { get { return Mask(secondTens, 3); } }
-        public bool Flag1 { get { return Mask(flag1, 1)!=0; } }
+		// Byte 0
+		public uint FrameUnits { get { return ReadSection(0,4); } }
+		public uint FrameTens { get { return ReadSection(4, 2); } }
+		public bool DropFlag { get { return ReadSection(6, 1)!=0; } }
 
-        // Byte 2
-        [FieldOffset(16)]
-        private readonly byte minuteUnits;
-        [FieldOffset(20)]
-        private readonly byte minuteTens;
-        [FieldOffset(23)]
-        private readonly byte flag2;
-        public uint MinuteUnits { get { return Mask(minuteUnits, 4); } }
-        public uint MinuteTens { get { return Mask(minuteTens, 3); } }
-        public bool Flag2 { get { return Mask(flag2, 1)!=0; } }
+		// Byte 1
+		public uint SecondUnits { get { return ReadSection(8, 4); } }
+		public uint SecondTens { get { return ReadSection(12, 3); } }
+		public bool Flag1 { get { return ReadSection(15, 1) != 0; } }
 
-        // Byte 3
-        [FieldOffset(24)]
-        private readonly byte hourUnits;
-        [FieldOffset(28)]
-        private readonly byte hourTens;
-        [FieldOffset(30)]
-        private readonly byte flag3;
-        [FieldOffset(31)]
-        private readonly byte flag4;
-        public uint HourUnits { get { return Mask(hourUnits, 4); } }
-        public uint HourTens { get { return Mask(hourTens, 2); } }
-        public bool Flag3 { get { return Mask(flag3, 1)!=0; } }
-        public bool Flag4 { get { return Mask(flag4, 1)!=0; } }
+		// Byte 2
+		public uint MinuteUnits { get { return ReadSection(16, 4); } }
+		public uint MinuteTens { get { return ReadSection(20, 3); } }
+		public bool Flag2 { get { return ReadSection(23, 1) != 0; } }
 
-        // Bytes 4-7 (BG Fields can contain date/time)
-        [FieldOffset(32)]
-        private readonly byte BG1_2;
-        [FieldOffset(40)]
-        private readonly byte BG3_4;
-        [FieldOffset(48)]
-        private readonly byte BG5_6;
-        [FieldOffset(56)]
-        private readonly byte BG7_8;
+		// Byte 3
+		public uint HourUnits { get { return ReadSection(24, 4); } }
+		public uint HourTens { get { return ReadSection(28, 2); } }
+		public bool Flag3 { get { return ReadSection(30, 1) != 0; } }
+		public bool Flag4 { get { return ReadSection(31, 1) != 0; } }
 
-        static private uint Mask(byte data, int bitDepth)
+		private uint ReadSection(uint offset, uint length)
         {
-            return (uint)((2 << bitDepth) - 1) & data;
+			var pos = (int)(offset < 32 ? offset: offset-32);
+			var word = offset < 32 ? lowInteger : highInteger;
+
+			uint mask = ((((uint)1) << (int)length) - 1) << pos;
+			return (word & mask) >> pos;
+		}
+
+        public override string ToString()
+        {
+            var hours = HourTens * 10 + HourUnits;
+            var minutes = MinuteTens * 10 + MinuteUnits;
+            var seconds = SecondTens * 10 + SecondUnits;
+            var frames = FrameTens * 10 + FrameUnits;
+
+            return DropFlag ? hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + seconds.ToString("D2") + ";" + frames.ToString("D2") :
+                hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + seconds.ToString("D2") + ":" + frames.ToString("D2");
         }
 
         /*

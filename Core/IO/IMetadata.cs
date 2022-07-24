@@ -11,7 +11,8 @@ namespace Octopus.Player.Core.IO
         string Title { get; }
         uint DurationFrames { get; }
 
-        Maths.Rational Framerate { get; }
+        Maths.Rational? Framerate { get; }
+        SMPTETimeCode? StartTimeCode { get; }
 
         Vector2i Dimensions { get; }
         Rational AspectRatio { get; }

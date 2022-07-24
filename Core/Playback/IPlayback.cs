@@ -20,6 +20,7 @@ namespace Octopus.Player.Core.Playback
 	{
 		uint FirstFrame { get; }
 		uint LastFrame { get; }
+		Maths.Rational Framerate { get; }
 
 		List<Essence> SupportedEssence { get; }
 		State State { get; }

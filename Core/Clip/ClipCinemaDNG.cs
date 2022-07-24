@@ -88,7 +88,7 @@ namespace Octopus.Player.Core
             // Check path has sequenceable DNGs
             try
             {
-                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly);
+                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
 
                 // Determine the sequencing field
                 // Travel backwards from where digits start to where digits end
