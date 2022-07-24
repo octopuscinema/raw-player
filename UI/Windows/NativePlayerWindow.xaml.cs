@@ -262,9 +262,12 @@ namespace Octopus.Player.UI.Windows
 
         public void SetLabelContent(string id, string content)
         {
-            var label = FindControl<Label>(id);
-            if (label != null)
-                label.Content = Content;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var label = FindControl<Label>(id);
+                if (label != null)
+                    label.Content = content;
+            });
         }
 
         public void SetButtonVisibility(string id, bool visible)
