@@ -23,11 +23,11 @@
                 <rect key="frame" x="0.0" y="0.0" width="960" height="540"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <customView id="8" customClass="PlayerView">
+                    <customView identifier="playerView" id="8" customClass="PlayerView">
                         <rect key="frame" x="0.0" y="0.0" width="960" height="540"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <customView identifier="playbackControls" id="gPa-RO-80N" customClass="DraggableView">
+                            <customView identifier="playbackControls" id="gPa-RO-80N" customClass="PlaybackControlsView">
                                 <rect key="frame" x="239" y="20" width="480" height="80"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
@@ -122,6 +122,6 @@
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
         <image name="pause.fill" catalog="system" width="14" height="17"/>
-        <image name="play.fill" catalog="system" width="15" height="17"/>
+        <image name="play.fill" catalog="system" width="12" height="13"/>
     </resources>
 </document>

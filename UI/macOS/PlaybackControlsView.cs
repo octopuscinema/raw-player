@@ -10,19 +10,18 @@ using OpenGL;
 
 namespace Octopus.Player.UI.macOS
 {
-    public partial class DraggableView : AppKit.NSVisualEffectView
+    public partial class PlaybackControlsView : AppKit.NSVisualEffectView
     {
         CGPoint? startPoint;
         CGPoint? frameOrigin;
 
-        // Called when created from unmanaged code
-        public DraggableView(IntPtr handle) : base(handle)
+        public PlaybackControlsView(IntPtr handle) : base(handle)
         {
-            //TODO: Rename to PlaybackControlsView
+
         }
 
         [Export("initWithCoder:")]
-        public DraggableView(NSCoder coder) : base(coder)
+        public PlaybackControlsView(NSCoder coder) : base(coder)
         {
         }
 
@@ -30,6 +29,7 @@ namespace Octopus.Player.UI.macOS
         {
             base.AwakeFromNib();
 
+            // Apply style
             Appearance = NSAppearance.GetAppearance(NSAppearance.NameVibrantDark);
             BlendingMode = NSVisualEffectBlendingMode.WithinWindow;
             Material = NSVisualEffectMaterial.Menu;
@@ -44,18 +44,24 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDragged(NSEvent theEvent)
         {
+            // Allow for dragging the view around
             if (startPoint.HasValue && frameOrigin.HasValue)
             {
                 var offset = new CGPoint(theEvent.LocationInWindow.X - startPoint.Value.X, theEvent.LocationInWindow.Y - startPoint.Value.Y);
                 var frame = Frame;
-                frame.Location = new CGPoint( frameOrigin.Value.X + offset.X, frameOrigin.Value.Y + offset.Y);
+                frame.Location = new CGPoint(frameOrigin.Value.X + offset.X, frameOrigin.Value.Y + offset.Y);
 
+                // Constrain location to within bounds
                 var playerWindow = (NativePlayerWindow)Window;
                 if (playerWindow != null)
                 {
                     var margin = playerWindow.PlayerWindow.Theme.PlaybackControlsMargin;
                     frame.X = (nfloat)Math.Max(margin, frame.X);
                     frame.Y = (nfloat)Math.Max(margin, frame.Y);
+
+                    var playerView = playerWindow.FindView(playerWindow.ContentView, "playerView");
+                    frame.X = (nfloat)Math.Min(playerView.Frame.Width - (frame.Width + margin), frame.X);
+                    frame.Y = (nfloat)Math.Min(playerView.Frame.Height - (frame.Height + margin), frame.Y);
                 }
                 Frame = frame;
             }

@@ -21,8 +21,8 @@ namespace Octopus.Player.UI.macOS
 	}
 
 	// Should subclass MonoMac.AppKit.NSView
-	[Foundation.Register("DraggableView")]
-	public partial class DraggableView {
+	[Foundation.Register("PlaybackControlsView")]
+	public partial class PlaybackControlsView {
 	}
 	
 	// Should subclass MonoMac.AppKit.NSView

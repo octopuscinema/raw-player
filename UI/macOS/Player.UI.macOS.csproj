@@ -102,7 +102,7 @@
     <Compile Include="PlayerView.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="OpenGLLayer.cs" />
-    <Compile Include="DraggableView.cs" />
+    <Compile Include="PlaybackControlsView.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="PlayerMenu.xib" />
