@@ -24,7 +24,16 @@ namespace Octopus.Player.Core.Maths
             }
         }
 
-        public TimeCode(ulong frames, Rational framerate, bool? dropFrame = null)
+        public TimeCode(in IO.SMPTETimeCode timeCode)
+        {
+            Frame = (ushort)((timeCode.FrameTens * 10) + timeCode.FrameUnits);
+            Second = (ushort)((timeCode.SecondTens * 10) + timeCode.SecondUnits);
+            Minute = (ushort)((timeCode.MinuteTens * 10) + timeCode.MinuteUnits);
+
+            // TODO: Add hours here
+        }
+
+        public TimeCode(ulong frames, in Rational framerate, bool? dropFrame = null)
             : this()
         {
             Debug.Assert(!framerate.IsInfinity && !framerate.IsZero);
@@ -37,7 +46,6 @@ namespace Octopus.Player.Core.Maths
             // Adapted from http://andrewduncan.net/timecodes/ and https://video.stackexchange.com/questions/22722/how-are-frames-in-59-94-drop-frame-timecode-dropped
             if (dropFrame.Value)
             {
-
                 long dropFrames = 0;
                 long framesPer10Minutes = 0;
 
@@ -101,7 +109,7 @@ namespace Octopus.Player.Core.Maths
             return Minute.ToString("D2") + ":" + Second.ToString("D2") + ":" + Frame.ToString("D2");
         }
 
-        public ulong TotalFrames(Rational framerate, bool? dropFrame = null)
+        public ulong TotalFrames(in Rational framerate, bool? dropFrame = null)
         {
             Debug.Assert(!framerate.IsInfinity && !framerate.IsZero);
             if (framerate.IsInfinity || framerate.IsZero)
