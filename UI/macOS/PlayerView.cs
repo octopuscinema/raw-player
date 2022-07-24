@@ -46,12 +46,25 @@ namespace Octopus.Player.UI.macOS
         {
             base.ResizeSubviewsWithOldSize(oldSize);
             ResizeGLLayer();
+            UpdateLayout();
         }
 
         public override void ResizeWithOldSuperviewSize(CGSize oldSize)
         {
             base.ResizeWithOldSuperviewSize(oldSize);
             ResizeGLLayer();
+            UpdateLayout();
+        }
+
+        private void UpdateLayout()
+        {
+            if ( NativePlayerWindow != null )
+            {
+                var playbackControls = NativePlayerWindow.FindView(this, "playbackControls");
+                var frame = playbackControls.Frame;
+                frame.Location = new CGPoint(Frame.Width/2 - frame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
+                playbackControls.Frame = frame;
+            }
         }
 
         private void ResizeGLLayer()

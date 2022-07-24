@@ -10,8 +10,6 @@
 
 namespace Octopus.Player.UI.macOS
 {
-	
-	
 	// Should subclass MonoMac.AppKit.NSWindow
 	[Foundation.Register("NativePlayerWindow")]
 	public partial class NativePlayerWindow {
@@ -20,6 +18,11 @@ namespace Octopus.Player.UI.macOS
 	// Should subclass MonoMac.AppKit.NSWindowController
 	[Foundation.Register("PlayerWindowController")]
 	public partial class PlayerWindowController {
+	}
+
+	// Should subclass MonoMac.AppKit.NSView
+	[Foundation.Register("DraggableView")]
+	public partial class DraggableView {
 	}
 	
 	// Should subclass MonoMac.AppKit.NSView

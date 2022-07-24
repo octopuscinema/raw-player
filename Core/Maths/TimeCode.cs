@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Octopus.Player.Core.Maths
 {
-    struct TimeCode
+    public struct TimeCode
     {
         public ushort Frame { get; private set; }
         public ushort Second { get; private set; }

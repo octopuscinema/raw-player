@@ -167,7 +167,7 @@ namespace Octopus.Player.UI.macOS
 				item.Title = name;
 		}
 
-		private NSView FindView(NSView root, string id)
+		internal NSView FindView(NSView root, string id)
 		{
 			if (root == null)
 				return null;

@@ -18,6 +18,8 @@ namespace Octopus.Player.UI
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             NativeWindow.EnableMenuItem("clip", false);
+            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
+            NativeWindow.SetLabelContent("durationLabel", "--:--:--");
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -304,6 +306,8 @@ namespace Octopus.Player.UI
 
         public void OnClipClosed(object sender, EventArgs e)
         {
+            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
+            NativeWindow.SetLabelContent("durationLabel", "--:--:--");
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
@@ -313,15 +317,19 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
+            NativeWindow.SetLabelContent("timeCodeLabel", "00:00:00:00");
             NativeWindow.SetSliderValue("seekBar", 0.0f);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
 
-            Debug.Assert(Playback != null && Playback.Clip != null);
             bool isColour = false;
+            Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {
+                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Clip.Metadata.Framerate);
+                NativeWindow.SetLabelContent("durationLabel", duration.ToString());
+
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
                 NativeWindow.SetMenuItemTitle("exposureAsShot", "As Shot (" + Playback.Clip.Metadata.ExposureValue.ToString("F") + ")");
 
