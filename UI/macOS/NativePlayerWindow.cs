@@ -189,13 +189,17 @@ namespace Octopus.Player.UI.macOS
 			return (T)FindView(root, id);
 		}
 
-		public void SetLabelContent(string id, string content)
+		public void SetLabelContent(string id, string content, Vector3? colour = null)
 		{
 			InvokeOnMainThread(() =>
 			{
 				var label = FindControl<NSTextField>(ContentView, id);
 				if (label != null)
+				{
 					label.StringValue = content;
+					if (colour.HasValue)
+						label.TextColor = NSColor.FromRgb(colour.Value.X, colour.Value.Y, colour.Value.Z);
+				}
 			});
 		}
 
