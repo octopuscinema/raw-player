@@ -289,9 +289,11 @@ namespace Octopus.Player.Core.Playback
             return (uint)Math.Abs((int)frame1 - (int)frame2);
         }
 
-        public override Error DisplayFrame(uint frameNumber)
+        public override Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode)
         {
-            //Trace.WriteLine("Display frame: " + frameNumber);
+            actualFrameNumber = frameNumber;
+            actualTimeCode = null;
+            var ret = Error.None;
 
             // Attempt to get the frame for display
             var frame = SequenceStream.RetrieveFrame(frameNumber);
@@ -316,20 +318,22 @@ namespace Octopus.Player.Core.Playback
             }
 
             // We got a frame, 'display' it
-            if ( frame != null )
+            if (frame != null)
             {
-                if ( GpuFrameTest != null )
+                if (GpuFrameTest != null)
                     frame.CopyToGPU(Clip, RenderContext, GpuFrameTest, displayFrameStaging);
                 RenderContext.RequestRender();
-
-                //Trace.WriteLine("actual frame displayed: " + frame.frameNumber);
+                actualFrameNumber = frame.frameNumber;
+                actualTimeCode = frame.timeCode;
             }
+            else
+                ret = Error.FrameNotReady;
 
             // Play direction is forward, reclaim or cancel any frames up to the intended display frame
             SequenceStream.ReclaimReadyFramesUpTo(frameNumber);
             SequenceStream.CancelRequestsUpTo(frameNumber);
-            
-            return Error.NotImplmeneted;
+
+            return ret;
         }
     }
 }

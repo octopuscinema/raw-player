@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Octopus.Player.Core.Maths;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -53,7 +54,7 @@ namespace Octopus.Player.Core.Playback
         public bool IsPlaying { get { return State == State.Playing || State == State.PlayingFromBuffer || State == State.Buffering; } }
         public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
 
-        public event EventHandler<uint> FrameDisplayed;
+        public event IPlayback.FrameDisplayedEventHandler FrameDisplayed;
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -140,6 +141,12 @@ namespace Octopus.Player.Core.Playback
             });
         }
 
+        private TimeCode GenerateTimeCode(uint frameNumber)
+        {
+            var globalFrameNumber = frameNumber - FirstFrame;
+            return new TimeCode(globalFrameNumber, Framerate);
+        }
+
         private void OnFrameDisplay(object obj)
         {
             PlayerWindow.InvokeOnUIThread(() =>
@@ -147,8 +154,12 @@ namespace Octopus.Player.Core.Playback
                 if (!(State == State.Buffering || State == State.Playing || State == State.PlayingFromBuffer))
                     return;
 
-                DisplayFrame(displayFrame.Value);
-                FrameDisplayed?.Invoke(this, displayFrame.Value);
+                uint frameDisplayed;
+                TimeCode? frameTimeCode;
+                DisplayFrame(displayFrame.Value, out frameDisplayed, out frameTimeCode);
+                if ( !frameTimeCode.HasValue )
+                    frameTimeCode = GenerateTimeCode(frameDisplayed);
+                FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
 
                 // Last frame displayed, pause
                 if (displayFrame >= LastFrame)
@@ -194,7 +205,7 @@ namespace Octopus.Player.Core.Playback
 
         public abstract Error RequestFrame(uint frameNumber);
 
-        public abstract Error DisplayFrame(uint frameNumber);
+        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode);
 
         public abstract void OnRenderFrame(double timeInterval);
 

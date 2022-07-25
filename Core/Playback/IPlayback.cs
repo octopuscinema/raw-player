@@ -33,7 +33,8 @@ namespace Octopus.Player.Core.Playback
 		void Pause();
 		bool IsPlaying { get; }
 		bool IsPaused { get; }
-		event EventHandler<uint> FrameDisplayed;
+		public delegate void FrameDisplayedEventHandler(uint frame, Maths.TimeCode timeCode);
+		event FrameDisplayedEventHandler FrameDisplayed;
 
 		// Clip control
 		Error Open(IClip clip);

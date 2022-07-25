@@ -297,11 +297,14 @@ namespace Octopus.Player.UI
             }
         }
 
-        public void OnFrameDisplayed(object sender, uint frame)
+        public void OnFrameDisplayed(uint frame, Core.Maths.TimeCode timeCode)
         {
             // Update seek bar
             var playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
             NativeWindow.SetSliderValue("seekBar", playhead);
+
+            // Update timecode label
+            NativeWindow.SetLabelContent("timeCodeLabel", timeCode.ToString());
         }
 
         public void OnClipClosed(object sender, EventArgs e)

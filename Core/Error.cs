@@ -13,6 +13,7 @@ namespace Octopus.Player.Core
         BadFrame,
         BadImageData,
         BadFrameIndex,
+        FrameNotReady,
         NotImplmeneted
     }
 }
