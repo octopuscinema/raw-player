@@ -47,6 +47,10 @@ namespace Octopus.Player.Core.Playback
                 return Error.BadFrame;
             }
 
+            // Read timecode
+            if ( DNGReader.ContainsTimeCode )
+                timeCode = new TimeCode(DNGReader.TimeCode);
+
             // Read the data
             switch (DNGReader.Compression)
             {

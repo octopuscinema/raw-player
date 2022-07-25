@@ -297,7 +297,7 @@ namespace Octopus.Player.UI
             }
         }
 
-        public void OnFrameDisplayed(uint frame, Core.Maths.TimeCode timeCode)
+        public void OnFrameDisplayed(uint frame, in Core.Maths.TimeCode timeCode)
         {
             // Update seek bar
             var playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
@@ -320,7 +320,6 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
-            NativeWindow.SetLabelContent("timeCodeLabel", "00:00:00:00");
             NativeWindow.SetSliderValue("seekBar", 0.0f);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
@@ -334,7 +333,14 @@ namespace Octopus.Player.UI
                 if (!Playback.Clip.Metadata.Framerate.HasValue)
                     NativeWindow.Alert(AlertType.Warning, "Clip is missing framerate metadata.\nPlayback framerate will default to: " + Playback.Framerate.ToString(true) + "fps.", "Missing framerate information");
 
-                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate);
+                // Set start time code label
+                var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.TimeCode(Playback.Clip.Metadata.StartTimeCode.Value) 
+                    : new Core.Maths.TimeCode(0, Playback.Framerate);
+                NativeWindow.SetLabelContent("timeCodeLabel", startTimeCode.ToString());
+
+                // Set duration label
+                bool? dropFrame = Playback.Clip.Metadata.StartTimeCode.HasValue ? Playback.Clip.Metadata.StartTimeCode.Value.DropFlag : (bool?)null;
+                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate, dropFrame);
                 NativeWindow.SetLabelContent("durationLabel", duration.ToString());
 
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);

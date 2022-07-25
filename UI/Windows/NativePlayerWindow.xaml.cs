@@ -260,13 +260,17 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
-        public void SetLabelContent(string id, string content)
+        public void SetLabelContent(string id, string content, Vector3? colour = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var label = FindControl<Label>(id);
                 if (label != null)
+                {
                     label.Content = content;
+                    if ( colour.HasValue )
+                        label.Foreground = new SolidColorBrush(Color.FromRgb((byte)(colour.Value.X * 255.0f), (byte)(colour.Value.Y * 255.0f), (byte)(colour.Value.Z * 255.0f)));
+                }
             });
         }
 
