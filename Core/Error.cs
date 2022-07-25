@@ -14,6 +14,7 @@ namespace Octopus.Player.Core
         BadImageData,
         BadFrameIndex,
         FrameNotReady,
+        FrameRequestError,
         NotImplmeneted
     }
 }

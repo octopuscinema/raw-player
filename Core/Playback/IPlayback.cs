@@ -34,7 +34,11 @@ namespace Octopus.Player.Core.Playback
 		bool IsPlaying { get; }
 		bool IsPaused { get; }
 		public delegate void FrameDisplayedEventHandler(uint frame, in Maths.TimeCode timeCode);
+		public delegate void FrameSkippedEventHandler(uint requestedFrame, uint displayedFrame, in Maths.TimeCode synthesisedTimeCode);
+		public delegate void FrameMissingEventHandler(uint requestedFrame, in Maths.TimeCode synthesisedTimeCode);
 		event FrameDisplayedEventHandler FrameDisplayed;
+		event FrameSkippedEventHandler FrameSkipped;
+		event FrameMissingEventHandler FrameMissing;
 
 		// Clip control
 		Error Open(IClip clip);

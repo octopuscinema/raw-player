@@ -249,6 +249,8 @@ namespace Octopus.Player.UI
                 Playback.ClipClosed -= OnClipClosed;
                 Playback.StateChanged -= OnPlaybackStateChanged;
                 Playback.FrameDisplayed -= OnFrameDisplayed;
+                Playback.FrameSkipped -= OnFrameSkipped;
+                Playback.FrameMissing -= OnFrameMissing;
                 Playback.Dispose();
                 Playback = null;
             }
@@ -261,6 +263,8 @@ namespace Octopus.Player.UI
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;
                 Playback.FrameDisplayed += OnFrameDisplayed;
+                Playback.FrameSkipped += OnFrameSkipped;
+                Playback.FrameMissing += OnFrameMissing;
             }
             else
                 Playback.Close();
@@ -299,12 +303,27 @@ namespace Octopus.Player.UI
 
         public void OnFrameDisplayed(uint frame, in Core.Maths.TimeCode timeCode)
         {
+            UpdateFrameUI(frame, timeCode, Theme.LabelColour);
+        }
+
+        public void OnFrameSkipped(uint frameRequested, uint frameDisplayed, in Core.Maths.TimeCode synthesisedTimeCode)
+        {
+            UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.SkippedFrameColour);
+        }
+
+        public void OnFrameMissing(uint frameRequested, in Core.Maths.TimeCode synthesisedTimeCode)
+        {
+            UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.MissingFrameColour);
+        }
+
+        private void UpdateFrameUI(uint frame, in Core.Maths.TimeCode timeCode, in Vector3 timeCodeLabelColour)
+        {
             // Update seek bar
             var playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
             NativeWindow.SetSliderValue("seekBar", playhead);
 
             // Update timecode label
-            NativeWindow.SetLabelContent("timeCodeLabel", timeCode.ToString());
+            NativeWindow.SetLabelContent("timeCodeLabel", timeCode.ToString(), timeCodeLabelColour);
         }
 
         public void OnClipClosed(object sender, EventArgs e)

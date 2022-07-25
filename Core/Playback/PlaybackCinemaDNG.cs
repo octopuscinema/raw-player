@@ -277,11 +277,7 @@ namespace Octopus.Player.Core.Playback
 
         public override Error RequestFrame(uint frameNumber)
         {
-            //Trace.WriteLine("Request frame: " + frameNumber);
-
-            SequenceStream.RequestFrame(frameNumber);
-
-            return Error.NotImplmeneted;
+            return SequenceStream.RequestFrame(frameNumber) == FrameRequestResult.Success ? Error.None : Error.FrameRequestError;
         }
 
         private uint FrameDistance(uint frame1, uint frame2)
@@ -315,6 +311,7 @@ namespace Octopus.Player.Core.Playback
                 // Use the nearest frame
                 if (nearestFrame.HasValue)
                     frame = SequenceStream.RetrieveFrame(nearestFrame.Value);
+                ret = Error.FrameNotReady;
             }
 
             // We got a frame, 'display' it

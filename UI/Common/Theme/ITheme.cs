@@ -9,6 +9,11 @@ namespace Octopus.Player.UI
     {
         Vector3 ClipBackground { get; }
         Vector3 EmptyBackground { get; }
+
+        Vector3 LabelColour { get; }
+        Vector3 MissingFrameColour { get; }
+        Vector3 SkippedFrameColour { get; }
+
         float PlaybackControlsMargin { get; }
     }
 }

@@ -20,7 +20,7 @@ namespace Octopus.Player.Core.Playback
         private uint? requestFrame;
         private uint? displayFrame;
 
-        static private readonly Maths.Rational defaultFramerate = new Maths.Rational(24000,1001);
+        static private readonly Maths.Rational defaultFramerate = new Maths.Rational(24000, 1001);
 
         public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {
@@ -55,6 +55,8 @@ namespace Octopus.Player.Core.Playback
         public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
 
         public event IPlayback.FrameDisplayedEventHandler FrameDisplayed;
+        public event IPlayback.FrameSkippedEventHandler FrameSkipped;
+        public event IPlayback.FrameMissingEventHandler FrameMissing;
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -156,10 +158,21 @@ namespace Octopus.Player.Core.Playback
 
                 uint frameDisplayed;
                 TimeCode? frameTimeCode;
-                DisplayFrame(displayFrame.Value, out frameDisplayed, out frameTimeCode);
-                if ( !frameTimeCode.HasValue )
+                var displayFrameResult = DisplayFrame(displayFrame.Value, out frameDisplayed, out frameTimeCode);
+                if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
-                FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
+                switch (displayFrameResult)
+                {
+                    case Error.None:
+                        //Debug.Assert(frameDisplayed == displayFrame.Value);
+                        FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
+                        break;
+                    case Error.FrameNotReady:
+                        FrameSkipped?.Invoke(displayFrame.Value, frameDisplayed, frameTimeCode.Value);
+                        break;
+                    default:
+                        break;
+                }
 
                 // Last frame displayed, pause
                 if (displayFrame >= LastFrame)

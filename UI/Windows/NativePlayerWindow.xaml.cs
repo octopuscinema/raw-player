@@ -27,6 +27,12 @@ namespace Octopus.Player.UI.Windows
     {
         public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
         public Vector3 EmptyBackground { get { return new Vector3(SystemColors.MenuBarColor.R, SystemColors.MenuBarColor.G, SystemColors.MenuBarColor.B) / 255.0f; } }
+
+        public Vector3 LabelColour { get { return new Vector3(1, 1, 1); } }
+
+        public Vector3 MissingFrameColour { get { return new Vector3(1, 0, 0); } }
+        public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
+
         public float PlaybackControlsMargin { get { return 20.0f; } }
     }
 
