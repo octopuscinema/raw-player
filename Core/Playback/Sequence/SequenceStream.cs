@@ -58,6 +58,7 @@ namespace Octopus.Player.Core.Playback
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
+                frame.timeCode = null;
                 var decodeResult = frame.Decode(Clip);
 
                 // Frame ready to be displayed
