@@ -7,6 +7,7 @@ namespace Octopus.Player.Core.Playback
 {
     public abstract class SequenceFrame : IDisposable
     {
+		public Error LastError { get; protected set; }
 		public volatile uint frameNumber;
 		public byte[] decodedImage;
 		public TimeCode? timeCode;

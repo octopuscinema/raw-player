@@ -328,7 +328,7 @@ namespace Octopus.Player.UI
 
         public void OnClipClosed(object sender, EventArgs e)
         {
-            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
+            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", Theme.LabelColour);
             NativeWindow.SetLabelContent("durationLabel", "--:--:--");
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
@@ -355,7 +355,7 @@ namespace Octopus.Player.UI
                 // Set start time code label
                 var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.TimeCode(Playback.Clip.Metadata.StartTimeCode.Value) 
                     : new Core.Maths.TimeCode(0, Playback.Framerate);
-                NativeWindow.SetLabelContent("timeCodeLabel", startTimeCode.ToString());
+                NativeWindow.SetLabelContent("timeCodeLabel", startTimeCode.ToString(), Theme.LabelColour);
 
                 // Set duration label
                 bool? dropFrame = Playback.Clip.Metadata.StartTimeCode.HasValue ? Playback.Clip.Metadata.StartTimeCode.Value.DropFlag : (bool?)null;

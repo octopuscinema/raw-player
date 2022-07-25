@@ -164,11 +164,14 @@ namespace Octopus.Player.Core.Playback
                 switch (displayFrameResult)
                 {
                     case Error.None:
-                        //Debug.Assert(frameDisplayed == displayFrame.Value);
+                        Debug.Assert(frameDisplayed == displayFrame.Value);
                         FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotReady:
                         FrameSkipped?.Invoke(displayFrame.Value, frameDisplayed, frameTimeCode.Value);
+                        break;
+                    case Error.FrameNotPresent:
+                        FrameMissing?.Invoke(displayFrame.Value, frameTimeCode.Value);
                         break;
                     default:
                         break;

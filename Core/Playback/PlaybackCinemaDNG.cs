@@ -322,6 +322,8 @@ namespace Octopus.Player.Core.Playback
                 RenderContext.RequestRender();
                 actualFrameNumber = frame.frameNumber;
                 actualTimeCode = frame.timeCode;
+                if (frame.LastError == Error.FrameNotPresent)
+                    ret = Error.FrameNotPresent;
             }
             else
                 ret = Error.FrameNotReady;

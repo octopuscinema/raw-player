@@ -77,6 +77,7 @@ namespace Octopus.Player.Core.Playback
             var result = TryDecode(clip);
             if (result != Error.None)
                 System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImage[0], 0, (uint)decodedImage.Length);
+            LastError = result;
             return result;
         }
 
@@ -84,11 +85,10 @@ namespace Octopus.Player.Core.Playback
         {
             // Copy to staging array
             Debug.Assert(decodedImage.Length == stagingImage.Length);
-            decodedImage.CopyTo(stagingImage, 0);
+            System.Buffer.BlockCopy(decodedImage, 0, stagingImage, 0, stagingImage.Length);
 
             renderContext.EnqueueRenderAction(() =>
             {
-
                 // Tiled DNG
                 var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
                 if (cinemaDNGMetadata.TileCount > 0)
