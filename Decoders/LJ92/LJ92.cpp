@@ -20,25 +20,25 @@ LJ92.cpp (modifications/optimisations)
 #include <windows.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
 )
 {
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
 }
 #endif
-	
+
 namespace Octopus::Player::Decoders::LJ92
 {
-    typedef uint8_t u8;
+	typedef uint8_t u8;
 	typedef uint16_t u16;
 	typedef uint32_t u32;
 
@@ -61,10 +61,10 @@ namespace Octopus::Player::Decoders::LJ92
 	}
 #endif
 
-//#define DEBUG
-//#define PROFILE_DURATION
+	//#define DEBUG
+	//#define PROFILE_DURATION
 
-    //#define SLOW_HUFF
+		//#define SLOW_HUFF
 
 	struct ljp {
 		u8* data;
@@ -74,6 +74,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int ix;
 		int x; // Width
 		int y; // Height
+		int numComponents; // Number of componenets
 		int bits; // Bit depth
 		int writelen; // Write rows this long
 		int skiplen; // Skip this many values after each row
@@ -134,6 +135,7 @@ namespace Octopus::Player::Decoders::LJ92
 		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
 		u8* huffhead = &self->data[self->ix]; // xstruct.unpack('>HB16B',self.data[self.ix:self.ix+19])
 		u8* bits = &huffhead[2];
+		int componentIndex = huffhead[2];
 		bits[0] = 0; // Because table starts from 1
 		int hufflen = BEH(huffhead[0]);
 		if ((self->ix + hufflen) >= self->datalen) return ret;
@@ -314,6 +316,7 @@ namespace Octopus::Player::Decoders::LJ92
 		if (self->ix + 6 >= self->datalen) return LJ92_ERROR_CORRUPT;
 		self->y = BEH(self->data[self->ix + 3]);
 		self->x = BEH(self->data[self->ix + 5]);
+		self->numComponents = self->data[self->ix + 7];
 		self->bits = self->data[self->ix + 2];
 		self->ix += BEH(self->data[self->ix]);
 		return LJ92_ERROR_NONE;
@@ -466,12 +469,12 @@ namespace Octopus::Player::Decoders::LJ92
 		int col = 0;
 		int left = 0;
 		while (c < pixels) {
-			
+
 			diff = nextdiff(self, Px);
 			left = Px + diff;
 			Px = left; // Default use left pixel
 			//printf("%d %d %d\n",c,diff,left);
-			
+
 			thisrow[col] = left;
 			out[c++] = left;
 			if (++col == self->x) {
@@ -481,7 +484,7 @@ namespace Octopus::Player::Decoders::LJ92
 				thisrow = temprow;
 				Px = lastrow[col]; // Use value above for first pixel in row
 			}
-			
+
 			if (self->ix >= self->datalen + 2) break;
 		}
 		if (c >= pixels) ret = LJ92_ERROR_NONE;
@@ -494,7 +497,7 @@ namespace Octopus::Player::Decoders::LJ92
 		self->ix += BEH(self->data[self->ix]);
 		self->cnt = 0;
 		self->b = 0;
-		
+
 		// Now need to decode huffman coded values
 		int pixels = self->y * self->x;
 		u16* out = self->image;
@@ -510,9 +513,9 @@ namespace Octopus::Player::Decoders::LJ92
 		while (c < self->x) {
 			diff = nextdiff(self, Px);
 			left = Px + diff;
-			
+
 			out[c++] = left;
-			
+
 			if (self->ix >= self->datalen + 2)
 				break;
 			Px = left;
@@ -526,7 +529,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 			diff = nextdiff(self, Px);
 			left = Px + diff;
-			
+
 			out[c++] = left;
 
 			if (self->ix >= self->datalen + 2)
@@ -659,9 +662,9 @@ namespace Octopus::Player::Decoders::LJ92
 		if (pred == 6)
 			return parsePred6(self);
 		// Fast path for predictor 1
-		if (pred == 1 && self->skiplen == 0 && self->linearize == nullptr )
+		if (pred == 1 && self->skiplen == 0 && self->linearize == nullptr)
 			return parsePred1NoSkipNoLinearize(self);
-		
+
 		self->ix += BEH(self->data[self->ix]);
 		self->cnt = 0;
 		self->b = 0;
@@ -815,16 +818,17 @@ namespace Octopus::Player::Decoders::LJ92
 
 		LJ92_ERRORS ret = findSoI(self);
 
-		if (ret == LJ92_ERROR_NONE) {
+		if (ret == LJ92_ERROR_NONE) 
+		{
 			//if (pWorkingCache == nullptr) {
-				u16* rowcache = (u16*)calloc(self->x * 2, sizeof(u16));
-				if (rowcache == NULL)
-                    ret = LJ92_ERROR_NO_MEMORY;
-				else {
-					self->rowcache = rowcache;
-					self->outrow[0] = rowcache;
-					self->outrow[1] = rowcache + self->x;
-				}
+			u16* rowcache = (u16*)calloc(self->x * 2, sizeof(u16));
+			if (rowcache == NULL)
+				ret = LJ92_ERROR_NO_MEMORY;
+			else {
+				self->rowcache = rowcache;
+				self->outrow[0] = rowcache;
+				self->outrow[1] = rowcache + self->x;
+			}
 			/*} else {
 				self->rowcache = nullptr;
 				pWorkingCache->resize(self->x * 2);
@@ -835,17 +839,19 @@ namespace Octopus::Player::Decoders::LJ92
 
 		if (ret != LJ92_ERROR_NONE)
 			free_memory(self);
-		else {
+		else
+		{
 			*width = self->x;
 			*height = self->y;
 			*bitdepth = self->bits;
 		}
+
 		return ret;
 	}
 
 	LJ92_ERRORS lj92_decode(lj92& lj,
 		uint16_t* target, int writeLength, int skipLength,
-		uint16_t* linearize, int linearizeLength) 
+		uint16_t* linearize, int linearizeLength)
 	{
 		LJ92_ERRORS ret = LJ92_ERROR_NONE;
 		ljp* self = &lj;
@@ -858,45 +864,45 @@ namespace Octopus::Player::Decoders::LJ92
 		return ret;
 	}
 
-	void lj92_close(lj92& lj) 
+	void lj92_close(lj92& lj)
 	{
 		ljp* self = &lj;
 		if (self != nullptr)
 			free_memory(self);
 	}
- 
-    Core::eError LJ92Error(LJ92_ERRORS error)
-    {
-		switch (error) {
-			case LJ92_ERROR_NONE:
-			   return Core::eError::None;
-			case LJ92_ERROR_CORRUPT:
-				return Core::eError::BadImageData;
-			case LJ92_ERROR_NO_MEMORY:
-				return Core::eError::NotImplmeneted;
-			case LJ92_ERROR_BAD_HANDLE:
-				return Core::eError::BadImageData;
-			case LJ92_ERROR_TOO_WIDE:
-				return Core::eError::BadMetadata;
-			default:
-				return Core::eError::NotImplmeneted;
-		}
-    }
 
-    extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
-    {
-        int actualWidth, actualHeight, actualBitDepth;
-        lj92 lj;
-        auto error = LJ92Error(lj92_open(lj, pInCompressed, compressedSizeBytes, &actualWidth, &actualHeight, &actualBitDepth));
-        if ( error == Core::eError::None )
-        {
+	Core::eError LJ92Error(LJ92_ERRORS error)
+	{
+		switch (error) {
+		case LJ92_ERROR_NONE:
+			return Core::eError::None;
+		case LJ92_ERROR_CORRUPT:
+			return Core::eError::BadImageData;
+		case LJ92_ERROR_NO_MEMORY:
+			return Core::eError::NotImplmeneted;
+		case LJ92_ERROR_BAD_HANDLE:
+			return Core::eError::BadImageData;
+		case LJ92_ERROR_TOO_WIDE:
+			return Core::eError::BadMetadata;
+		default:
+			return Core::eError::NotImplmeneted;
+		}
+	}
+
+	extern "C" Core::eError Decode(uint8_t * pOut16Bit, uint32_t outOffsetBytes, uint8_t * pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
+	{
+		int actualWidth, actualHeight, actualBitDepth;
+		lj92 lj;
+		auto error = LJ92Error(lj92_open(lj, pInCompressed, compressedSizeBytes, &actualWidth, &actualHeight, &actualBitDepth));
+		if (error == Core::eError::None)
+		{
 			// Don't compare width/height directly, lossless jpeg bayer compression may change the width and height to improve compression/predictor efficiency
-            if ( (actualWidth*actualHeight) == (width*height) && actualBitDepth == bitDepth )
-                error = LJ92Error(lj92_decode(lj, (uint16_t*)(pOut16Bit+outOffsetBytes), 0, 0, nullptr, 0));
-            else
-                error = Core::eError::BadMetadata;
-            lj92_close(lj);
-        }
-        return error;
-    }
+			if ((actualWidth * actualHeight * lj.numComponents) == (width * height) && actualBitDepth == bitDepth)
+				error = LJ92Error(lj92_decode(lj, (uint16_t*)(pOut16Bit + outOffsetBytes), 0, 0, nullptr, 0));
+			else
+				error = Core::eError::BadMetadata;
+			lj92_close(lj);
+		}
+		return error;
+	}
 }
