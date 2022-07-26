@@ -4,6 +4,7 @@ using Foundation;
 using AppKit;
 using System.Diagnostics;
 using OpenTK.Mathematics;
+using CoreAnimation;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -13,9 +14,13 @@ namespace Octopus.Player.UI.macOS
 
         public Vector2i FramebufferSize { get { return new Vector2i((int)ContentView.Frame.Width, (int)ContentView.Frame.Height); } }
 
+        public PlaybackControlsAnimationState PlaybackControlsAnimationState { get; private set; }
+
         // Called when created from unmanaged code
         public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
+			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
 		}
@@ -24,6 +29,8 @@ namespace Octopus.Player.UI.macOS
 		[Export("initWithCoder:")]
 		public NativePlayerWindow (NSCoder coder) : base(coder)
 		{
+			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
 		}
@@ -230,6 +237,32 @@ namespace Octopus.Player.UI.macOS
 			else
 				InvokeOnMainThread(action);
 		}
-	}
+
+        public void AnimateInPlaybackControls(TimeSpan duration)
+        {
+			Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.Out);
+			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+			NSAnimationContext.RunAnimation(ctx =>
+			{
+				ctx.Duration = duration.TotalSeconds;
+				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
+				var playbackControls = FindView(ContentView, "playbackControls");
+				((NSView)playbackControls.Animator).AlphaValue = 1.0f;
+			});
+		}
+
+        public void AnimateOutPlaybackControls(TimeSpan duration)
+        {
+			Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.In);
+			PlaybackControlsAnimationState = PlaybackControlsAnimationState.Out;
+			NSAnimationContext.RunAnimation(ctx =>
+			{
+				ctx.Duration = duration.TotalSeconds;
+				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
+				var playbackControls = FindView(ContentView, "playbackControls");
+				((NSView)playbackControls.Animator).AlphaValue = 0.0f;
+			});
+		}
+    }
 }
 
