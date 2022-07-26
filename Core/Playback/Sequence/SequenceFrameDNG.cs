@@ -1,6 +1,7 @@
 ﻿using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
+using System;
 using System.Diagnostics;
 using System.IO;
 
@@ -99,7 +100,11 @@ namespace Octopus.Player.Core.Playback
                     {
                         for (int x = 0; x < clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
                         {
-                            gpuImage.Modify(renderContext, new Vector2i(x, y), cinemaDNGMetadata.TileDimensions, stagingImage, (uint)frameOffset);
+                            var tileDimensions = cinemaDNGMetadata.TileDimensions;
+                            var maxTileSize = gpuImage.Dimensions - new Vector2i(x, y);
+                            tileDimensions.X = Math.Min(maxTileSize.X, tileDimensions.X);
+                            tileDimensions.Y = Math.Min(maxTileSize.Y, tileDimensions.Y);
+                            gpuImage.Modify(renderContext, new Vector2i(x, y), tileDimensions, stagingImage, (uint)frameOffset);
                             frameOffset += (int)tileSizeBytes;
                         }
                     }

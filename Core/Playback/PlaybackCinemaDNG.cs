@@ -207,7 +207,11 @@ namespace Octopus.Player.Core.Playback
                     {
                         for (int x = 0; x < Clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
                         {
-                            GpuFrameTest.Modify(RenderContext, new Vector2i(x, y), cinemaDNGMetadata.TileDimensions, testFrame.decodedImage, (uint)frameOffset);
+                            var tileDimensions = cinemaDNGMetadata.TileDimensions;
+                            var maxTileSize = GpuFrameTest.Dimensions - new Vector2i(x, y);
+                            tileDimensions.X = Math.Min(maxTileSize.X, tileDimensions.X);
+                            tileDimensions.Y = Math.Min(maxTileSize.Y, tileDimensions.Y);
+                            GpuFrameTest.Modify(RenderContext, new Vector2i(x, y), tileDimensions, testFrame.decodedImage, (uint)frameOffset);
                             frameOffset += (int)tileSizeBytes;
                         }
                     }
