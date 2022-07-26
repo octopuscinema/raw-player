@@ -145,8 +145,17 @@ namespace Octopus.Player.Core.Playback
 
         private TimeCode GenerateTimeCode(uint frameNumber)
         {
-            var globalFrameNumber = frameNumber - FirstFrame;
-            return new TimeCode(globalFrameNumber, Framerate, null, true);
+            ulong globalFrameNumber = frameNumber - FirstFrame;
+            bool? dropFrame = null;
+
+            if (Clip.Metadata.StartTimeCode.HasValue)
+            {
+                var startTC = new TimeCode(Clip.Metadata.StartTimeCode.Value);
+                globalFrameNumber += startTC.TotalFrames(Framerate);
+                dropFrame = startTC.DropFrame;
+            }
+
+            return new TimeCode(globalFrameNumber, Framerate, dropFrame, true);
         }
 
         private void OnFrameDisplay(object obj)

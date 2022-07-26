@@ -22,7 +22,7 @@ namespace Octopus.Player.Core.Maths
             if (framerate != 0)
             {
                 ulong TotalSeconds = frames / framerate;
-                Frame = (ushort)(frames - TotalSeconds * (ulong)framerate);
+                Frame = (ushort)(frames - TotalSeconds * framerate);
                 Minute = (uint)(TotalSeconds / 60);
                 Second = (ushort)(TotalSeconds - (ulong)Minute * 60);
             }
@@ -58,55 +58,57 @@ namespace Octopus.Player.Core.Maths
             // Adapted from http://andrewduncan.net/timecodes/ and https://video.stackexchange.com/questions/22722/how-are-frames-in-59-94-drop-frame-timecode-dropped
             if (dropFrame.Value)
             {
-                long dropFrames = 0;
-                long framesPer10Minutes = 0;
+                long dropFrames;
+                long framesPer10Minutes;
 
                 // Drop frame for 29.97
                 if (framerate == new Rational(30000, 1001))
                 {
                     dropFrames = 2;
                     framesPer10Minutes = 17982;
-
-                    // Drop Frame for 59.94
                 }
+                // Drop Frame for 59.94
                 else if (framerate == new Rational(60000, 1001))
                 {
                     dropFrames = 4;
                     framesPer10Minutes = 35964;
-
-                    // Not a supported drop frame fps
                 }
+                // Not a supported drop frame fps
                 else
                 {
                     Debug.Assert(false, "Attempting to use drop frame with a frame rate which doesn't support drop frame");
                     return;
                 }
 
-                var D = (long)frames / framesPer10Minutes;
-                var M = (long)frames % framesPer10Minutes;
+                var d = (long)frames / framesPer10Minutes;
+                var m = (long)frames % framesPer10Minutes;
 
-                frames += (ulong)(9 * dropFrames * D + dropFrames * ((M - dropFrames) / (framesPer10Minutes / 10)));
+                frames += (ulong)(9 * dropFrames * d + dropFrames * ((m - dropFrames) / (framesPer10Minutes / 10)));
 
                 var framerateInteger = (long)Math.Round(framerate.ToDouble());
                 Frame = (ushort)((long)frames % framerateInteger);
                 Second = (ushort)((long)frames / framerateInteger % 60);
-                Minute = (uint)((long)frames / (framerateInteger * 60));
+                if (useHours)
+                {
+                    Minute = (uint)((long)frames / (framerateInteger * 60) % 60);
+                    Hour = (ushort)((long)frames / (framerateInteger * 3600) % 24);
+                } else
+                    Minute = (uint)((long)frames / (framerateInteger * 60));
             }
 
             // Round up frame rate to whole number for time code calculations
             else
             {
-                var framerateInteger = (uint)Math.Round(framerate.ToDouble());
+                var framerateInteger = (ulong)Math.Round(framerate.ToDouble());
                 ulong totalSeconds = frames / framerateInteger;
                 Frame = (ushort)(frames - totalSeconds * (ulong)framerateInteger);
                 Minute = (uint)(totalSeconds / 60);
                 Second = (ushort)(totalSeconds - (ulong)Minute * 60);
-            }
-
-            if (useHours)
-            {
-                Hour = (ushort)((int)Minute / 60);
-                Minute %= 60;
+                if (useHours)
+                {
+                    Hour = (ushort)((int)Minute / 60);
+                    Minute %= 60;
+                }
             }
         }
 
@@ -135,25 +137,28 @@ namespace Octopus.Player.Core.Maths
             if (framerate.IsInfinity || framerate.IsZero)
                 return 0;
 
+            var hours = Hour.HasValue ? Hour.Value : Minute / 60;
+            var totalMinutes = Hour.HasValue ? (60*Hour.Value) + Minute : Minute;
+            var minutes = Minute %= 60;
+            
             // Adapted from: http://andrewduncan.net/timecodes/
             if (DropFrame)
             {
                 // Drop frame for 29.97
                 if (framerate == new Rational(30000, 1001))
                 {
-                    var frameNumber = 1800 * Minute
+                    var frameNumber = 108000 * hours + 1800 * minutes
                         + 30 * Second + Frame
-                        - 2 * (Minute - (Minute / 10));
+                        - 2 * (totalMinutes - (totalMinutes / 10));
                     return (ulong)frameNumber;
-
                 }
 
                 // Drop frame for 59.94
                 else if (framerate == new Rational(60000, 1001))
                 {
-                    var frameNumber = 3600 * Minute
+                    var frameNumber = 216000 * hours + 3600 * minutes
                         + 60 * Second + Frame
-                        - 4 * (Minute - (Minute / 10));
+                        - 4 * (totalMinutes - (totalMinutes / 10));
                     return (ulong)frameNumber;
                 }
 
@@ -161,7 +166,7 @@ namespace Octopus.Player.Core.Maths
             }
 
             var framerateInteger = (ulong)Math.Round(framerate.ToDouble());
-            return (ulong)((ulong)Frame + ((ulong)Second * framerateInteger) + ((ulong)Minute * (ulong)60 * framerateInteger));
+            return Frame + (Second * framerateInteger) + ((ulong)totalMinutes * 60 * framerateInteger);
         }
     }
 }
