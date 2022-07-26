@@ -11,6 +11,12 @@ namespace Octopus.Player.UI
 		Warning
     }
 
+	public enum PlaybackControlsAnimationState
+    {
+		In,
+		Out
+    }
+
 	public interface INativeWindow
 	{
 		void LockAspect(Core.Maths.Rational ratio);
@@ -30,6 +36,9 @@ namespace Octopus.Player.UI
 		void SetSliderValue(string id, float value);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
+		void AnimateInPlaybackControls(TimeSpan duration);
+		void AnimateOutPlaybackControls(TimeSpan duration);
+		PlaybackControlsAnimationState PlaybackControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }
 		void InvokeOnUIThread(Action action, bool async = true);

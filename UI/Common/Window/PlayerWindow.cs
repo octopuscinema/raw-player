@@ -34,6 +34,11 @@ namespace Octopus.Player.UI
 
         }
 
+        public void MouseMove(in Vector2 localPosition)
+        {
+            
+        }
+
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
         {
             if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)

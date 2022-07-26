@@ -16,5 +16,6 @@ namespace Octopus.Player.UI
         public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
+        public TimeSpan PlaybackControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
     }
 }

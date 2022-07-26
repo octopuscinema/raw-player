@@ -133,6 +133,7 @@
             x:Name="GLControl"
             Render="GLControl_OnRender" 
             MouseDown="GLControl_MouseDown"
+            MouseMove="GLControl_MouseMove"
             SizeChanged="GLControl_SizeChanged"
             SnapsToDevicePixels="True" Grid.Row="1"/>
 

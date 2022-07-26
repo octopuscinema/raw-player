@@ -13,6 +13,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -34,6 +35,7 @@ namespace Octopus.Player.UI.Windows
         public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
+        public TimeSpan PlaybackControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
     }
 
     /// <summary>
@@ -42,6 +44,9 @@ namespace Octopus.Player.UI.Windows
     public partial class NativePlayerWindow : Window, INativeWindow
     {
         public bool IsFullscreen { get; private set; }
+
+        public PlaybackControlsAnimationState PlaybackControlsAnimationState { get; private set; }
+
         private WindowState NonFullscreenWindowState { get; set; }
         private PlayerWindow PlayerWindow { get; set; }
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
@@ -52,6 +57,7 @@ namespace Octopus.Player.UI.Windows
 
         public NativePlayerWindow()
         {
+            PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
             InitializeComponent();
             
             // Create cross platform Window
@@ -106,6 +112,12 @@ namespace Octopus.Player.UI.Windows
                 default:
                     break;
             }
+        }
+
+        private void GLControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            var mousePosition = e.GetPosition(this);
+            PlayerWindow.MouseMove(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
         }
 
         Point? playbackControlsDragStart;
@@ -366,6 +378,32 @@ namespace Octopus.Player.UI.Windows
             var button = (Button)sender;
             if (button != null)
                 PlayerWindow.ButtonClick(button.Name);
+        }
+
+        public void AnimateOutPlaybackControls(TimeSpan duration)
+        {
+            Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.In);
+            PlaybackControlsAnimationState = PlaybackControlsAnimationState.Out;
+            DoubleAnimation animation = new DoubleAnimation();
+            animation.From = playbackControls.Opacity;
+            animation.To = 0;
+            animation.Duration = new Duration(duration);
+            animation.AutoReverse = false;
+            animation.RepeatBehavior = new RepeatBehavior(1);
+            playbackControls.BeginAnimation(OpacityProperty, animation);
+        }
+
+        public void AnimateInPlaybackControls(TimeSpan duration)
+        {
+            Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.Out);
+            PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+            DoubleAnimation animation = new DoubleAnimation();
+            animation.From = playbackControls.Opacity;
+            animation.To = 1;
+            animation.Duration = new Duration(duration);
+            animation.AutoReverse = false;
+            animation.RepeatBehavior = new RepeatBehavior(1);
+            playbackControls.BeginAnimation(OpacityProperty, animation);
         }
 
         public void InvokeOnUIThread(Action action, bool async = true)
