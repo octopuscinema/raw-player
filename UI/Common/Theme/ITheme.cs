@@ -14,6 +14,9 @@ namespace Octopus.Player.UI
         Vector3 MissingFrameColour { get; }
         Vector3 SkippedFrameColour { get; }
 
+        float DefaultOpacity { get; }
+        float DisabledOpacity { get; }
+
         float PlaybackControlsMargin { get; }
         TimeSpan PlaybackControlsAnimation { get; }
     }

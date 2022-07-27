@@ -17,9 +17,18 @@ namespace Octopus.Player.UI
         {
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
+        }
+
+        public void OnLoad()
+        {
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
             NativeWindow.SetLabelContent("durationLabel", "--:--:--");
+            NativeWindow.SetButtonEnabled("playButton", false);
+            NativeWindow.SetButtonEnabled("pauseButton", false);
+            NativeWindow.SetButtonEnabled("skipBackButton", false);
+            NativeWindow.SetButtonEnabled("skipAheadButton", false);
+            NativeWindow.SetSliderEnabled("seekBar", false);
         }
 
         public void LeftMouseDown(uint clickCount)
@@ -234,16 +243,16 @@ namespace Octopus.Player.UI
             }
         }
 
-        private Core.Error OpenCinemaDNG(string dngPath)
+        private Error OpenCinemaDNG(string dngPath)
         {
-            var dngSequenceClip = new Core.ClipCinemaDNG(dngPath);
+            var dngSequenceClip = new ClipCinemaDNG(dngPath);
             return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
         }
 
-        private Core.Error OpenClip<T>(Core.IClip clip) where T : Core.Playback.Playback
+        private Error OpenClip<T>(IClip clip) where T : Core.Playback.Playback
         {
             var dngValidity = clip.Validate();
-            if (dngValidity != Core.Error.None)
+            if (dngValidity != Error.None)
                 return dngValidity;
 
             // Current playback doesn't support this clip, shut it down
@@ -274,8 +283,18 @@ namespace Octopus.Player.UI
             else
                 Playback.Close();
 
-            // Open the clip
-            return Playback.Open(clip);
+            // Open the clip, if that fails close the playback
+            var error = Playback.Open(clip);
+            if ( error != Error.None)
+            {
+                if ( Playback.IsOpen() )
+                    Playback.Close();
+                Playback.Dispose();
+                Playback = null;
+                string openFailtureMessage = "Failed to open '" + clip.Metadata.Title + "'\nError: " + error.ToString();
+                NativeWindow.Alert(AlertType.Error, openFailtureMessage, "Error opening clip");
+            }
+            return error;
         }
 
         private void OnPlaybackStateChanged(object sender, EventArgs e)
@@ -294,8 +313,9 @@ namespace Octopus.Player.UI
                     NativeWindow.SetButtonVisibility("playButton", true);
                     break;
                 case Core.Playback.State.Empty:
+                    NativeWindow.SetSliderValue("seekBar", 0.0f);
                     NativeWindow.SetButtonVisibility("pauseButton", false);
-                    NativeWindow.SetButtonVisibility("playButton", false);
+                    NativeWindow.SetButtonVisibility("playButton", true);
                     break;
                 case Core.Playback.State.Playing:
                 case Core.Playback.State.Buffering:
@@ -333,6 +353,11 @@ namespace Octopus.Player.UI
 
         public void OnClipClosed(object sender, EventArgs e)
         {
+            NativeWindow.SetButtonEnabled("playButton", false);
+            NativeWindow.SetButtonEnabled("pauseButton", false);
+            NativeWindow.SetButtonEnabled("skipBackButton", false);
+            NativeWindow.SetButtonEnabled("skipAheadButton", false);
+            NativeWindow.SetSliderEnabled("seekBar", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", Theme.LabelColour);
             NativeWindow.SetLabelContent("durationLabel", "--:--:--");
             NativeWindow.EnableMenuItem("clip", false);
@@ -344,6 +369,11 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
+            NativeWindow.SetButtonEnabled("playButton", true);
+            NativeWindow.SetButtonEnabled("pauseButton", true);
+            NativeWindow.SetButtonEnabled("skipBackButton", true);
+            NativeWindow.SetButtonEnabled("skipAheadButton", true);
+            NativeWindow.SetSliderEnabled("seekBar", true);
             NativeWindow.SetSliderValue("seekBar", 0.0f);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");

@@ -34,6 +34,9 @@ namespace Octopus.Player.UI.Windows
         public Vector3 MissingFrameColour { get { return new Vector3(1, 0, 0); } }
         public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
 
+        public float DefaultOpacity { get { return 1.0f; } }
+        public float DisabledOpacity { get { return 0.5f; } }
+
         public float PlaybackControlsMargin { get { return 20.0f; } }
         public TimeSpan PlaybackControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
     }
@@ -78,6 +81,9 @@ namespace Octopus.Player.UI.Windows
 
             // Centre the playback controls at the bottom
             playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth/2, 0, 0, Theme.PlaybackControlsMargin);
+
+            // Safe to trigger Onload
+            PlayerWindow.OnLoad();
         }
 
         private void OnClose(object? sender, EventArgs e)
@@ -302,6 +308,19 @@ namespace Octopus.Player.UI.Windows
             });
         }
 
+        public void SetButtonEnabled(string id, bool enabled)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var button = FindControl<Button>(id);
+                if (button != null)
+                {
+                    button.IsEnabled = enabled;
+                    button.Opacity = enabled ? Theme.DefaultOpacity : Theme.DisabledOpacity;
+                }
+            });
+        }
+
         public void SetSliderValue(string id, float value)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -309,6 +328,19 @@ namespace Octopus.Player.UI.Windows
                 var slider = FindControl<Slider>(id);
                 if (slider != null)
                     slider.Value = value * slider.Maximum;
+            });
+        }
+
+        public void SetSliderEnabled(string id, bool enabled)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var slider = FindControl<Slider>(id);
+                if (slider != null)
+                {
+                    slider.IsEnabled = enabled;
+                    slider.Opacity = enabled ? Theme.DefaultOpacity : Theme.DisabledOpacity;
+                }
             });
         }
 

@@ -53,13 +53,14 @@ namespace Octopus.Player.Core.Playback
                 timeCode = new TimeCode(DNGReader.TimeCode);
 
             // Read the data
+            var decodeDataError = Error.None;
             switch (DNGReader.Compression)
             {
                 case IO.DNG.Compression.None:
                 case IO.DNG.Compression.LosslessJPEG:
                     var bytesPerPixel = clip.Metadata.BitDepth <= 8 ? 1 : 2;
                     Debug.Assert(decodedImage.Length == bytesPerPixel * clip.Metadata.Dimensions.Area());
-                    DNGReader.DecodeImageData(decodedImage);
+                    decodeDataError = DNGReader.DecodeImageData(decodedImage);
                     break;
                 default:
                     DNGReader.Dispose();
@@ -70,7 +71,7 @@ namespace Octopus.Player.Core.Playback
             // Done
             DNGReader.Dispose();
             DNGReader = null;
-            return Error.None;
+            return decodeDataError;
         }
 
         public override Error Decode(IClip clip)
@@ -82,11 +83,16 @@ namespace Octopus.Player.Core.Playback
             return result;
         }
 
-        public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage)
+        public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, Action postCopyAction = null)
         {
-            // Copy to staging array
-            Debug.Assert(decodedImage.Length == stagingImage.Length);
-            System.Buffer.BlockCopy(decodedImage, 0, stagingImage, 0, stagingImage.Length);
+            // Copy to staging array if supplied
+            if (stagingImage != null)
+            {
+                Debug.Assert(decodedImage.Length == stagingImage.Length);
+                Buffer.BlockCopy(decodedImage, 0, stagingImage, 0, stagingImage.Length);
+            }
+            else
+                stagingImage = decodedImage;
 
             renderContext.EnqueueRenderAction(() =>
             {
@@ -111,6 +117,9 @@ namespace Octopus.Player.Core.Playback
                 }
                 else
                     gpuImage.Modify(renderContext, Vector2i.Zero, gpuImage.Dimensions, stagingImage);
+
+                if (postCopyAction != null)
+                    postCopyAction();
             });
 
             return Error.None;

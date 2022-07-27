@@ -15,10 +15,7 @@ namespace Octopus.Player.Core.Playback
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
-        private ITexture GpuFrameTest { get; set; }
         private ITexture LinearizeTableTest { get; set; }
-
-        private SequenceFrame testFrame;
 
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
@@ -29,7 +26,7 @@ namespace Octopus.Player.Core.Playback
         public override uint LastFrame { get { return ((IO.DNG.MetadataCinemaDNG)Clip.Metadata).LastFrame; } }
 
         byte[] displayFrameStaging;
-        //ITexture displayFrameGPU;
+        ITexture displayFrameGPU;
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
             : base(playerWindow, renderContext, bufferDurationFrames)
@@ -39,26 +36,24 @@ namespace Octopus.Player.Core.Playback
 
         public override void Close()
         {
-            if (State != State.Stopped)
+            if (State != State.Stopped && State != State.Empty)
                 Stop();
-            Debug.Assert(IsOpen() && SequenceStream != null);
+            Debug.Assert(IsOpen());
             if (SequenceStream != null)
             {
                 SequenceStream.Dispose();
                 SequenceStream = null;
             }
-            if (GpuFrameTest != null)
+            if (displayFrameGPU != null)
             {
-                GpuFrameTest.Dispose();
-                GpuFrameTest = null;
+                displayFrameGPU.Dispose();
+                displayFrameGPU = null;
             }
             if(LinearizeTableTest != null)
             {
                 LinearizeTableTest.Dispose();
                 LinearizeTableTest = null;
             }
-            if (testFrame.decodedImage != null)
-                testFrame.Dispose();
             displayFrameStaging = null;
             State = State.Empty;
             Clip = null;
@@ -79,8 +74,22 @@ namespace Octopus.Player.Core.Playback
             if (clip.ReadMetadata() != Error.None)
                 return Error.BadMetadata;
             Clip = clip;
-            ClipOpened?.Invoke(this, new EventArgs());
             var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata;
+
+            // Attempt to decode first frame as preview, if that fails bail out
+            var gpuFormat = clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8;
+            var previewFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
+            previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
+            var decodeError = previewFrame.Decode(clip);
+            if (decodeError != Error.None)
+            {
+                previewFrame.Dispose();
+                return decodeError;
+            }
+            
+            // We can consider clip succesfully opened at this point
+            State = State.Stopped;
+            ClipOpened?.Invoke(this, new EventArgs());
 
             // Rebuild the shader if the defines have changed
             var requiredShaderDefines = ShaderDefinesForClip(clip);
@@ -93,27 +102,27 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            var gpuFormat = clip.Metadata.BitDepth > 8 ? GPU.Render.TextureFormat.R16 : GPU.Render.TextureFormat.R8;
             SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames);
-
-            // State is now stopped
-            State = State.Stopped;
 
             // Allocate display frame
             displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
 
-            // Decode test
-            testFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
-            testFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
-            testFrame.Decode(clip);
+            // Create display texture with preview frame
+            if (displayFrameGPU != null)
+                displayFrameGPU.Dispose();
+            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16,
+                cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, TextureFilter.Nearest, "gpuFrameTest");
 
-            // Test frame texture (Non tiled)
-            if (GpuFrameTest != null)
-                GpuFrameTest.Dispose();
-            GpuFrameTest = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, clip.Metadata.DecodedBitDepth == 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16,
-                cinemaDNGMetadata.TileCount == 0 ? testFrame.decodedImage : null, TextureFilter.Nearest, "gpuFrameTest");
-            if (cinemaDNGMetadata.TileCount == 0)
-                testFrame.Dispose();
+            // Tiled preview frame requires copying to GPU seperately
+            Action discardPreviewFrame = () =>
+            {
+                previewFrame.Dispose();
+                previewFrame = null;
+            };
+            if (cinemaDNGMetadata.TileCount > 0)
+                previewFrame.CopyToGPU(clip, RenderContext, displayFrameGPU, null, discardPreviewFrame);
+            else
+                discardPreviewFrame();
 
             // Test linearse table
             if ( cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
@@ -195,30 +204,10 @@ namespace Octopus.Player.Core.Playback
 
         public override void OnRenderFrame(double timeInterval)
         {
-            if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && GpuFrameTest != null && GpuFrameTest.Valid && Clip != null)
+            if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && displayFrameGPU != null && displayFrameGPU.Valid && Clip != null)
             {
-                // Tiled DNG frame test
-                var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
-                if (testFrame.decodedImage != null && cinemaDNGMetadata.TileCount > 0)
-                {
-                    var frameOffset = 0;
-                    var tileSizeBytes = (cinemaDNGMetadata.TileDimensions.Area() * Clip.Metadata.DecodedBitDepth) / 8;
-                    for (int y = 0; y < Clip.Metadata.Dimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
-                    {
-                        for (int x = 0; x < Clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
-                        {
-                            var tileDimensions = cinemaDNGMetadata.TileDimensions;
-                            var maxTileSize = GpuFrameTest.Dimensions - new Vector2i(x, y);
-                            tileDimensions.X = Math.Min(maxTileSize.X, tileDimensions.X);
-                            tileDimensions.Y = Math.Min(maxTileSize.Y, tileDimensions.Y);
-                            GpuFrameTest.Modify(RenderContext, new Vector2i(x, y), tileDimensions, testFrame.decodedImage, (uint)frameOffset);
-                            frameOffset += (int)tileSizeBytes;
-                        }
-                    }
-                    testFrame.Dispose();
-                }
-
                 // Calculate and apply exposure
+                var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
                 var exposure = Math.Pow(2.0, Clip.RawParameters.Value.exposure.HasValue ? Clip.RawParameters.Value.exposure.Value : cinemaDNGMetadata.ExposureValue );
                 GpuPipelineProgram.SetUniform(RenderContext, "exposure", (float)exposure);
 
@@ -272,7 +261,7 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
-                var textures = new Dictionary<string, ITexture> { { "rawImage", GpuFrameTest } };
+                var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };
                 if (LinearizeTableTest != null)
                     textures["linearizeTable"] = LinearizeTableTest;
                 RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
@@ -321,8 +310,8 @@ namespace Octopus.Player.Core.Playback
             // We got a frame, 'display' it
             if (frame != null)
             {
-                if (GpuFrameTest != null)
-                    frame.CopyToGPU(Clip, RenderContext, GpuFrameTest, displayFrameStaging);
+                if (displayFrameGPU != null)
+                    frame.CopyToGPU(Clip, RenderContext, displayFrameGPU, displayFrameStaging);
                 RenderContext.RequestRender();
                 actualFrameNumber = frame.frameNumber;
                 actualTimeCode = frame.timeCode;

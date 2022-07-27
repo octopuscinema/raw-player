@@ -33,7 +33,9 @@ namespace Octopus.Player.UI
 		void SetMenuItemTitle(string id, string name);
 		void SetLabelContent(string id, string content, Vector3? colour = null);
 		void SetButtonVisibility(string id, bool visible);
+		void SetButtonEnabled(string id, bool enabled);
 		void SetSliderValue(string id, float value);
+		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
 		void AnimateInPlaybackControls(TimeSpan duration);

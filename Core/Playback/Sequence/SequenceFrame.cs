@@ -32,6 +32,6 @@ namespace Octopus.Player.Core.Playback
 
 		public abstract Error Decode(IClip clip);
 
-		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage);
+		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, Action postCopyAction = null);
     }
 }
