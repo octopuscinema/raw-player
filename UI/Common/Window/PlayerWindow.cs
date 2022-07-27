@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Octopus.Player.UI
 {
-    public class PlayerWindow : IDisposable, IPlayerWindow
+    public class PlayerWindow : IPlayerWindow
     {
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
