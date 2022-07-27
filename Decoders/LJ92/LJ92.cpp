@@ -19,6 +19,9 @@ LJ92.cpp (modifications/optimisations)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+// Required to support some bayer SlimRAW output modes
+//#define EXPEIRMENTAL_MULTI_COMPONENT_SUPPORT
+
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
@@ -41,6 +44,8 @@ namespace Octopus::Player::Decoders::LJ92
 	typedef uint8_t u8;
 	typedef uint16_t u16;
 	typedef uint32_t u32;
+
+	static const uint32_t MaxComponents = 4;
 
 #ifdef _MSC_VER
 	// MSVC implementation of clz, from
@@ -91,7 +96,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int* huffsize;
 		int* huffcode;
 #else
-		u16* hufflut;
+		u16* hufflut[MaxComponents];
 		int huffbits;
 #endif
 		// Parse state
@@ -273,7 +278,7 @@ namespace Octopus::Player::Decoders::LJ92
 		/* Now fill the lut */
 		u16* hufflut = (u16*)malloc(((size_t)1 << maxbits) * sizeof(u16));
 		if (hufflut == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->hufflut = hufflut;
+		self->hufflut[componentIndex] = hufflut;
 		int i = 0;
 		int hv = 0;
 		int rv = 0;
@@ -381,7 +386,7 @@ namespace Octopus::Player::Decoders::LJ92
 	}
 #endif
 
-	inline static int nextdiff(ljp* self, int Px) {
+	inline static int nextdiff(ljp* self, int Px, int componentIndex) {
 #ifdef SLOW_HUFF
 		int t = decode(self);
 		int diff = receive(self, t);
@@ -409,7 +414,7 @@ namespace Octopus::Player::Decoders::LJ92
 				ix++;
 		}
 		int index = b >> (cnt - huffbits);
-		u16 ssssused = self->hufflut[index];
+		u16 ssssused = (self->hufflut[componentIndex])[index];
 		int usedbits = ssssused & 0xFF;
 		int t = ssssused >> 8;
 		self->sssshist[t]++;
@@ -463,6 +468,8 @@ namespace Octopus::Player::Decoders::LJ92
 		u16* thisrow = self->outrow[0];
 		u16* lastrow = self->outrow[1];
 
+		int componentIndex = 0;
+
 		// First pixel predicted from base value
 		int diff;
 		int Px = 1 << (self->bits - 1); // First pixel uses middle grey value
@@ -470,7 +477,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int left = 0;
 		while (c < pixels) {
 
-			diff = nextdiff(self, Px);
+			diff = nextdiff(self, Px, componentIndex);
 			left = Px + diff;
 			Px = left; // Default use left pixel
 			//printf("%d %d %d\n",c,diff,left);
@@ -502,6 +509,8 @@ namespace Octopus::Player::Decoders::LJ92
 		int pixels = self->y * self->x;
 		u16* out = self->image;
 
+		int componentIndex = 0;
+
 		// First pixel predicted from base value
 		int diff;
 		int Px = 1 << (self->bits - 1); // First pixel uses middle grey value
@@ -511,7 +520,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 		// First row (except first pixel) is always pixel to the left
 		while (c < self->x) {
-			diff = nextdiff(self, Px);
+			diff = nextdiff(self, Px, componentIndex);
 			left = Px + diff;
 
 			out[c++] = left;
@@ -527,7 +536,7 @@ namespace Octopus::Player::Decoders::LJ92
 			// Set pixel to above pixel
 			Px = out[c - self->x];
 
-			diff = nextdiff(self, Px);
+			diff = nextdiff(self, Px, componentIndex);
 			left = Px + diff;
 
 			out[c++] = left;
@@ -557,6 +566,8 @@ namespace Octopus::Player::Decoders::LJ92
 		u16* thisrow = self->outrow[0];
 		u16* lastrow = self->outrow[1];
 
+		int componentIndex = 0;
+
 		// First pixel predicted from base value
 		int diff;
 		int Px;
@@ -566,7 +577,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int linear;
 
 		// First pixel
-		diff = nextdiff(self, 0);
+		diff = nextdiff(self, 0, componentIndex);
 		Px = 1 << (self->bits - 1);
 		left = Px + diff;
 		if (self->linearize)
@@ -579,7 +590,7 @@ namespace Octopus::Player::Decoders::LJ92
 		--write;
 		int rowcount = self->x - 1;
 		while (rowcount--) {
-			diff = nextdiff(self, 0);
+			diff = nextdiff(self, 0, componentIndex);
 			Px = left;
 			left = Px + diff;
 			if (self->linearize)
@@ -602,7 +613,7 @@ namespace Octopus::Player::Decoders::LJ92
 		//printf("%x %x\n",thisrow,lastrow);
 		while (c < pixels) {
 			col = 0;
-			diff = nextdiff(self, 0);
+			diff = nextdiff(self, 0, componentIndex);
 			Px = lastrow[col]; // Use value above for first pixel in row
 			left = Px + diff;
 			if (self->linearize) {
@@ -621,7 +632,7 @@ namespace Octopus::Player::Decoders::LJ92
 				write = self->writelen;
 			}
 			while (rowcount--) {
-				diff = nextdiff(self, 0);
+				diff = nextdiff(self, 0, componentIndex);
 				Px = lastrow[col] + ((left - lastrow[col - 1]) >> 1);
 				left = Px + diff;
 				//printf("%d %d %d %d %d %x\n",col,diff,left,lastrow[col],lastrow[col-1],&lastrow[col]);
@@ -653,6 +664,21 @@ namespace Octopus::Player::Decoders::LJ92
 		memset(self->sssshist, 0, sizeof(self->sssshist));
 		self->ix = self->scanstart;
 		int compcount = self->data[self->ix + 2];
+
+		int huffmanTableIndicesLocation = self->ix + 3;
+		for (int i = 0; i < compcount; i++)
+		{
+			auto cc = self->data[huffmanTableIndicesLocation++];
+			auto c = self->data[huffmanTableIndicesLocation++];
+
+			int ci;
+			for (ci = 0; ci < self->numComponents; ci++)
+			{
+				//if ( cc == )
+				//break;
+			}
+		}
+
 		int pred = self->data[self->ix + 3 + 2 * compcount];
 		if (pred < 0 || pred>7) return ret;
 		// Fast path for predictor 2
@@ -675,6 +701,8 @@ namespace Octopus::Player::Decoders::LJ92
 		u16* out = self->image;
 		u16* thisrow = self->outrow[0];
 		u16* lastrow = self->outrow[1];
+
+		int componentIndex = 0;
 
 		// First pixel predicted from base value
 		int diff;
@@ -712,7 +740,7 @@ namespace Octopus::Player::Decoders::LJ92
 					Px = (left + lastrow[col]) >> 1; break;
 				}
 			}
-			diff = nextdiff(self, Px);
+			diff = nextdiff(self, Px, componentIndex);
 			left = Px + diff;
 			//printf("%d %d %d\n",c,diff,left);
 			int linear;
@@ -798,8 +826,11 @@ namespace Octopus::Player::Decoders::LJ92
 		free(self->huffcode);
 		self->huffcode = NULL;
 #else
-		free(self->hufflut);
-		self->hufflut = nullptr;
+		for (int i = 0; i < self->numComponents; i++)
+		{
+			free(self->hufflut[i]);
+			self->hufflut[i] = nullptr;
+		}
 #endif
 		if (self->rowcache != nullptr) {
 			free(self->rowcache);
@@ -897,7 +928,11 @@ namespace Octopus::Player::Decoders::LJ92
 		if (error == Core::eError::None)
 		{
 			// Don't compare width/height directly, lossless jpeg bayer compression may change the width and height to improve compression/predictor efficiency
+#ifdef EXPEIRMENTAL_MULTI_COMPONENT_SUPPORT
 			if ((actualWidth * actualHeight * lj.numComponents) == (width * height) && actualBitDepth == bitDepth)
+#else
+			if ((actualWidth * actualHeight) == (width * height) && actualBitDepth == bitDepth)
+#endif
 				error = LJ92Error(lj92_decode(lj, (uint16_t*)(pOut16Bit + outOffsetBytes), 0, 0, nullptr, 0));
 			else
 				error = Core::eError::BadMetadata;
