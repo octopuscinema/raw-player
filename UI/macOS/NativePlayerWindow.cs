@@ -16,23 +16,27 @@ namespace Octopus.Player.UI.macOS
 
         public PlaybackControlsAnimationState PlaybackControlsAnimationState { get; private set; }
 
-        // Called when created from unmanaged code
-        public NativePlayerWindow (IntPtr handle) : base(handle)
+		private ITheme Theme { get { return PlayerWindow.Theme; } }
+
+		// Called when created from unmanaged code
+		public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
 			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
 
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
+			PlayerWindow.OnLoad();
 		}
 
 		// Called when created directly from a XIB file
 		[Export("initWithCoder:")]
-		public NativePlayerWindow (NSCoder coder) : base(coder)
+		public NativePlayerWindow(NSCoder coder) : base(coder)
 		{
 			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
 
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
+			PlayerWindow.OnLoad();
 		}
 
 		public void LockAspect(Core.Maths.Rational ratio)
@@ -220,7 +224,20 @@ namespace Octopus.Player.UI.macOS
 			});
 		}
 
-        public void SetSliderValue(string id, float value)
+		public void SetButtonEnabled(string id, bool enabled)
+		{
+			InvokeOnMainThread(() =>
+			{
+				var button = FindControl<NSButton>(ContentView, id);
+				if (button != null)
+				{
+					button.Enabled = enabled;
+					button.AlphaValue = enabled ? Theme.DefaultOpacity : Theme.DisabledOpacity;
+				}
+			});
+		}
+
+		public void SetSliderValue(string id, float value)
         {
 			InvokeOnMainThread(() =>
 			{
@@ -229,6 +246,19 @@ namespace Octopus.Player.UI.macOS
 					slider.FloatValue = value;
 			});
         }
+
+		public void SetSliderEnabled(string id, bool enabled)
+		{
+			InvokeOnMainThread(() =>
+			{
+				var slider = FindControl<NSSlider>(ContentView, id);
+				if (slider != null)
+				{
+					slider.Enabled = enabled;
+					slider.AlphaValue = enabled ? Theme.DefaultOpacity : Theme.DisabledOpacity;
+				}
+			});
+		}
 
 		public void InvokeOnUIThread(Action action, bool async = true)
 		{

@@ -36,7 +36,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <sliderCell key="cell" controlSize="mini" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
                                     </slider>
-                                    <button autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
+                                    <button identifier="skipAheadButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
                                         <rect key="frame" x="261" y="32" width="27.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="forward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="S0o-x3-Jf1">
@@ -48,7 +48,7 @@
                                             <action selector="ButtonClick:" target="8" id="BiL-GE-kJ2"/>
                                         </connections>
                                     </button>
-                                    <button autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
+                                    <button identifier="skipBackButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
                                         <rect key="frame" x="191" y="32" width="27.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="backward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="ZVu-TT-ZiP">
@@ -91,7 +91,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="left" title="00:00:00:00" usesSingleLineMode="YES" id="1gN-C3-H88">
                                             <font key="font" size="15" name="HelveticaNeue"/>
-                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="textColor" white="0.89500251016416754" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
@@ -100,7 +100,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="right" title="00:00:00" usesSingleLineMode="YES" id="mCD-N5-rDO">
                                             <font key="font" size="15" name="HelveticaNeue"/>
-                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="textColor" white="0.89876529720279719" alpha="1" colorSpace="calibratedWhite"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
@@ -122,6 +122,6 @@
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
         <image name="pause.fill" catalog="system" width="14" height="17"/>
-        <image name="play.fill" catalog="system" width="12" height="13"/>
+        <image name="play.fill" catalog="system" width="15" height="17"/>
     </resources>
 </document>
