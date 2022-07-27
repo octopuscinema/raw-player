@@ -16,6 +16,17 @@ namespace Octopus.Player.Core.Playback
 		End
 	};
 
+	public enum PlaybackVelocity
+    {
+		Backward10x = -10,
+		Backward5x = -5,
+		Backward2x = -2,
+		Forward1x = 1,
+		Forward2x = 2,
+		Forward5x = 5,
+		Forward10x = 10
+	};
+
 	public interface IPlayback : IDisposable
 	{
 		uint FirstFrame { get; }
@@ -32,6 +43,9 @@ namespace Octopus.Player.Core.Playback
 		void Play();
 		void Pause();
 		bool IsPlaying { get; }
+		PlaybackVelocity Velocity { get; set; }
+		event EventHandler VelocityChanged;
+
 		bool IsPaused { get; }
 		public delegate void FrameDisplayedEventHandler(uint frame, in Maths.TimeCode timeCode);
 		public delegate void FrameSkippedEventHandler(uint requestedFrame, uint displayedFrame, in Maths.TimeCode synthesisedTimeCode);

@@ -24,6 +24,8 @@ namespace Octopus.Player.UI
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
             NativeWindow.SetLabelContent("durationLabel", "--:--:--");
+            NativeWindow.SetLabelContent("fastForwardLabel", "");
+            NativeWindow.SetLabelContent("fastRewindLabel", "");
             NativeWindow.SetButtonEnabled("playButton", false);
             NativeWindow.SetButtonEnabled("pauseButton", false);
             NativeWindow.SetButtonEnabled("skipBackButton", false);
@@ -45,7 +47,7 @@ namespace Octopus.Player.UI
 
         public void MouseMove(in Vector2 localPosition)
         {
-            
+
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
@@ -224,6 +226,44 @@ namespace Octopus.Player.UI
         {
             switch (id)
             {
+                case "skipBackButton":
+                    if (Playback != null && Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.Stopped)
+                    {/*
+                        switch (Playback.Velocity)
+                        {
+                            case Core.Playback.PlaybackVelocity.Backward10x:
+                            case Core.Playback.PlaybackVelocity.Backward5x:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Backward10x;
+                                break;
+                            case Core.Playback.PlaybackVelocity.Backward2x:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Backward5x;
+                                break;
+                            default:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Backward2x;
+                                break;
+                        }*/
+                    }
+                    break;
+                case "skipAheadButton":
+                    if (Playback != null && Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.PausedEnd)
+                    {
+                        switch (Playback.Velocity)
+                        {
+                            case Core.Playback.PlaybackVelocity.Forward10x:
+                            case Core.Playback.PlaybackVelocity.Forward5x:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Forward10x;
+                                break;
+                            case Core.Playback.PlaybackVelocity.Forward2x:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Forward5x;
+                                break;
+                            default:
+                                Playback.Velocity = Core.Playback.PlaybackVelocity.Forward2x;
+                                break;
+                        }
+                        if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused)
+                            Playback.Play();
+                    }
+                    break;
                 case "playButton":
                     if (Playback != null)
                     {
@@ -232,10 +272,13 @@ namespace Octopus.Player.UI
                     }
                     break;
                 case "pauseButton":
-                    if ( Playback != null )
+                    if (Playback != null)
                     {
                         if (Playback.State == Core.Playback.State.Playing)
+                        {
                             Playback.Pause();
+                            Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
+                        }
                     }
                     break;
                 default:
@@ -265,6 +308,7 @@ namespace Octopus.Player.UI
                 Playback.FrameDisplayed -= OnFrameDisplayed;
                 Playback.FrameSkipped -= OnFrameSkipped;
                 Playback.FrameMissing -= OnFrameMissing;
+                Playback.VelocityChanged -= OnPlaybackVelocityChanged;
                 Playback.Dispose();
                 Playback = null;
             }
@@ -279,15 +323,16 @@ namespace Octopus.Player.UI
                 Playback.FrameDisplayed += OnFrameDisplayed;
                 Playback.FrameSkipped += OnFrameSkipped;
                 Playback.FrameMissing += OnFrameMissing;
+                Playback.VelocityChanged += OnPlaybackVelocityChanged;
             }
             else
                 Playback.Close();
 
             // Open the clip, if that fails close the playback
             var error = Playback.Open(clip);
-            if ( error != Error.None)
+            if (error != Error.None)
             {
-                if ( Playback.IsOpen() )
+                if (Playback.IsOpen())
                     Playback.Close();
                 Playback.Dispose();
                 Playback = null;
@@ -388,7 +433,7 @@ namespace Octopus.Player.UI
                     NativeWindow.Alert(AlertType.Warning, "Clip is missing framerate metadata.\nPlayback framerate will default to: " + Playback.Framerate.ToString(true) + "fps.", "Missing framerate information");
 
                 // Set start time code label
-                var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.TimeCode(Playback.Clip.Metadata.StartTimeCode.Value) 
+                var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.TimeCode(Playback.Clip.Metadata.StartTimeCode.Value)
                     : new Core.Maths.TimeCode(0, Playback.Framerate);
                 NativeWindow.SetLabelContent("timeCodeLabel", startTimeCode.ToString(), Theme.LabelColour);
 
@@ -426,6 +471,37 @@ namespace Octopus.Player.UI
 
             RenderContext.BackgroundColor = Theme.ClipBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+        }
+
+        private void OnPlaybackVelocityChanged(object sender, EventArgs e)
+        {
+            switch (Playback.Velocity)
+            {
+                case Core.Playback.PlaybackVelocity.Backward10x:
+                    break;
+                case Core.Playback.PlaybackVelocity.Backward5x:
+                    break;
+                case Core.Playback.PlaybackVelocity.Backward2x:
+                    break;
+                case Core.Playback.PlaybackVelocity.Forward1x:
+                    NativeWindow.SetLabelContent("fastForwardLabel", "");
+                    NativeWindow.SetLabelContent("fastRewindLabel", "");
+                    break;
+                case Core.Playback.PlaybackVelocity.Forward2x:
+                    NativeWindow.SetLabelContent("fastForwardLabel", "2×");
+                    NativeWindow.SetLabelContent("fastRewindLabel", "");
+                    break;
+                case Core.Playback.PlaybackVelocity.Forward5x:
+                    NativeWindow.SetLabelContent("fastForwardLabel", "5×");
+                    NativeWindow.SetLabelContent("fastRewindLabel", "");
+                    break;
+                case Core.Playback.PlaybackVelocity.Forward10x:
+                    NativeWindow.SetLabelContent("fastForwardLabel", "10×");
+                    NativeWindow.SetLabelContent("fastRewindLabel", "");
+                    break;
+                default:
+                    throw new Exception("Unhandled playback velocity");
+            }
         }
 
         public void OnFramebufferResize(Vector2i framebufferSize)

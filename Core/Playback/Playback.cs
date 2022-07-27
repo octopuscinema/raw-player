@@ -10,9 +10,24 @@ namespace Octopus.Player.Core.Playback
     {
         public virtual uint FirstFrame { get { return 0; } }
         public virtual uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
-        public Maths.Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
+        public Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
 
         protected uint BufferDurationFrames { get; private set; }
+
+        private PlaybackVelocity velocity;
+        public PlaybackVelocity Velocity 
+        {
+            get { return velocity; }
+            set
+            {
+                if ( velocity != value)
+                {
+                    velocity = value;
+                    VelocityChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public event EventHandler VelocityChanged;
 
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
@@ -20,7 +35,7 @@ namespace Octopus.Player.Core.Playback
         private uint? requestFrame;
         private uint? displayFrame;
 
-        static private readonly Maths.Rational defaultFramerate = new Maths.Rational(24000, 1001);
+        static private readonly Rational defaultFramerate = new Rational(24000, 1001);
 
         public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {
@@ -30,6 +45,7 @@ namespace Octopus.Player.Core.Playback
             PlayerWindow = playerWindow;
             RenderContext = renderContext;
             BufferDurationFrames = bufferDurationFrames;
+            Velocity = PlaybackVelocity.Forward1x;
         }
 
         protected GPU.Render.IContext RenderContext { get; private set; }

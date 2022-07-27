@@ -20,7 +20,8 @@ LJ92.cpp (modifications/optimisations)
 #include <windows.h>
 
 // Required to support some bayer SlimRAW output modes
-//#define EXPEIRMENTAL_MULTI_COMPONENT_SUPPORT
+// See https://github.com/yanburman/dng_sdk/blob/ae301a57b4e14a6826914e29daf6d40459ef6acf/source/dng_lossless_jpeg.cpp 
+//#define WIP_MULTI_COMPONENT_SUPPORT
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -928,7 +929,7 @@ namespace Octopus::Player::Decoders::LJ92
 		if (error == Core::eError::None)
 		{
 			// Don't compare width/height directly, lossless jpeg bayer compression may change the width and height to improve compression/predictor efficiency
-#ifdef EXPEIRMENTAL_MULTI_COMPONENT_SUPPORT
+#ifdef WIP_MULTI_COMPONENT_SUPPORT
 			if ((actualWidth * actualHeight * lj.numComponents) == (width * height) && actualBitDepth == bitDepth)
 #else
 			if ((actualWidth * actualHeight) == (width * height) && actualBitDepth == bitDepth)

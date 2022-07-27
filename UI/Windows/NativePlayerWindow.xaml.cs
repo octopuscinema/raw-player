@@ -29,7 +29,7 @@ namespace Octopus.Player.UI.Windows
         public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
         public Vector3 EmptyBackground { get { return new Vector3(SystemColors.MenuBarColor.R, SystemColors.MenuBarColor.G, SystemColors.MenuBarColor.B) / 255.0f; } }
 
-        public Vector3 LabelColour { get { return new Vector3(1, 1, 1); } }
+        public Vector3 LabelColour { get { return new Vector3(System.Drawing.Color.LightGray.R, System.Drawing.Color.LightGray.G, System.Drawing.Color.LightGray.B) / 255.0f; } }
 
         public Vector3 MissingFrameColour { get { return new Vector3(1, 0, 0); } }
         public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
@@ -64,7 +64,7 @@ namespace Octopus.Player.UI.Windows
             InitializeComponent();
             
             // Create cross platform Window
-            PlayerWindow = new PlayerWindow(this);
+            PlayerWindow = new PlayerWindow(this, new DefaultWindowsTheme());
             Closed += OnClose;
 
             // Save the startup window state
