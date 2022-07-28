@@ -247,6 +247,8 @@ namespace Octopus.Player.UI
                 case "skipAheadButton":
                     if (Playback != null && Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.PausedEnd)
                     {
+                        if ((Playback.State == Core.Playback.State.Playing || Playback.State == Core.Playback.State.PlayingFromBuffer ) && Playback.Velocity != Core.Playback.PlaybackVelocity.Forward10x)
+                            Playback.Pause();
                         switch (Playback.Velocity)
                         {
                             case Core.Playback.PlaybackVelocity.Forward10x:
@@ -268,13 +270,16 @@ namespace Octopus.Player.UI
                     if (Playback != null)
                     {
                         if (Playback.State == Core.Playback.State.Stopped || Playback.State == Core.Playback.State.Paused || Playback.State == Core.Playback.State.PausedEnd)
+                        {
+                            Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
                             Playback.Play();
+                        }
                     }
                     break;
                 case "pauseButton":
                     if (Playback != null)
                     {
-                        if (Playback.State == Core.Playback.State.Playing)
+                        if (Playback.State == Core.Playback.State.Playing || Playback.State == Core.Playback.State.PlayingFromBuffer)
                         {
                             Playback.Pause();
                             Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
@@ -475,33 +480,10 @@ namespace Octopus.Player.UI
 
         private void OnPlaybackVelocityChanged(object sender, EventArgs e)
         {
-            switch (Playback.Velocity)
-            {
-                case Core.Playback.PlaybackVelocity.Backward10x:
-                    break;
-                case Core.Playback.PlaybackVelocity.Backward5x:
-                    break;
-                case Core.Playback.PlaybackVelocity.Backward2x:
-                    break;
-                case Core.Playback.PlaybackVelocity.Forward1x:
-                    NativeWindow.SetLabelContent("fastForwardLabel", "");
-                    NativeWindow.SetLabelContent("fastRewindLabel", "");
-                    break;
-                case Core.Playback.PlaybackVelocity.Forward2x:
-                    NativeWindow.SetLabelContent("fastForwardLabel", "2×");
-                    NativeWindow.SetLabelContent("fastRewindLabel", "");
-                    break;
-                case Core.Playback.PlaybackVelocity.Forward5x:
-                    NativeWindow.SetLabelContent("fastForwardLabel", "5×");
-                    NativeWindow.SetLabelContent("fastRewindLabel", "");
-                    break;
-                case Core.Playback.PlaybackVelocity.Forward10x:
-                    NativeWindow.SetLabelContent("fastForwardLabel", "10×");
-                    NativeWindow.SetLabelContent("fastRewindLabel", "");
-                    break;
-                default:
-                    throw new Exception("Unhandled playback velocity");
-            }
+            string velocityLabel = Math.Abs((int)Playback.Velocity).ToString() + "×";
+            bool isForward = Core.Playback.Extensions.IsForward(Playback.Velocity);
+            NativeWindow.SetLabelContent("fastForwardLabel", isForward && (Playback.Velocity != Core.Playback.PlaybackVelocity.Forward1x) ? velocityLabel : "");
+            NativeWindow.SetLabelContent("fastRewindLabel", isForward ? "" : velocityLabel);
         }
 
         public void OnFramebufferResize(Vector2i framebufferSize)
