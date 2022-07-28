@@ -143,11 +143,6 @@ namespace Octopus.Player.Core.Playback
             SequenceStream.ReclaimReadyFrames();
         }
 
-        public override void Play()
-        {
-            base.Play();
-        }
-
         public override void Pause()
         {
             base.Pause();

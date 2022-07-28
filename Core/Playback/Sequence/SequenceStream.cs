@@ -111,9 +111,12 @@ namespace Octopus.Player.Core.Playback
 
         public void ReclaimReadyFrames()
         {
+            Workers.ForEach(i => i.Stop());
             var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
             foreach(var frame in displayFramesCopy)
                 OnFrameDisplayed(frame.Key);
+            Debug.Assert(DisplayFrames.IsEmpty);
+            Workers.ForEach(i => i.Start());
         }
 
         public void ReclaimReadyFramesUpTo(uint upToFrame)

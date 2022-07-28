@@ -30,6 +30,23 @@ namespace Octopus.Player.Core.Playback
             Sync.Dispose();
             Thread = null;
             Sync = null;
+            Work = null;
+        }
+
+        public void Stop()
+        {
+            terminate = true;
+            Resume();
+            Thread.Join();
+            Thread = null;
+        }
+
+        public void Start()
+        {
+            terminate = false;
+            Debug.Assert(Thread == null);
+            Thread = new Thread(WorkLoop);
+            Thread.Start();
         }
 
         public void Resume()

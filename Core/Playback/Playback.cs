@@ -152,10 +152,20 @@ namespace Octopus.Player.Core.Playback
                 RequestFrame(requestFrame.Value);
 
                 // Last frame requested, we're now playing from the buffer
-                if (requestFrame >= LastFrame)
-                    State = State.PlayingFromBuffer;
-                else if (requestFrame < LastFrame)
-                    requestFrame++;
+                if (Velocity.IsForward())
+                {
+                    if (requestFrame >= LastFrame)
+                        State = State.PlayingFromBuffer;
+                    else if (requestFrame < LastFrame)
+                    {
+                        requestFrame += (uint)Velocity;
+                        requestFrame = Math.Min(requestFrame.Value, LastFrame);
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             });
         }
 
@@ -203,10 +213,28 @@ namespace Octopus.Player.Core.Playback
                 }
 
                 // Last frame displayed, pause
-                if (displayFrame >= LastFrame)
-                    Pause();
-                else if (displayFrame < LastFrame)
-                    displayFrame++;
+                if (Velocity.IsForward())
+                {
+                    if (displayFrame >= LastFrame)
+                        Pause();
+                    else if (displayFrame < LastFrame)
+                    {
+                        displayFrame += (uint)Velocity;
+                        displayFrame = Math.Min(displayFrame.Value, LastFrame);
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                    /*
+                    if (displayFrame <= FirstFrame)
+                        Pause();
+                    else if ( displayFrame > FirstFrame )
+                    {
+                        displayFrame -= (uint)Math.Abs((int)Velocity);
+                        displayFrame = Math.Min(displayFrame.Value, LastFrame);
+                    }*/
+                }
 
                 // Buffering becomes playing when the first frame is displayed
                 if (State == State.Buffering)

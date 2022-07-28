@@ -27,6 +27,14 @@ namespace Octopus.Player.Core.Playback
 		Forward10x = 10
 	};
 
+	public static class Extensions
+    {
+		public static bool IsForward(this PlaybackVelocity velocity)
+		{
+			return (int)velocity > 0;
+		}
+	}
+
 	public interface IPlayback : IDisposable
 	{
 		uint FirstFrame { get; }
