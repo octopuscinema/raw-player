@@ -7,6 +7,8 @@
         xmlns:local="clr-namespace:Octopus.Player.UI.Windows"
         mc:Ignorable="d"
         Loaded="Window_Loaded"
+        SizeChanged="Window_SizeChanged"
+        SnapsToDevicePixels="true"
         Title="OCTOPUS RAW Player" Height="450" Width="800">
 
     <Window.Resources>
@@ -124,7 +126,7 @@
         </Style>
         <SolidColorBrush x:Key="PlaybackControlsBackground" Color="Black" Opacity="0.5" />
     </Window.Resources>
-    <Grid>
+    <Grid x:Name="PlayerGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
