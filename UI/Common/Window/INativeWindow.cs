@@ -21,6 +21,7 @@ namespace Octopus.Player.UI
 	{
 		void LockAspect(Core.Maths.Rational ratio);
 		void UnlockAspect();
+		bool AspectLocked { get; }
 		void SetWindowTitle(string text);
 		void ToggleFullscreen();
 #nullable enable

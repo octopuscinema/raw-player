@@ -23,9 +23,8 @@ namespace Octopus.Player.UI.Windows
         private const int SWP_NOSIZE = 0x0001;
 
         public bool IsFullscreen { get; protected set; }
-        protected Rational? lockedAspectRatio;
+        protected Rational? lockedContentAspectRatio;
         private int sizingEdge;
-        protected virtual Vector2 AspectRatioArea { get; }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
@@ -76,7 +75,7 @@ namespace Octopus.Player.UI.Windows
                     break;
 
                 case WM_WINDOWPOSCHANGING:
-                    if (!lockedAspectRatio.HasValue || IsFullscreen)
+                    if (!lockedContentAspectRatio.HasValue || IsFullscreen)
                         return IntPtr.Zero;
                     var windowPositionObject = Marshal.PtrToStructure(lParam, typeof(WINDOWPOS));
                     if (windowPositionObject == null)
@@ -85,10 +84,14 @@ namespace Octopus.Player.UI.Windows
                     WINDOWPOS windowPosition = (WINDOWPOS)windowPositionObject;
                     if ((windowPosition.flags & SWP_NOSIZE) == 0)
                     {
-                        // Calculate client aspect ratio
-                        var clientAspectRatio = lockedAspectRatio.Value;
-                        
+                        // Calculate required aspect ratio for entire window
+                        var clientSize = new Vector2d(((System.Windows.Controls.Grid)Content).ActualWidth, ((System.Windows.Controls.Grid)Content).ActualHeight);
+                        var windowDecorationSize = new Vector2d(ActualWidth, ActualHeight) - clientSize;
+                        clientSize.Y = clientSize.X * (1.0 / lockedContentAspectRatio.Value.ToDouble());
+                        var aspectCorrectWindowSize = clientSize + windowDecorationSize;
+                        var ratio = aspectCorrectWindowSize.X / aspectCorrectWindowSize.Y;
 
+                        // Apply aspect ratio to resizing
                         var logicalSize = TransformPixelToLogical(new Vector2i(windowPosition.cx, windowPosition.cy));
                         if (logicalSize.HasValue && (logicalSize.Value.X != Width || logicalSize.Value.Y != Height))
                         {
@@ -97,19 +100,19 @@ namespace Octopus.Player.UI.Windows
                                 case WMSZ_TOP:
                                 case WMSZ_BOTTOM:
                                 case WMSZ_TOPRIGHT:
-                                    windowPosition.cx = (int)(windowPosition.cy * lockedAspectRatio.Value.ToDouble());
+                                    windowPosition.cx = (int)Math.Round(windowPosition.cy * ratio);
                                     break;
 
                                 case WMSZ_LEFT:
                                 case WMSZ_RIGHT:
                                 case WMSZ_BOTTOMRIGHT:
                                 case WMSZ_BOTTOMLEFT:
-                                    windowPosition.cy = (int)(windowPosition.cx * (1.0 / lockedAspectRatio.Value.ToDouble()));
+                                    windowPosition.cy = (int)Math.Round(windowPosition.cx * (1.0 / ratio));
                                     break;
 
                                 case WMSZ_TOPLEFT:
                                     var rightEdge = windowPosition.x + windowPosition.cx;
-                                    windowPosition.cx = (int)(windowPosition.cy * lockedAspectRatio.Value.ToDouble());
+                                    windowPosition.cx = (int)Math.Round(windowPosition.cy * ratio);
                                     windowPosition.x = rightEdge - windowPosition.cx;
                                     break;
                             }

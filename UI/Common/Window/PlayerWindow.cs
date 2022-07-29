@@ -415,7 +415,8 @@ namespace Octopus.Player.UI
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
-            NativeWindow.UnlockAspect();
+            if (NativeWindow.AspectLocked)
+                NativeWindow.UnlockAspect();
         }
 
         public void OnClipOpened(object sender, EventArgs e)

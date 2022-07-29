@@ -18,6 +18,7 @@ namespace Octopus.Player.UI.Windows
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
     {
         public ControlsAnimationState ControlsAnimationState { get; private set; }
+        public bool AspectLocked { get { return lockedContentAspectRatio.HasValue; } }
 
         private WindowState NonFullscreenWindowState { get; set; }
         private PlayerWindow PlayerWindow { get; set; }
@@ -364,23 +365,31 @@ namespace Octopus.Player.UI.Windows
 
         public void LockAspect(Rational ratio)
         {
-            Debug.Assert(!lockedAspectRatio.HasValue);
-
-            //ratio.
-
-            lockedAspectRatio = ratio;
-            var clientArea = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight); 
-            var minSize = new Vector2d(clientArea.X + playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, clientArea.Y + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            Debug.Assert(!lockedContentAspectRatio.HasValue);
+            lockedContentAspectRatio = ratio;
+            var minContentSize = new Vector2d(playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            minContentSize.X = Math.Max(minContentSize.X, minContentSize.Y * ratio.ToDouble());
+            minContentSize.Y = Math.Max(minContentSize.Y, minContentSize.X / ratio.ToDouble());
+            var windowDecorationSize = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight); 
+            var minSize = windowDecorationSize + minContentSize;
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
+
+            // Change window size to fit aspect immediately
+            var contentSize = new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight);
+            var aspectCorrectContentSize = new Vector2d(contentSize.Y * ratio.ToDouble(), contentSize.Y);
+            var aspectCorrectWindowSize = aspectCorrectContentSize + windowDecorationSize;
+            Width = aspectCorrectWindowSize.X;
+            Height = aspectCorrectWindowSize.Y;
         }
 
         public void UnlockAspect()
         {
-            Debug.Assert(lockedAspectRatio.HasValue);
-            lockedAspectRatio = null;
-            var clientArea = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight);
-            var minSize = new Vector2d(clientArea.X + playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, clientArea.Y + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            Debug.Assert(lockedContentAspectRatio.HasValue);
+            lockedContentAspectRatio = null;
+            var minContentSize = new Vector2d(playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, PlayerMenu.ActualHeight + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            var windowDecorationSize = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight);
+            var minSize = windowDecorationSize + minContentSize;
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
         }
@@ -468,8 +477,9 @@ namespace Octopus.Player.UI.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var clientArea = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight);
-            var minSize = new Vector2d(clientArea.X + playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, clientArea.Y + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            var minContentSize = new Vector2d(playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, PlayerMenu.ActualHeight + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
+            var windowDecorationSize = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight);
+            var minSize = windowDecorationSize + minContentSize;
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
             PlayerWindow.OnLoad();
