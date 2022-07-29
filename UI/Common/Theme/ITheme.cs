@@ -18,6 +18,6 @@ namespace Octopus.Player.UI
         float DisabledOpacity { get; }
 
         float PlaybackControlsMargin { get; }
-        TimeSpan PlaybackControlsAnimation { get; }
+        TimeSpan ControlsAnimation { get; }
     }
 }

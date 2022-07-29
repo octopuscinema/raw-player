@@ -11,7 +11,7 @@ namespace Octopus.Player.UI
 		Warning
     }
 
-	public enum PlaybackControlsAnimationState
+	public enum ControlsAnimationState
     {
 		In,
 		Out
@@ -38,9 +38,9 @@ namespace Octopus.Player.UI
 		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
-		void AnimateInPlaybackControls(TimeSpan duration);
-		void AnimateOutPlaybackControls(TimeSpan duration);
-		PlaybackControlsAnimationState PlaybackControlsAnimationState { get; }
+		void AnimateInControls(TimeSpan duration);
+		void AnimateOutControls(TimeSpan duration);
+		ControlsAnimationState ControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }
 		void InvokeOnUIThread(Action action, bool async = true);

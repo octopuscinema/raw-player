@@ -1,56 +1,23 @@
-﻿#define WINDOW_ASPECT_RATIO_LOCK
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Octopus.Player.Core.Maths;
-using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
 
 namespace Octopus.Player.UI.Windows
 {
-    public struct DefaultWindowsTheme : ITheme
+    public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
     {
-        public Vector3 ClipBackground { get { return new Vector3(0, 0, 0); } }
-        public Vector3 EmptyBackground { get { return new Vector3(SystemColors.MenuBarColor.R, SystemColors.MenuBarColor.G, SystemColors.MenuBarColor.B) / 255.0f; } }
-
-        public Vector3 LabelColour { get { return new Vector3(System.Drawing.Color.LightGray.R, System.Drawing.Color.LightGray.G, System.Drawing.Color.LightGray.B) / 255.0f; } }
-
-        public Vector3 MissingFrameColour { get { return new Vector3(1, 0, 0); } }
-        public Vector3 SkippedFrameColour { get { return new Vector3(1, 0.5f, 0); } }
-
-        public float DefaultOpacity { get { return 1.0f; } }
-        public float DisabledOpacity { get { return 0.5f; } }
-
-        public float PlaybackControlsMargin { get { return 20.0f; } }
-        public TimeSpan PlaybackControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
-    }
-
-    /// <summary>
-    /// Interaction logic for PlayerWindow.xaml
-    /// </summary>
-    public partial class NativePlayerWindow : Window, INativeWindow
-    {
-        public bool IsFullscreen { get; private set; }
-
-        public PlaybackControlsAnimationState PlaybackControlsAnimationState { get; private set; }
+        public ControlsAnimationState ControlsAnimationState { get; private set; }
 
         private WindowState NonFullscreenWindowState { get; set; }
         private PlayerWindow PlayerWindow { get; set; }
@@ -61,11 +28,10 @@ namespace Octopus.Player.UI.Windows
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
         private IntPtr? hwnd;
-        private Rational? lockedAspectRatio;
 
         public NativePlayerWindow()
         {
-            PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+            ControlsAnimationState = ControlsAnimationState.In;
             InitializeComponent();
 
             // Create cross platform Window
@@ -152,7 +118,7 @@ namespace Octopus.Player.UI.Windows
                 margin.Bottom = Math.Max(Theme.PlaybackControlsMargin, playbackControlsPosition.Value.Y - delta.Y);
                 
                 margin.Left = Math.Min(margin.Left, GLControl.ActualWidth - (playbackControls.ActualWidth + Theme.PlaybackControlsMargin));
-                margin.Bottom = Math.Min(margin.Bottom, GLControl.ActualHeight - (playbackControls.ActualHeight + Theme.PlaybackControlsMargin));
+                margin.Bottom = Math.Min(margin.Bottom, GLControl.ActualHeight - (playbackControls.ActualHeight + Theme.PlaybackControlsMargin + PlayerMenu.ActualHeight));
 
                 playbackControls.Margin = margin;
             }
@@ -399,6 +365,9 @@ namespace Octopus.Player.UI.Windows
         public void LockAspect(Rational ratio)
         {
             Debug.Assert(!lockedAspectRatio.HasValue);
+
+            //ratio.
+
             lockedAspectRatio = ratio;
             var clientArea = new Vector2d(ActualWidth, ActualHeight) - new Vector2d(GLControl.ActualWidth, GLControl.ActualHeight); 
             var minSize = new Vector2d(clientArea.X + playbackControls.ActualWidth + Theme.PlaybackControlsMargin * 2, clientArea.Y + playbackControls.ActualHeight + Theme.PlaybackControlsMargin * 2);
@@ -421,13 +390,20 @@ namespace Octopus.Player.UI.Windows
             Debug.Assert(sender.GetType() == typeof(Button));
             var button = (Button)sender;
             if (button != null)
+            {
                 PlayerWindow.ButtonClick(button.Name);
+                if (ControlsAnimationState == ControlsAnimationState.In)
+                    AnimateOutControls(Theme.ControlsAnimation);
+                else
+                    AnimateInControls(Theme.ControlsAnimation);
+            }
         }
 
-        public void AnimateOutPlaybackControls(TimeSpan duration)
+        public void AnimateOutControls(TimeSpan duration)
         {
-            Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.In);
-            PlaybackControlsAnimationState = PlaybackControlsAnimationState.Out;
+            Cursor = Cursors.None;
+            Debug.Assert(ControlsAnimationState == ControlsAnimationState.In);
+            ControlsAnimationState = ControlsAnimationState.Out;
             DoubleAnimation animation = new DoubleAnimation();
             animation.From = playbackControls.Opacity;
             animation.To = 0;
@@ -435,12 +411,14 @@ namespace Octopus.Player.UI.Windows
             animation.AutoReverse = false;
             animation.RepeatBehavior = new RepeatBehavior(1);
             playbackControls.BeginAnimation(OpacityProperty, animation);
+            PlayerMenu.BeginAnimation(OpacityProperty, animation);
         }
 
-        public void AnimateInPlaybackControls(TimeSpan duration)
+        public void AnimateInControls(TimeSpan duration)
         {
-            Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.Out);
-            PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+            Cursor = Cursors.Arrow;
+            Debug.Assert(ControlsAnimationState == ControlsAnimationState.Out);
+            ControlsAnimationState = ControlsAnimationState.In;
             DoubleAnimation animation = new DoubleAnimation();
             animation.From = playbackControls.Opacity;
             animation.To = 1;
@@ -448,6 +426,7 @@ namespace Octopus.Player.UI.Windows
             animation.AutoReverse = false;
             animation.RepeatBehavior = new RepeatBehavior(1);
             playbackControls.BeginAnimation(OpacityProperty, animation);
+            PlayerMenu.BeginAnimation(OpacityProperty, animation);
         }
 
         public void InvokeOnUIThread(Action action, bool async = true)
@@ -456,16 +435,6 @@ namespace Octopus.Player.UI.Windows
                 Application.Current.Dispatcher.BeginInvoke(action);
             else
                 Application.Current.Dispatcher.Invoke(action);
-        }
-
-        private Vector2? TransformPixelToLogical(in Vector2i sizePixels)
-        {
-            var presentationSource = PresentationSource.FromVisual(this);
-            if (presentationSource == null)
-                return null;
-            Matrix transformFromDevice = presentationSource.CompositionTarget.TransformFromDevice;
-            var size = transformFromDevice.Transform(new Vector(sizePixels.X,sizePixels.Y));
-            return new Vector2((float)size.X, (float)size.Y);
         }
 
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -505,99 +474,5 @@ namespace Octopus.Player.UI.Windows
             SetValue(MinHeightProperty, minSize.Y);
             PlayerWindow.OnLoad();
         }
-
-#if WINDOW_ASPECT_RATIO_LOCK
-        // TODO: Move all this into base class "AspectRatioWindow"
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            var source = (HwndSource)PresentationSource.FromVisual(this);
-            if (source != null)
-                source.AddHook(new HwndSourceHook(WinProc));
-        }
-
-        private int sizingEdge = 0;
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct WINDOWPOS
-        {
-            public IntPtr hwnd;
-            public IntPtr hwndInsertAfter;
-            public int x;
-            public int y;
-            public int cx;
-            public int cy;
-            public int flags;
-        }
-
-        private IntPtr WinProc(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            const int WM_SIZING = 0x0214;
-            const int WM_WINDOWPOSCHANGING = 0x0046;
-
-            // https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-sizing
-            const int WMSZ_BOTTOM = 6;
-            const int WMSZ_BOTTOMLEFT = 7;
-            const int WMSZ_BOTTOMRIGHT = 8;
-            const int WMSZ_LEFT = 1;
-            const int WMSZ_RIGHT = 2;
-            const int WMSZ_TOP = 3;
-            const int WMSZ_TOPLEFT = 4;
-            const int WMSZ_TOPRIGHT = 5;
-            const int SWP_NOSIZE = 0x0001;
-
-            switch (msg)
-            {
-                case WM_SIZING:
-                    sizingEdge = wParam.ToInt32();
-                    break;
-
-                case WM_WINDOWPOSCHANGING:
-                    if (!lockedAspectRatio.HasValue || IsFullscreen)
-                        return IntPtr.Zero;
-                    var windowPositionObject = Marshal.PtrToStructure(lParam, typeof(WINDOWPOS));
-                    if (windowPositionObject != null)
-                    {
-                        WINDOWPOS windowPosition = (WINDOWPOS)windowPositionObject;
-                        if ((windowPosition.flags & SWP_NOSIZE) == 0)
-                        {
-                            // Calculate client aspect ratio
-                            var clientAspectRatio = lockedAspectRatio.Value;
-
-
-                            var logicalSize = TransformPixelToLogical(new Vector2i(windowPosition.cx, windowPosition.cy));
-                            if (logicalSize.HasValue && (logicalSize.Value.X != Width || logicalSize.Value.Y != Height))
-                            {
-                                switch (sizingEdge)
-                                {
-                                    case WMSZ_TOP:
-                                    case WMSZ_BOTTOM:
-                                    case WMSZ_TOPRIGHT:
-                                        windowPosition.cx = (int)(windowPosition.cy * lockedAspectRatio.Value.ToDouble());
-                                        break;
-
-                                    case WMSZ_LEFT:
-                                    case WMSZ_RIGHT:
-                                    case WMSZ_BOTTOMRIGHT:
-                                    case WMSZ_BOTTOMLEFT:
-                                        windowPosition.cy = (int)(windowPosition.cx * (1.0 / lockedAspectRatio.Value.ToDouble()));
-                                        break;
-
-                                    case WMSZ_TOPLEFT:
-                                        var rightEdge = windowPosition.x + windowPosition.cx;
-                                        windowPosition.cx = (int)(windowPosition.cy * lockedAspectRatio.Value.ToDouble());
-                                        windowPosition.x = rightEdge - windowPosition.cx;
-                                        break;
-                                }
-                            }
-                        }
-                        Marshal.StructureToPtr(windowPosition, lParam, true);
-                    }
-                    break;
-            }
-
-            return IntPtr.Zero;
-        }
-#endif
     }
 }

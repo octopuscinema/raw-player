@@ -47,7 +47,8 @@ namespace Octopus.Player.UI
 
         public void MouseMove(in Vector2 localPosition)
         {
-
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls(Theme.ControlsAnimation);
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
