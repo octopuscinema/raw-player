@@ -157,7 +157,7 @@
             </Grid>
         </Border>
 
-        <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+        <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" MouseMove="GLControl_MouseMove">
             <MenuItem Header="_File" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
                 <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" Click="MenuItem_Click"/>
                 <Separator />

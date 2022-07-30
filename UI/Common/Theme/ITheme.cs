@@ -19,5 +19,6 @@ namespace Octopus.Player.UI
 
         float PlaybackControlsMargin { get; }
         TimeSpan ControlsAnimation { get; }
+        TimeSpan ControlsAnimationDelay { get; }
     }
 }

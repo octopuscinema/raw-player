@@ -3,6 +3,9 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace Octopus.Player.UI
 {
@@ -10,13 +13,32 @@ namespace Octopus.Player.UI
     {
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
-        GPU.Render.IContext RenderContext { get; set; }
         public ITheme Theme { get; private set; }
+        private GPU.Render.IContext RenderContext { get; set; }
+        private Timer AnimateOutControlsTimer { get; set; }
+
+        private DateTime lastInteraction;
+
+        // Application info (Maybe move to a separate class)
+        public string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
+        public string Version { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
+        public string VersionMajor 
+        { 
+            get 
+            {
+                var versionParts = Version.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                return versionParts.Length > 0 ? versionParts[0] : "";
+            }
+        }
+        public string Company { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute)).OfType<AssemblyCompanyAttribute>().FirstOrDefault().Company; } }
+        public string License { get { return "MIT License"; } }
+        public string Copyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
 
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
+            lastInteraction = DateTime.Now;
         }
 
         public void OnLoad()
@@ -31,10 +53,30 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("skipBackButton", false);
             NativeWindow.SetButtonEnabled("skipAheadButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
+
+            // Create the animate controls timer
+            AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
+        }
+
+        private void AnimateOutControls(object obj)
+        {
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.In && (DateTime.Now - lastInteraction) > Theme.ControlsAnimationDelay && Playback != null &&
+                Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.Stopped)
+            {
+                NativeWindow.InvokeOnUIThread(() =>
+                {
+                    if (NativeWindow.ControlsAnimationState == ControlsAnimationState.In)
+                        NativeWindow.AnimateOutControls();
+                });
+            }
         }
 
         public void LeftMouseDown(uint clickCount)
         {
+            lastInteraction = DateTime.Now;
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls();
+
             // Double click to go full screen
             if (clickCount == 2)
                 NativeWindow.ToggleFullscreen();
@@ -42,13 +84,16 @@ namespace Octopus.Player.UI
 
         public void RightMouseDown(uint clickCount)
         {
-
+            lastInteraction = DateTime.Now;
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls();
         }
 
         public void MouseMove(in Vector2 localPosition)
         {
+            lastInteraction = DateTime.Now;
             if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
-                NativeWindow.AnimateInControls(Theme.ControlsAnimation);
+                NativeWindow.AnimateInControls();
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
@@ -135,6 +180,10 @@ namespace Octopus.Player.UI
 
         public void MenuItemClick(string id)
         {
+            lastInteraction = DateTime.Now;
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls();
+
             switch (id)
             {
                 // Advanced raw paramters
@@ -179,7 +228,12 @@ namespace Octopus.Player.UI
 
                 // Help
                 case "about":
-                    NativeWindow.Alert(AlertType.Blank, "\n\t\t  OCTOPUS RAW Player\n\t\t ------------------------\n\t\t  Pre-release version X.X\n\t\t           MIT License\n\n\n\t\t© 2022 OCTOPUSCINEMA\t\t", "About OCTOPUS RAW Player");
+                    string aboutText = "\n\t\t  " + ProductName + "\n\t\t  ------------------------\n\t\t     ";
+                    string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;
+                    aboutText += versionText + "\n\t\t           ";
+                    aboutText += License;
+                    aboutText += "\n\n\n\t\t" + Copyright + "\t\t";
+                    NativeWindow.Alert(AlertType.Blank, aboutText, "About " + ProductName);
                     break;
                 case "visitInstagram":
                     NativeWindow.OpenUrl("https://www.instagram.com/octopuscinema/");
@@ -225,6 +279,10 @@ namespace Octopus.Player.UI
 
         public void ButtonClick(string id)
         {
+            lastInteraction = DateTime.Now;
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls();
+
             switch (id)
             {
                 case "skipBackButton":
@@ -509,6 +567,16 @@ namespace Octopus.Player.UI
 
         public void Dispose()
         {
+            if (AnimateOutControlsTimer != null)
+            {
+                using (var waitHandle = new ManualResetEvent(false))
+                {
+                    AnimateOutControlsTimer.Dispose(waitHandle);
+                    waitHandle.WaitOne();
+                }
+                AnimateOutControlsTimer = null;
+            }
+
             if (Playback != null)
             {
                 Debug.Assert(Playback.IsOpen());

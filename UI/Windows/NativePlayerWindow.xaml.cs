@@ -25,7 +25,6 @@ namespace Octopus.Player.UI.Windows
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
         public Vector2i FramebufferSize { get; private set; }
-
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
         private IntPtr? hwnd;
@@ -123,6 +122,9 @@ namespace Octopus.Player.UI.Windows
 
                 playbackControls.Margin = margin;
             }
+
+            var mousePosition = e.GetPosition(this);
+            PlayerWindow.MouseMove(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
         }
 
         private void PlaybackControls_MouseUp(object sender, MouseButtonEventArgs e)
@@ -399,16 +401,10 @@ namespace Octopus.Player.UI.Windows
             Debug.Assert(sender.GetType() == typeof(Button));
             var button = (Button)sender;
             if (button != null)
-            {
                 PlayerWindow.ButtonClick(button.Name);
-                if (ControlsAnimationState == ControlsAnimationState.In)
-                    AnimateOutControls(Theme.ControlsAnimation);
-                else
-                    AnimateInControls(Theme.ControlsAnimation);
-            }
         }
 
-        public void AnimateOutControls(TimeSpan duration)
+        public void AnimateOutControls()
         {
             Cursor = Cursors.None;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.In);
@@ -416,14 +412,14 @@ namespace Octopus.Player.UI.Windows
             DoubleAnimation animation = new DoubleAnimation();
             animation.From = playbackControls.Opacity;
             animation.To = 0;
-            animation.Duration = new Duration(duration);
+            animation.Duration = new Duration(Theme.ControlsAnimation);
             animation.AutoReverse = false;
             animation.RepeatBehavior = new RepeatBehavior(1);
             playbackControls.BeginAnimation(OpacityProperty, animation);
             PlayerMenu.BeginAnimation(OpacityProperty, animation);
         }
 
-        public void AnimateInControls(TimeSpan duration)
+        public void AnimateInControls()
         {
             Cursor = Cursors.Arrow;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.Out);
@@ -431,7 +427,7 @@ namespace Octopus.Player.UI.Windows
             DoubleAnimation animation = new DoubleAnimation();
             animation.From = playbackControls.Opacity;
             animation.To = 1;
-            animation.Duration = new Duration(duration);
+            animation.Duration = new Duration(Theme.ControlsAnimation);
             animation.AutoReverse = false;
             animation.RepeatBehavior = new RepeatBehavior(1);
             playbackControls.BeginAnimation(OpacityProperty, animation);

@@ -20,5 +20,7 @@ namespace Octopus.Player.UI
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
         public TimeSpan ControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
+
+        public TimeSpan ControlsAnimationDelay { get { return TimeSpan.FromSeconds(2.5); } }
     }
 }

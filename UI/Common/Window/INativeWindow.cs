@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using OpenTK.Mathematics;
 
 namespace Octopus.Player.UI
@@ -39,8 +40,8 @@ namespace Octopus.Player.UI
 		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
-		void AnimateInControls(TimeSpan duration);
-		void AnimateOutControls(TimeSpan duration);
+		void AnimateInControls();
+		void AnimateOutControls();
 		ControlsAnimationState ControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }
