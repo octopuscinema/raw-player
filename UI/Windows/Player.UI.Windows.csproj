@@ -8,6 +8,9 @@
 		<RootNamespace>Octopus.Player.UI.Windows</RootNamespace>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AssemblyName>OCTOPUS RAW Player</AssemblyName>
+		<Authors>OCTOPUSCINEMA</Authors>
+		<Version>0.0.1</Version>
+		<Copyright>© 2022 OCTOPUSCINEMA</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>
