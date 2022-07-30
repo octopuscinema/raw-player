@@ -40,7 +40,7 @@ jobs:
       
     - name: Publish
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /p:PublishProfile="${{env.PUBLISH_PROFILE}}" ${{env.PROJECT_FILE_PATH}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} /p:PublishProfile="${{env.PUBLISH_PROFILE}}" ${{env.PROJECT_FILE_PATH}}
   
     - name: Upload artifacts
       uses: actions/upload-artifact@v3.1.0
