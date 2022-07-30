@@ -7,14 +7,17 @@ using Foundation;
 using AppKit;
 using CoreAnimation;
 using OpenGL;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.UI.macOS
 {
-    public partial class PlayerView : AppKit.NSView
+    public partial class PlayerView : NSView
     {
         private OpenGLLayer GLLayer { get; set; }
 
         private NativePlayerWindow NativePlayerWindow { get { return (NativePlayerWindow)Window; } }
+
+        private NSTrackingArea trackingArea;
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
@@ -25,6 +28,12 @@ namespace Octopus.Player.UI.macOS
         [Export("initWithCoder:")]
         public PlayerView(NSCoder coder) : base(coder)
         {
+        }
+
+        ~PlayerView()
+        {
+            if (trackingArea != null)
+                trackingArea.Dispose();
         }
 
         public override void AwakeFromNib()
@@ -40,6 +49,18 @@ namespace Octopus.Player.UI.macOS
             Layer = new CALayer();
             Layer.AddSublayer(GLLayer);
             WantsLayer = true;
+        }
+
+        public override void UpdateTrackingAreas()
+        {
+            if (trackingArea != null)
+            {
+                RemoveTrackingArea(trackingArea);
+                trackingArea.Dispose();
+            }
+
+            trackingArea = new NSTrackingArea(Frame, NSTrackingAreaOptions.ActiveInKeyWindow | NSTrackingAreaOptions.MouseEnteredAndExited | NSTrackingAreaOptions.MouseMoved, this, null);
+            AddTrackingArea(trackingArea);
         }
 
         public override void ResizeSubviewsWithOldSize(CGSize oldSize)
@@ -89,6 +110,27 @@ namespace Octopus.Player.UI.macOS
         {
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
+        }
+
+        public override void MouseMoved(NSEvent theEvent)
+        {
+            base.MouseMoved(theEvent);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.MouseMove(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
+        }
+
+        public override void MouseExited(NSEvent theEvent)
+        {
+            base.MouseExited(theEvent);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.MouseExited(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
+        }
+
+        public override void MouseEntered(NSEvent theEvent)
+        {
+            base.MouseEntered(theEvent);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.MouseEntered(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
         }
 
         public override void DidChangeBackingProperties()

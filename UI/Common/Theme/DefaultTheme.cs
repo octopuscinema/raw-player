@@ -1,7 +1,5 @@
 ﻿using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Octopus.Player.UI
 {
@@ -19,7 +17,7 @@ namespace Octopus.Player.UI
         public float DisabledOpacity { get { return 0.5f; } }
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
-        public TimeSpan ControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
+        public TimeSpan ControlsAnimation { get { return TimeSpan.FromSeconds(0.2); } }
 
         public TimeSpan ControlsAnimationDelay { get { return TimeSpan.FromSeconds(2.5); } }
     }

@@ -8,20 +8,22 @@ using CoreAnimation;
 
 namespace Octopus.Player.UI.macOS
 {
-	public partial class NativePlayerWindow : AppKit.NSWindow, INativeWindow
+	public partial class NativePlayerWindow : NSWindow, INativeWindow
 	{
 		public PlayerWindow PlayerWindow { get; private set; }
 
         public Vector2i FramebufferSize { get { return new Vector2i((int)ContentView.Frame.Width, (int)ContentView.Frame.Height); } }
 
-        public PlaybackControlsAnimationState PlaybackControlsAnimationState { get; private set; }
+        public ControlsAnimationState ControlsAnimationState { get; private set; }
+
+		public bool AspectLocked { get; private set; }
 
 		private ITheme Theme { get { return PlayerWindow.Theme; } }
 
 		// Called when created from unmanaged code
 		public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
-			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+			ControlsAnimationState = ControlsAnimationState.In;
 
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
@@ -32,7 +34,7 @@ namespace Octopus.Player.UI.macOS
 		[Export("initWithCoder:")]
 		public NativePlayerWindow(NSCoder coder) : base(coder)
 		{
-			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+			ControlsAnimationState = ControlsAnimationState.In;
 
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
@@ -41,12 +43,14 @@ namespace Octopus.Player.UI.macOS
 
 		public void LockAspect(Core.Maths.Rational ratio)
         {
+			AspectLocked = true;
 			ContentAspectRatio = new CoreGraphics.CGSize(ratio.Numerator, ratio.Denominator);
 		}
 
 		public void UnlockAspect()
 		{
 			ResizeIncrements = new CoreGraphics.CGSize(1.0f, 1.0f);
+			AspectLocked = false;
 		}
 		
 		public void SetWindowTitle(string text)
@@ -268,26 +272,28 @@ namespace Octopus.Player.UI.macOS
 				InvokeOnMainThread(action);
 		}
 
-        public void AnimateInPlaybackControls(TimeSpan duration)
+        public void AnimateInControls()
         {
-			Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.Out);
-			PlaybackControlsAnimationState = PlaybackControlsAnimationState.In;
+			Debug.Assert(ControlsAnimationState == ControlsAnimationState.Out);
+			ControlsAnimationState = ControlsAnimationState.In;
 			NSAnimationContext.RunAnimation(ctx =>
 			{
-				ctx.Duration = duration.TotalSeconds;
+				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
 				var playbackControls = FindView(ContentView, "playbackControls");
 				((NSView)playbackControls.Animator).AlphaValue = 1.0f;
 			});
 		}
 
-        public void AnimateOutPlaybackControls(TimeSpan duration)
+        public void AnimateOutControls()
         {
-			Debug.Assert(PlaybackControlsAnimationState == PlaybackControlsAnimationState.In);
-			PlaybackControlsAnimationState = PlaybackControlsAnimationState.Out;
+			if ( WindowNumberAtPoint(NSEvent.CurrentMouseLocation, 0) == WindowNumber )
+				NSCursor.SetHiddenUntilMouseMoves(true);
+			Debug.Assert(ControlsAnimationState == ControlsAnimationState.In);
+			ControlsAnimationState = ControlsAnimationState.Out;
 			NSAnimationContext.RunAnimation(ctx =>
 			{
-				ctx.Duration = duration.TotalSeconds;
+				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
 				var playbackControls = FindView(ContentView, "playbackControls");
 				((NSView)playbackControls.Animator).AlphaValue = 0.0f;

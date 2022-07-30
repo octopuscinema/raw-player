@@ -61,7 +61,7 @@ namespace Octopus.Player.UI
         private void AnimateOutControls(object obj)
         {
             if (NativeWindow.ControlsAnimationState == ControlsAnimationState.In && (DateTime.Now - lastInteraction) > Theme.ControlsAnimationDelay && Playback != null &&
-                Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.Stopped)
+                Playback.State != Core.Playback.State.Empty)
             {
                 NativeWindow.InvokeOnUIThread(() =>
                 {
@@ -94,6 +94,17 @@ namespace Octopus.Player.UI
             lastInteraction = DateTime.Now;
             if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
                 NativeWindow.AnimateInControls();
+        }
+
+        public void MouseExited(in Vector2 localPosition)
+        {
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.In && Playback != null && Playback.State != Core.Playback.State.Empty)
+                NativeWindow.AnimateOutControls();
+        }
+
+        public void MouseEntered(in Vector2 localPosition)
+        {
+
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
