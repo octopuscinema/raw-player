@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+  BUILD_ARTIFACT_NAME: "OCTOPUS RAW Player"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-x64:
+    name: Build Windows x64
+    runs-on: windows-latest
+    
+    env:
+      SOLUTION_FILE_PATH: Player.Windows.sln
+      PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
+      PUBLISH_PROFILE: "Windows x64 Single File"
+      ARTIFACT_PATH: "bin/Release/net6.0-windows/publish/"
+      BUILD_PLATFORM: x64
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
+      
+    - name: Publish
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:PublishProfile="${{env.PUBLISH_PROFILE}}" ${{env.PROJECT_FILE_PATH}}
+  
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: ${{env.BUILD_ARTIFACT_NAME}}
+        path: ${{env.ARTIFACT_PATH}}
+      
