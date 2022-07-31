@@ -46,5 +46,6 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: "${{env.GITHUB_WORKSPACE}}/${{env.ARTIFACT_PATH}}"
+        path: "${{env.ARTIFACT_PATH}}"
+        if-no-files-found: error
       
