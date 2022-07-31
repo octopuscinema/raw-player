@@ -8,22 +8,23 @@ on:
 
 env:
   BUILD_CONFIGURATION: Release
-  BUILD_ARTIFACT_NAME: "OCTOPUS RAW Player"
 
 permissions:
   contents: read
 
 jobs:
-  build-windows-x64:
-    name: Build Windows x64
+  windows:
+    name: Windows
     runs-on: windows-latest
+    timeout-minutes: 10
     
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
       PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
-      ARTIFACT_PATH: "UI/Windows/bin/Release/net6.0-windows/publish/"
+      ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
       BUILD_PLATFORM: x64
+      BUILD_ARTIFACT_NAME: "Player-Win64-exe-${{github.ref_name}}-${{github.sha_short}}"
 
     steps:
     - uses: actions/checkout@v3
@@ -42,15 +43,10 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
   
-    - name: test
-      working-directory: ${{ github.workspace }}\UI\Windows\bin\Release\net6.0-windows\publish\
-      run: "echo test; ls"
-      shell: pwsh
-  
     - name: Upload artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: ${{ github.workspace }}\UI\Windows\bin\Release\net6.0-windows\publish\*.*
+        path: ${{ env.ARTIFACT_PATH }}
         if-no-files-found: error
       
