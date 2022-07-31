@@ -21,7 +21,8 @@ jobs:
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
-      ARTIFACT_PATH: "bin/Release/net6.0-windows/publish/"
+      PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
+      ARTIFACT_PATH: "UI/Windows/bin/Release/net6.0-windows/publish/"
       BUILD_PLATFORM: x64
 
     steps:
@@ -45,5 +46,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: ${{env.GITHUB_WORKSPACE}}/${{env.ARTIFACT_PATH}}
+        path: "${{env.GITHUB_WORKSPACE}}/${{env.ARTIFACT_PATH}}"
       
