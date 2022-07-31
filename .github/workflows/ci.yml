@@ -40,7 +40,7 @@ jobs:
       
     - name: Publish
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.ARTIFACT_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
+      run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
   
     - name: test
       working-directory: ${{ github.workspace }}\UI\Windows\bin\Release\net6.0-windows\publish\
