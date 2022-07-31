@@ -44,7 +44,6 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
-        working-directory: ${{env.GITHUB_WORKSPACE}}
         name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: ${{env.ARTIFACT_PATH}}
+        path: ${{env.GITHUB_WORKSPACE}}/${{env.ARTIFACT_PATH}}
       
