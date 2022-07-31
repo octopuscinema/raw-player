@@ -40,8 +40,9 @@ jobs:
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
       
     - name: Publish
+      if: ${{ github.ref_name == 'main' }}
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
+      run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=false /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
   
     - name: Upload artifacts
       uses: actions/upload-artifact@v3.1.0
