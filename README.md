@@ -6,8 +6,8 @@ OCTOPUS RAW Player is a lightweight video playback application for reviewing RAW
 - Efficient real-time CinemaDNG playback for 8,12,14-bit bayer or monochrome, uncompressed or losslessly compressed ```.dng``` sequences.
 - Professional RAW controls (White balance, exposure)
 - Advanced colour science control (Highlight recovery/roll-off, SDR Tone-Mapping)
-- Timecode display
-- Support for real-time up to 8K playback
+- Timecode and metadata display
+- Support for real-time 8K playback
 
 **Tested Cameras**
 - Sigma Fp
