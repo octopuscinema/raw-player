@@ -3,7 +3,7 @@ OCTOPUS RAW Player is a lightweight video playback application for reviewing RAW
 
 **Features**
 - Modern minimal interface
-- Efficient real-time CinemaDNG playback for 8,12,14-bit bayer or monochrome, uncompressed or losslessly compressed ```.dng``` sequences.
+- Efficient real-time CinemaDNG playback for 8,12,14-bit bayer or monochrome, uncompressed or losslessl compressed ```.dng``` sequences.
 - Professional RAW controls (White balance, exposure)
 - Advanced colour science control (Highlight recovery/roll-off, SDR Tone-Mapping)
 - Timecode and metadata display
@@ -24,10 +24,10 @@ OCTOPUS RAW Player is a lightweight video playback application for reviewing RAW
 - GPU with support for OpenGL 3.2 or greater (Native Apple Metal API support in progress)
 
 ## Installation
-OCTOPUS RAW Player releases are ususally installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively (Windows only), the OCTOPUS RAW Player can be run as a portable single-file executable without installation.
+OCTOPUS RAW Player releases are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively (Windows only), the OCTOPUS RAW Player can be run as a portable single-file executable without installation.
 
 ### Standalone executable (Windows only)
-The OCTOPUS RAW Player is built into a single-file ```.exe``` with no depednancies executable which can be run without installation.
+The OCTOPUS RAW Player is built into a single-file ```.exe``` with no dependencies executable which can be run without installation.
 
 ### User Guide
 For more information about the OCTOPUS RAW Player, please see the wiki:
@@ -49,11 +49,11 @@ Unless explicitly stated otherwise, any contribution intentionally submitted for
 # Getting started for Developers
 
 ## Building for Windows
-### Dependancies
+### Dependencies
 Building OCTOPUS RAW Player requires Visual Studio 2022 with the C# desktop development workload. The OCTOPUS RAW Player project references several NuGet packages which should be restored (https://docs.microsoft.com/en-us/nuget/consume-packages/package-restore) prior to building.
 
 ### Building the solution
-The OCTOPUS RAW Player executable for Windows can be built from the ```raw-player/Player.Windows.sln``` solution file. The solution contains both C# and C++ projects (mixed managed/unmanaged code). C++ project dependancies are linked dynamically at run-time - please ensure the C++ projects ```raw-player/Decoders``` are built prior to publishing or lauching the debug/release executable.
+The OCTOPUS RAW Player executable for Windows can be built from the ```raw-player/Player.Windows.sln``` solution file. The solution contains both C# and C++ projects (mixed managed/unmanaged code). C++ project dependencies are linked dynamically at run-time - please ensure the C++ projects ```raw-player/Decoders``` are built prior to publishing or launching the debug/release executable.
 
 #### Deployment
 The ```raw-player/Player.Windows.sln``` solution includes a publish profile to build a standalone single-file executable with an embedded .net runtime. This executable can be run on systems without .net runtimes installed.
