@@ -94,6 +94,12 @@ namespace Octopus.Player.UI.Windows
             PlayerWindow.MouseMove(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
         }
 
+        private void GLControl_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var mousePosition = e.GetPosition(this);
+            PlayerWindow.MouseExited(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
+        }
+
         Point? playbackControlsDragStart;
         Point? playbackControlsPosition;
 

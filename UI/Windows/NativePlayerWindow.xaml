@@ -136,6 +136,7 @@
             Render="GLControl_OnRender" 
             MouseDown="GLControl_MouseDown"
             MouseMove="GLControl_MouseMove"
+            MouseLeave="GLControl_MouseLeave"
             SizeChanged="GLControl_SizeChanged"
             SnapsToDevicePixels="True" Grid.Row="0"/>
 
