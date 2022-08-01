@@ -28,6 +28,7 @@ namespace Octopus.Player.UI.macOS
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
 			PlayerWindow.OnLoad();
+			WillClose += OnClose;
 		}
 
 		// Called when created directly from a XIB file
@@ -39,12 +40,33 @@ namespace Octopus.Player.UI.macOS
 			// Create platform independant window logic
 			PlayerWindow = new PlayerWindow(this);
 			PlayerWindow.OnLoad();
+            WillClose += OnClose;
+		}
+
+		private void OnClose(object sender, EventArgs e)
+        {
+			Debug.Assert(PlayerWindow != null);
+			PlayerWindow.Dispose();
+			PlayerWindow = null;
 		}
 
 		public void LockAspect(Core.Maths.Rational ratio)
         {
 			AspectLocked = true;
+
+			// Change size immediately and set content aspect ratio
+			var playerView = FindView(ContentView, "playerView");
+			var contentSize = playerView.Frame.Size;
+			var aspectCorrectContentSize = new Vector2d(contentSize.Height * ratio.ToDouble(), contentSize.Height);
+			SetContentSize(new CoreGraphics.CGSize(aspectCorrectContentSize.X, aspectCorrectContentSize.Y));
 			ContentAspectRatio = new CoreGraphics.CGSize(ratio.Numerator, ratio.Denominator);
+
+			// Apply content min size
+			var playbackControls = FindView(ContentView, "playbackControls");
+			var minContentSize = new Vector2d(playbackControls.Frame.Width, playbackControls.Frame.Height) + (new Vector2d(Theme.PlaybackControlsMargin, Theme.PlaybackControlsMargin) * 2);
+			minContentSize.X = Math.Max(minContentSize.X, minContentSize.Y * ratio.ToDouble());
+			minContentSize.Y = Math.Max(minContentSize.Y, minContentSize.X / ratio.ToDouble());
+			ContentMinSize = new CoreGraphics.CGSize(minContentSize.X, minContentSize.Y);
 		}
 
 		public void UnlockAspect()
