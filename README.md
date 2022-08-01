@@ -33,8 +33,8 @@ For more information about the OCTOPUS RAW Player, please see the wiki:
 http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
 
 ## Sample CinemaDNG Files
-Sample CinemaDNG sequences for testing with OCTOPUS RAW Player are downloadable from:
-www.octopuscinema.com/cinema-dng-samples
+~~Sample CinemaDNG sequences for testing with OCTOPUS RAW Player are downloadable from:
+www.octopuscinema.com/cinema-dng-samples~~
 
 # Included in this repository
 Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
