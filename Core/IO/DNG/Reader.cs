@@ -438,7 +438,17 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedBlackLevel.HasValue)
-                    CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : 0);
+                {
+                    try
+                    {
+                        CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : 0);
+                    }
+                    catch
+                    {
+                        var blackLevelRational = Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadRationalField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : new TiffRational();
+                        CachedBlackLevel = blackLevelRational.Denominator == 0 ? (ushort)0 : (ushort)(blackLevelRational.Numerator / blackLevelRational.Denominator);
+                    }
+                }
                 return CachedBlackLevel.Value;
             }
         }
