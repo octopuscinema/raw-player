@@ -1,9 +1,9 @@
 # Introduction to OCTOPUS RAW Player
-OCTOPUS RAW Player is a lightweight video playback application for reviewing RAW video footage from professional cameras. Currently the player supports CinemaDNG RAW ```.dng``` sequences. The OCTOPUS RAW Player leverages native C++ code for low-level decoding and implements our unique sophisticated colour science processing pipeline in GLSL (OpenGL shading language).
+OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playback application for reviewing RAW video footage from professional cameras. Currently the player supports CinemaDNG RAW ```.dng``` sequences. The OCTOPUS RAW Player leverages native C++ code for low-level decoding and implements our unique sophisticated colour science processing pipeline in GLSL (OpenGL shading language).
 
 **Features**
 - Modern minimal interface
-- Efficient real-time CinemaDNG playback for 8,12,14-bit bayer or monochrome, uncompressed or losslessl compressed ```.dng``` sequences.
+- Efficient real-time CinemaDNG playback for 8,12,14,16-bit bayer or monochrome, uncompressed or losslessl compressed ```.dng``` sequences.
 - Professional RAW controls (White balance, exposure)
 - Advanced colour science control (Highlight recovery/roll-off, SDR Tone-Mapping)
 - Timecode and metadata display
@@ -11,6 +11,7 @@ OCTOPUS RAW Player is a lightweight video playback application for reviewing RAW
 
 **Tested Cameras**
 - Sigma Fp
+- DJI Xenmuse X5,X5R,X7
 - Blackmagic Cinema Camera 2.5K
 - Blackmagic Pocket Cinema Camera (Original)
 - Blackmagic Micro Cinema Camera
