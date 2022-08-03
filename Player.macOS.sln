@@ -56,4 +56,8 @@ Global
 		{292E0AB5-280A-46B0-97C4-7A9ABD794413} = {80F9CF39-FEFB-4A5F-8F0C-315F43412549}
 		{5886F24E-7A6A-4861-BCF3-0C237207E156} = {80F9CF39-FEFB-4A5F-8F0C-315F43412549}
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		description = OCTOPUS RAW Player
+		version = 0.0.1
+	EndGlobalSection
 EndGlobal
