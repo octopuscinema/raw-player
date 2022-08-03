@@ -165,12 +165,6 @@ namespace Octopus.Player.UI
             {
                 case "highlightRecovery":
                     rawParameters.highlightRecovery = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRecovery.On : Core.HighlightRecovery.Off;
-                    if (rawParameters.highlightRecovery == Core.HighlightRecovery.On)
-                    {
-                        NativeWindow.CheckMenuItem("highlightRollOff", true, false);
-                        rawParameters.highlightRollOff = Core.HighlightRollOff.Low;
-                    }
-                    NativeWindow.EnableMenuItem("highlightRollOff", rawParameters.highlightRecovery == Core.HighlightRecovery.On ? false : true);
                     break;
                 case "highlightRollOff":
                     rawParameters.highlightRollOff = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRollOff.Low : Core.HighlightRollOff.Off;
@@ -540,7 +534,7 @@ namespace Octopus.Player.UI
             NativeWindow.EnableMenuItem("debayerQuality", isColour);
             NativeWindow.EnableMenuItem("highlightRecovery", isColour);
             NativeWindow.EnableMenuItem("gamutCompression", isColour);
-            NativeWindow.EnableMenuItem("highlightRollOff", false);
+            NativeWindow.EnableMenuItem("highlightRollOff", isColour);
             NativeWindow.CheckMenuItem("highlightRecovery", isColour, false);
             NativeWindow.CheckMenuItem("highlightRollOff", isColour, false);
             NativeWindow.CheckMenuItem("gamutCompression", isColour, false);
