@@ -151,8 +151,8 @@
                 <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
                 <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0"/>
                 <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" IsTabStop="False" Grid.Row="0"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" IsTabStop="False" Grid.Row="0"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="fastRewindButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" IsTabStop="False" Grid.Row="0"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="fastForwardButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" IsTabStop="False" Grid.Row="0"/>
 
                 <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}" Grid.Row="0"/>
             </Grid>

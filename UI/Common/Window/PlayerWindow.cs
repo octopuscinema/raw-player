@@ -50,8 +50,8 @@ namespace Octopus.Player.UI
             NativeWindow.SetLabelContent("fastRewindLabel", "");
             NativeWindow.SetButtonEnabled("playButton", false);
             NativeWindow.SetButtonEnabled("pauseButton", false);
-            NativeWindow.SetButtonEnabled("skipBackButton", false);
-            NativeWindow.SetButtonEnabled("skipAheadButton", false);
+            NativeWindow.SetButtonEnabled("fastForwardButton", false);
+            NativeWindow.SetButtonEnabled("fastRewindButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
 
             // Create the animate controls timer
@@ -296,9 +296,11 @@ namespace Octopus.Player.UI
 
             switch (id)
             {
-                case "skipBackButton":
+                case "fastRewindButton":
                     if (Playback != null && Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.Stopped)
-                    {/*
+                    {
+                        if ((Playback.State == Core.Playback.State.Playing || Playback.State == Core.Playback.State.PlayingFromBuffer) && Playback.Velocity != Core.Playback.PlaybackVelocity.Backward10x)
+                            Playback.Pause();
                         switch (Playback.Velocity)
                         {
                             case Core.Playback.PlaybackVelocity.Backward10x:
@@ -311,10 +313,12 @@ namespace Octopus.Player.UI
                             default:
                                 Playback.Velocity = Core.Playback.PlaybackVelocity.Backward2x;
                                 break;
-                        }*/
+                        }
+                        if (Playback.State == Core.Playback.State.PausedEnd || Playback.State == Core.Playback.State.Paused)
+                            Playback.Play();
                     }
                     break;
-                case "skipAheadButton":
+                case "fastForwardButton":
                     if (Playback != null && Playback.State != Core.Playback.State.Empty && Playback.State != Core.Playback.State.PausedEnd)
                     {
                         if ((Playback.State == Core.Playback.State.Playing || Playback.State == Core.Playback.State.PlayingFromBuffer ) && Playback.Velocity != Core.Playback.PlaybackVelocity.Forward10x)
@@ -426,11 +430,16 @@ namespace Octopus.Player.UI
                     NativeWindow.SetSliderValue("seekBar", 0.0f);
                     NativeWindow.SetButtonVisibility("pauseButton", false);
                     NativeWindow.SetButtonVisibility("playButton", true);
+                    Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
                     break;
                 case Core.Playback.State.Paused:
+                    NativeWindow.SetButtonVisibility("pauseButton", false);
+                    NativeWindow.SetButtonVisibility("playButton", true);
+                    break;
                 case Core.Playback.State.PausedEnd:
                     NativeWindow.SetButtonVisibility("pauseButton", false);
                     NativeWindow.SetButtonVisibility("playButton", true);
+                    Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
                     break;
                 case Core.Playback.State.Empty:
                     NativeWindow.SetSliderValue("seekBar", 0.0f);
@@ -475,8 +484,8 @@ namespace Octopus.Player.UI
         {
             NativeWindow.SetButtonEnabled("playButton", false);
             NativeWindow.SetButtonEnabled("pauseButton", false);
-            NativeWindow.SetButtonEnabled("skipBackButton", false);
-            NativeWindow.SetButtonEnabled("skipAheadButton", false);
+            NativeWindow.SetButtonEnabled("fastRewindButton", false);
+            NativeWindow.SetButtonEnabled("fastForwardButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", Theme.LabelColour);
             NativeWindow.SetLabelContent("durationLabel", "--:--:--");
@@ -492,8 +501,8 @@ namespace Octopus.Player.UI
         {
             NativeWindow.SetButtonEnabled("playButton", true);
             NativeWindow.SetButtonEnabled("pauseButton", true);
-            NativeWindow.SetButtonEnabled("skipBackButton", true);
-            NativeWindow.SetButtonEnabled("skipAheadButton", true);
+            NativeWindow.SetButtonEnabled("fastRewindButton", true);
+            NativeWindow.SetButtonEnabled("fastForwardButton", true);
             NativeWindow.SetSliderEnabled("seekBar", true);
             NativeWindow.SetSliderValue("seekBar", 0.0f);
             NativeWindow.EnableMenuItem("clip", true);
