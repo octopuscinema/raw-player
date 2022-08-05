@@ -271,6 +271,7 @@ namespace Octopus.Player.UI.Windows
                     label.Content = content;
                     if ( colour.HasValue )
                         label.Foreground = new SolidColorBrush(Color.FromRgb((byte)(colour.Value.X * 255.0f), (byte)(colour.Value.Y * 255.0f), (byte)(colour.Value.Z * 255.0f)));
+                    label.IsEnabled = content.Length > 0;
                 }
             });
         }
