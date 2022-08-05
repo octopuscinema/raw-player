@@ -240,6 +240,8 @@ namespace Octopus.Player.UI
                     break;
 
                 // Help
+                case "license":
+                    break;
                 case "about":
                     string aboutText = "\n\t\t  " + ProductName + "\n\t\t  ------------------------\n\t\t     ";
                     string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;

@@ -223,6 +223,8 @@
                 <Separator />
                 <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
                 <Separator />
+                <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
+                <Separator />
                 <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
             </MenuItem>
         </Menu>
