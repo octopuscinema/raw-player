@@ -176,6 +176,7 @@ namespace Octopus.Player.UI.Windows
             dialog.EnsurePathExists = true;
             dialog.Multiselect = false;
             dialog.DefaultDirectory = defaultDirectory;
+            dialog.Title = title;
 
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
