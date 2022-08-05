@@ -33,7 +33,6 @@
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <LinkMode>None</LinkMode>
     <AOTMode>None</AOTMode>
-    <XamMacArch>x86_64,ARM64</XamMacArch>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -42,7 +41,7 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <EnableCodeSigning>true</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
@@ -52,7 +51,7 @@
     <LinkMode>SdkOnly</LinkMode>
     <AOTMode>None</AOTMode>
     <LangVersion>8.0</LangVersion>
-    <CodeSigningKey>Mac Developer</CodeSigningKey>
+    <CodeSigningKey>Developer ID Application: Peartree Studios Ltd (978UCD44M6)</CodeSigningKey>
     <CodeSignProvision></CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <XamMacArch>x86_64</XamMacArch>
