@@ -273,7 +273,7 @@ namespace Octopus.Player.Core.Playback
             return (uint)Math.Abs((int)frame1 - (int)frame2);
         }
 
-        public override Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode)
+        public override Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode, PlaybackVelocity playbackVelocity)
         {
             actualFrameNumber = frameNumber;
             actualTimeCode = null;
@@ -290,7 +290,9 @@ namespace Octopus.Player.Core.Playback
                 var readyFrames = SequenceStream.ReadyFrames();
                 foreach(var readyFrame in readyFrames)
                 {
-                    if (readyFrame > frameNumber)
+                    if (playbackVelocity.IsForward() && readyFrame > frameNumber)
+                        continue;
+                    if (!playbackVelocity.IsForward() && readyFrame < frameNumber)
                         continue;
                     if (!nearestFrame.HasValue || FrameDistance(frameNumber, readyFrame) < FrameDistance(frameNumber, nearestFrame.Value))
                         nearestFrame = readyFrame;
@@ -317,8 +319,16 @@ namespace Octopus.Player.Core.Playback
                 ret = Error.FrameNotReady;
 
             // Play direction is forward, reclaim or cancel any frames up to the intended display frame
-            SequenceStream.ReclaimReadyFramesUpTo(frameNumber);
-            SequenceStream.CancelRequestsUpTo(frameNumber);
+            if (playbackVelocity.IsForward()) 
+            {
+                SequenceStream.ReclaimReadyFramesUpTo(frameNumber);
+                SequenceStream.CancelRequestsUpTo(frameNumber);
+            } 
+            else
+            {
+                SequenceStream.ReclaimReadyFramesFrom(frameNumber);
+                SequenceStream.CancelRequestsFrom(frameNumber);
+            }
 
             return ret;
         }

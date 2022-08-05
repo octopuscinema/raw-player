@@ -32,8 +32,8 @@ namespace Octopus.Player.Core.Playback
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
 
-        private uint? requestFrame;
-        private uint? displayFrame;
+        private long? requestFrame;
+        private long? displayFrame;
 
         static private readonly Rational defaultFramerate = new Rational(24000, 1001);
 
@@ -119,11 +119,11 @@ namespace Octopus.Player.Core.Playback
         {
             Trace.WriteLine("Playback::Play");
 
-            // Stop first if we're paused at the end
-            if (State == State.PausedEnd)
+            // Stop first if we're trying to play forwards while paused at the end
+            if (Velocity.IsForward() && State == State.PausedEnd)
                 Stop();
 
-            Debug.Assert(State == State.Stopped || State == State.Paused);
+            Debug.Assert(State == State.Stopped || State == State.Paused || State == State.PausedEnd);
             Debug.Assert(FrameRequestTimer == null && FrameDisplayTimer == null);
 
             // Resuming from paused, continue from the last displayed frame
@@ -149,7 +149,7 @@ namespace Octopus.Player.Core.Playback
                 if (!(State == State.Buffering || State == State.Playing))
                     return;
 
-                RequestFrame(requestFrame.Value);
+                RequestFrame((uint)requestFrame.Value);
 
                 // Last frame requested, we're now playing from the buffer
                 if (Velocity.IsForward())
@@ -158,13 +158,19 @@ namespace Octopus.Player.Core.Playback
                         State = State.PlayingFromBuffer;
                     else if (requestFrame < LastFrame)
                     {
-                        requestFrame += (uint)Velocity;
+                        requestFrame += (int)Velocity;
                         requestFrame = Math.Min(requestFrame.Value, LastFrame);
                     }
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    if (requestFrame <= FirstFrame)
+                        State = State.PlayingFromBuffer;
+                    else if (requestFrame > FirstFrame)
+                    {
+                        requestFrame += (int)Velocity;
+                        requestFrame = Math.Max(requestFrame.Value, FirstFrame);
+                    }
                 }
             });
         }
@@ -193,7 +199,7 @@ namespace Octopus.Player.Core.Playback
 
                 uint frameDisplayed;
                 TimeCode? frameTimeCode;
-                var displayFrameResult = DisplayFrame(displayFrame.Value, out frameDisplayed, out frameTimeCode);
+                var displayFrameResult = DisplayFrame((uint)displayFrame.Value, out frameDisplayed, out frameTimeCode, Velocity);
                 if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
                 switch (displayFrameResult)
@@ -203,10 +209,10 @@ namespace Octopus.Player.Core.Playback
                         FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotReady:
-                        FrameSkipped?.Invoke(displayFrame.Value, frameDisplayed, frameTimeCode.Value);
+                        FrameSkipped?.Invoke((uint)displayFrame.Value, frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotPresent:
-                        FrameMissing?.Invoke(displayFrame.Value, frameTimeCode.Value);
+                        FrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
                         break;
                     default:
                         break;
@@ -219,21 +225,19 @@ namespace Octopus.Player.Core.Playback
                         Pause();
                     else if (displayFrame < LastFrame)
                     {
-                        displayFrame += (uint)Velocity;
+                        displayFrame += (int)Velocity;
                         displayFrame = Math.Min(displayFrame.Value, LastFrame);
                     }
                 }
                 else
                 {
-                    throw new NotImplementedException();
-                    /*
                     if (displayFrame <= FirstFrame)
-                        Pause();
+                        Stop();
                     else if ( displayFrame > FirstFrame )
                     {
-                        displayFrame -= (uint)Math.Abs((int)Velocity);
-                        displayFrame = Math.Min(displayFrame.Value, LastFrame);
-                    }*/
+                        displayFrame += (int)Velocity;
+                        displayFrame = Math.Max(displayFrame.Value, FirstFrame);
+                    }
                 }
 
                 // Buffering becomes playing when the first frame is displayed
@@ -274,7 +278,7 @@ namespace Octopus.Player.Core.Playback
 
         public abstract Error RequestFrame(uint frameNumber);
 
-        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode);
+        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode, PlaybackVelocity playbackVelocity);
 
         public abstract void OnRenderFrame(double timeInterval);
 
