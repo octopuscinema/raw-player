@@ -35,7 +35,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
 {
     public class Context : IContext
     {
-        public GPU.Render.Api Api { get { return Api.OpenGL; } }
+        public Api Api { get { return Api.OpenGL; } }
+        public string ApiVersion { get; private set; }
+        public string ApiRenderer { get; private set; }
+        public string ApiVendor { get; private set; }
+        public string ApiShadingLanguageVersion { get; private set; }
         public Vector3 BackgroundColor { get; set; }
         public RedrawBackground RedrawBackground { get; set; }
         public object NativeContext { get; private set; }
@@ -99,8 +103,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
             // Print GL info
             Trace.WriteLine("Created OpenGL render context on thread: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-            Trace.WriteLine("OpenGL version: " + GL.GetString(StringName.Version));
-            Trace.WriteLine("GLSL version: " + GL.GetString(StringName.ShadingLanguageVersion));
+            ApiVersion = GL.GetString(StringName.Version);
+            ApiShadingLanguageVersion = GL.GetString(StringName.ShadingLanguageVersion);
+            ApiRenderer = GL.GetString(StringName.Renderer);
+            ApiVendor = GL.GetString(StringName.Vendor);
+            Trace.WriteLine("OpenGL version: " + ApiVersion);
+            Trace.WriteLine("GLSL version: " + ApiShadingLanguageVersion);
         }
 
         public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)

@@ -221,7 +221,13 @@
                     <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
+                <MenuItem Header="_Develop">
+                    <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Troubleshooting">
+                    <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
                 <Separator />

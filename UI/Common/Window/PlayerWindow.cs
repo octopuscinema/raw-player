@@ -242,6 +242,18 @@ namespace Octopus.Player.UI
                 // Help
                 case "license":
                     break;
+                case "openglInfo":
+                    string renderApiInfo = "Version: " + RenderContext.ApiVersion;
+                    renderApiInfo += "\nRenderer: " + RenderContext.ApiRenderer;
+                    renderApiInfo += "\nVendor: " + RenderContext.ApiVendor;
+                    switch (RenderContext.Api)
+                    {
+                        case GPU.Render.Api.OpenGL:
+                            renderApiInfo += "\nGLSL version: " + RenderContext.ApiShadingLanguageVersion;
+                            NativeWindow.Alert(AlertType.Information, renderApiInfo, "OpenGL information");
+                            break;
+                    }
+                    break;
                 case "about":
                     string aboutText = "\n\t\t  " + ProductName + "\n\t\t  ------------------------\n\t\t     ";
                     string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;

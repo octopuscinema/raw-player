@@ -24,6 +24,10 @@ namespace Octopus.Player.GPU.Render
     public interface IContext : IDisposable
     {
         Api Api { get; }
+        string ApiVersion { get; }
+        string ApiRenderer { get; }
+        string ApiVendor { get; }
+        string ApiShadingLanguageVersion { get; }
 
         Vector3 BackgroundColor {get; set;}
         RedrawBackground RedrawBackground {get; set;}
