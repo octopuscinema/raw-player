@@ -48,7 +48,7 @@ namespace Octopus.Player.UI.Windows
             var mainSettings = new GLWpfControlSettings 
             { 
                 MajorVersion = 3, 
-                MinorVersion = 3,
+                MinorVersion = 2,
                 RenderContinuously = false 
             };
             GLControl.Start(mainSettings);
