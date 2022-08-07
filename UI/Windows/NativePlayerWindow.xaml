@@ -8,6 +8,8 @@
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        KeyDown="Window_KeyDown"
         SnapsToDevicePixels="true"
         xmlns:base="clr-namespace:Octopus.Player.UI.Windows"
         Title="OCTOPUS RAW Player" Height="450" Width="800">
@@ -91,6 +93,16 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="InterfaceFocusStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="-8" StrokeThickness="2" Stroke="White" StrokeDashArray="1 1" RadiusX="5" RadiusY="5" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="InterfaceButtonStyle" TargetType="Button">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -149,15 +161,17 @@
                 <Label x:Name="fastRewindLabel" FontSize="12" Content="10&#xd7;" Foreground="LightGray" Margin="0,16,310,0" VerticalAlignment="Top" HorizontalAlignment="Right" ToolTip="Rewind speed"/>
 
                 <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0" ToolTip="Play"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0" ToolTip="Pause"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="fastRewindButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" IsTabStop="False" Grid.Row="0" ToolTip="Rewind"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="fastForwardButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" IsTabStop="False" Grid.Row="0" ToolTip="Fast-forward"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="previousButton" Content="&#xE892;" Height="auto" Width="auto" FontSize="22" Margin="-180,0,0,39" IsTabStop="False" Grid.Row="0" ToolTip="Previous"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="nextButton" Content="&#xE893;" Height="auto" Width="auto" FontSize="22" Margin="180,0,0,39" IsTabStop="False" Grid.Row="0" ToolTip="Next"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" TabIndex="3" Grid.Row="0" ToolTip="Play"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" TabIndex="4" Grid.Row="0" ToolTip="Pause"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="fastRewindButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" TabIndex="2" Grid.Row="0" ToolTip="Rewind"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="fastForwardButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" TabIndex="5" Grid.Row="0" ToolTip="Fast-forward"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="previousButton" Content="&#xE892;" Height="auto" Width="auto" FontSize="22" Margin="-180,0,0,39" TabIndex="1" Grid.Row="0" ToolTip="Previous"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="nextButton" Content="&#xE893;" Height="auto" Width="auto" FontSize="22" Margin="180,0,0,39" TabIndex="6" Grid.Row="0" ToolTip="Next"/>
 
                 <!-- Seek bar -->
-                <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}" Grid.Row="0" ToolTip="Seek"/>
+                <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" 
+                        IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" Background="{x:Null}" TabIndex="7" Grid.Row="0" 
+                        ToolTip="Seek" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted" Thumb.DragDelta="Slider_DragDelta"/>
             </Grid>
         </Border>
 

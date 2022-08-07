@@ -109,6 +109,44 @@ namespace Octopus.Player.UI
 
         }
 
+        public bool PreviewKeyDown(string id)
+        {
+            bool handled = false;
+            bool showControls = false;
+
+            switch (id)
+            {
+                case "Tab":
+                    showControls = true;
+                    break;
+                case "Space":
+                    if ( Playback != null && Playback.State != Core.Playback.State.Empty )
+                    {
+                        if (Playback.IsPlaying)
+                            Playback.Pause();
+                        else
+                            Playback.Play();
+                    }
+                    handled = true;
+                    showControls = true;
+                    break;
+            }
+
+            if ( showControls )
+            {
+                lastInteraction = DateTime.Now;
+                if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                    NativeWindow.AnimateInControls();
+            }
+
+            return handled;
+        }
+
+        public void KeyDown(string id)
+        {
+            
+        }
+
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
         {
             if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
@@ -403,6 +441,24 @@ namespace Octopus.Player.UI
                 default:
                     break;
             }
+        }
+
+        public void SliderDragStart(string id)
+        {
+            if (Playback == null || id != "seekBar")
+                return;
+        }
+
+        public void SliderDragComplete(string id)
+        {
+            if (Playback == null || id != "seekBar")
+                return;
+        }
+
+        public void SliderDragDelta(string id)
+        {
+            if (Playback == null || id != "seekBar")
+                return;
         }
 
         private Error OpenCinemaDNG(string dngPath)

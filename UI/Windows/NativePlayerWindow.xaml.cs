@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -62,6 +63,16 @@ namespace Octopus.Player.UI.Windows
             Debug.Assert(PlayerWindow != null);
             if (PlayerWindow != null) 
                 PlayerWindow.Dispose();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = PlayerWindow.PreviewKeyDown(e.Key.ToString());
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            PlayerWindow.KeyDown(e.Key.ToString());
         }
 
         private void GLControl_OnRender(TimeSpan delta)
@@ -410,13 +421,13 @@ namespace Octopus.Player.UI.Windows
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(Button));
-            var button = (Button)sender;
-            if (button != null)
-                PlayerWindow.ButtonClick(button.Name);
+            PlayerWindow.ButtonClick(((Button)sender).Name);
         }
 
         public void AnimateOutControls()
         {
+            List<Control> controls = new List<Control>(){ playButton, pauseButton, fastForwardButton, fastRewindButton, nextButton, previousButton, seekBar };
+            controls.ForEach(b => b.Focusable = false);
             Cursor = Cursors.None;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.In);
             ControlsAnimationState = ControlsAnimationState.Out;
@@ -432,6 +443,8 @@ namespace Octopus.Player.UI.Windows
 
         public void AnimateInControls()
         {
+            List<Control> controls = new List<Control>() { playButton, pauseButton, fastForwardButton, fastRewindButton, nextButton, previousButton, seekBar };
+            controls.ForEach(b => b.Focusable = true);
             Cursor = Cursors.Arrow;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.Out);
             ControlsAnimationState = ControlsAnimationState.In;
@@ -490,6 +503,24 @@ namespace Octopus.Player.UI.Windows
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
             PlayerWindow.OnLoad();
+        }
+
+        private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            PlayerWindow.SliderDragStart(((Slider)sender).Name);
+        }
+
+        private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            PlayerWindow.SliderDragComplete(((Slider)sender).Name);
+        }
+
+        private void Slider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            PlayerWindow.SliderDragDelta(((Slider)sender).Name);
         }
     }
 }
