@@ -32,6 +32,8 @@
         <Style x:Key="SliderRepeatButton1" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />
             <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="IsTabStop" Value="false" />
+            <Setter Property="Focusable" Value="false" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
@@ -152,7 +154,7 @@
             SizeChanged="GLControl_SizeChanged"
             SnapsToDevicePixels="True" Grid.Row="0"/>
 
-        <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="0">
+        <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseEnter="PlaybackControls_MouseEnter" MouseLeave="PlaybackControls_MouseLeave" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="0">
             <Grid>
                 <!-- Labels -->
                 <Label x:Name="timeCodeLabel" FontSize="14" Content="00:00:00:00" Foreground="LightGray" Margin="15,15,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="Timecode"/>

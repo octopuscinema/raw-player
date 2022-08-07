@@ -29,6 +29,7 @@ namespace Octopus.Player.UI.Windows
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
         public Vector2i FramebufferSize { get; private set; }
+        public bool MouseInsidePlaybackControls { get; private set; }
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
         private IntPtr? hwnd;
@@ -155,6 +156,16 @@ namespace Octopus.Player.UI.Windows
                 playbackControlsDragStart = null;
                 playbackControlsPosition = null;
             }
+        }
+
+        private void PlaybackControls_MouseEnter(object sender, MouseEventArgs e)
+        {
+            MouseInsidePlaybackControls = true;
+        }
+
+        private void PlaybackControls_MouseLeave(object sender, MouseEventArgs e)
+        {
+            MouseInsidePlaybackControls = false;
         }
 
         public void SetWindowTitle(string text)

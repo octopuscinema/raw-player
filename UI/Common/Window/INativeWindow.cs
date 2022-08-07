@@ -45,6 +45,7 @@ namespace Octopus.Player.UI
 		ControlsAnimationState ControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }
+		bool MouseInsidePlaybackControls { get; }
 		void InvokeOnUIThread(Action action, bool async = true);
 	}
 }

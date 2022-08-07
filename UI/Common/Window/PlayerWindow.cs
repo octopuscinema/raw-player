@@ -62,7 +62,7 @@ namespace Octopus.Player.UI
 
         private void AnimateOutControls(object obj)
         {
-            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.In && (DateTime.Now - lastInteraction) > Theme.ControlsAnimationDelay && Playback != null &&
+            if (!NativeWindow.MouseInsidePlaybackControls && NativeWindow.ControlsAnimationState == ControlsAnimationState.In && (DateTime.Now - lastInteraction) > Theme.ControlsAnimationDelay && Playback != null &&
                 Playback.State != Core.Playback.State.Empty)
             {
                 NativeWindow.InvokeOnUIThread(() =>
@@ -123,9 +123,15 @@ namespace Octopus.Player.UI
                     if ( Playback != null && Playback.State != Core.Playback.State.Empty )
                     {
                         if (Playback.IsPlaying)
+                        {
                             Playback.Pause();
+                            Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
+                        }
                         else
+                        {
+                            Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
                             Playback.Play();
+                        }
                     }
                     handled = true;
                     showControls = true;
