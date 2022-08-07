@@ -81,7 +81,7 @@ namespace Octopus.Player.Core.IO.DNG
 
         public override string ToString()
         {
-            string text = base.ToString() + "\nCinemaDNG\n-------------\n";
+            string text = base.ToString() + "\n-------------\nCinemaDNG\n-------------\n";
 
             var properties = GetType().GetProperties(System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
