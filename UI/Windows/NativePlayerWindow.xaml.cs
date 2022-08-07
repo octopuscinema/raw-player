@@ -17,6 +17,9 @@ namespace Octopus.Player.UI.Windows
 {
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
     {
+        [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
+        public static extern bool ShouldSystemUseDarkMode();
+
         public ControlsAnimationState ControlsAnimationState { get; private set; }
         public bool AspectLocked { get { return lockedContentAspectRatio.HasValue; } }
 
@@ -35,7 +38,7 @@ namespace Octopus.Player.UI.Windows
             InitializeComponent();
 
             // Create cross platform Window
-            PlayerWindow = new PlayerWindow(this, new DefaultWindowsTheme());
+            PlayerWindow = new PlayerWindow(this, ShouldSystemUseDarkMode() ? new DefaultWindowsThemeDark() : new DefaultWindowsTheme());
             Closed += OnClose;
 
             // Save the startup window state
