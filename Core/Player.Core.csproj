@@ -21,6 +21,7 @@
     <None Remove="Resources\GLSL\PipelineCinemaDNG.glsl" />
     <None Remove="Resources\GLSL\RollOff.glsl.h" />
     <None Remove="Resources\GLSL\ToneMap.glsl.h" />
+    <None Remove="Resources\License.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +39,7 @@
     <EmbeddedResource Include="Resources\GLSL\PipelineCinemaDNG.glsl" />
     <EmbeddedResource Include="Resources\GLSL\RollOff.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\ToneMap.glsl.h" />
+    <EmbeddedResource Include="Resources\License.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.7.4" />

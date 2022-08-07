@@ -14,6 +14,8 @@ namespace Octopus.Player.Core
         public IMetadata Metadata { get; protected set; }
         public bool Valid { get; protected set; }
         public RawParameters? RawParameters { get; set; }
+        public abstract IClip NextClip { get; }
+        public abstract IClip PreviousClip { get; }
 
         public abstract Error ReadMetadata(uint? frame = null);
         public abstract Error Validate();

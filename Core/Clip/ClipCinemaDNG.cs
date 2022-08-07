@@ -9,7 +9,40 @@ namespace Octopus.Player.Core
 	public class ClipCinemaDNG : Clip
 	{
         public override Essence Essence { get { return Essence.Sequence; } }
-		
+
+        public override IClip NextClip
+        {
+            get
+            {
+                var clips = EnumerateAdditionalClips();
+                if (clips != null)
+                {
+                    for (int i = 0; i < clips.Count; i++)
+                    {
+                        if (clips[i].Path == Path && (i+1) < clips.Count)
+                            return clips[i+1];
+                    }
+                }
+                return null;
+            }
+        }
+        public override IClip PreviousClip
+        {
+            get
+            {
+                var clips = EnumerateAdditionalClips();
+                if (clips != null)
+                {
+                    for (int i = 0; i < clips.Count; i++)
+                    {
+                        if (clips[i].Path == Path && (i - 1) >= 0)
+                            return clips[i - 1];
+                    }
+                }
+                return null;
+            }
+        }
+
         private uint SequencingFieldPosition { get; set; }
         private uint SequencingFieldLength { get; set; }
         private string CachedFramePath { get; set; }
@@ -79,6 +112,25 @@ namespace Octopus.Player.Core
             // Extract the sequencing field from the path
             string sequencingField = dngFramePath.Substring((int)SequencingFieldPosition, (int)SequencingFieldLength);
             return uint.TryParse(sequencingField, out frameNumber) ? Error.None : Error.BadFrameIndex;
+        }
+
+        private List<IClip> EnumerateAdditionalClips()
+        {
+            var parentFolder = System.IO.Directory.GetParent(Path);
+            if (parentFolder == null)
+                return null;
+
+            var folders = System.IO.Directory.EnumerateDirectories(parentFolder.FullName, "*", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
+
+            var clips = new List<IClip>();
+            foreach(var folder in folders)
+            {
+                if (!System.IO.Directory.Exists(folder))
+                    continue;
+                if ( System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any() )
+                    clips.Add(new ClipCinemaDNG(folder));
+            }
+            return clips;
         }
 
         public override Error Validate()

@@ -235,6 +235,8 @@ namespace Octopus.Player.UI
 
                 // Help
                 case "license":
+                    var licenseText = Resource.LoadAsciiResource("License.txt");
+                    NativeWindow.Alert(AlertType.Blank, licenseText, "License");
                     break;
                 case "openglInfo":
                     string renderApiInfo = "Version: " + RenderContext.ApiVersion;
@@ -249,12 +251,8 @@ namespace Octopus.Player.UI
                     }
                     break;
                 case "about":
-                    string aboutText = "\n\t\t  " + ProductName + "\n\t\t  ------------------------\n\t\t     ";
                     string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;
-                    aboutText += versionText + "\n\t\t           ";
-                    aboutText += License;
-                    aboutText += "\n\n\n\t\t" + Copyright + "\t\t";
-                    NativeWindow.Alert(AlertType.Blank, aboutText, "About " + ProductName);
+                    NativeWindow.Alert(AlertType.Blank, versionText + "\n" + License + "\n" + Copyright, "About " + ProductName);
                     break;
                 case "visitInstagram":
                     NativeWindow.OpenUrl("https://www.instagram.com/octopuscinema/");
@@ -311,7 +309,12 @@ namespace Octopus.Player.UI
                     {
                         if (Playback.State == Core.Playback.State.Stopped)
                         {
-
+                            var previousClip = Playback.Clip.PreviousClip;
+                            if (previousClip != null)
+                            {
+                                if (previousClip.GetType() == typeof(ClipCinemaDNG))
+                                    OpenClip<Core.Playback.PlaybackCinemaDNG>(previousClip);
+                            }
                         }
                         else
                         {
@@ -319,6 +322,17 @@ namespace Octopus.Player.UI
                             Playback.Stop();
                             if (resume)
                                 Playback.Play();
+                        }
+                    }
+                    break;
+                case "nextButton":
+                    if (Playback != null && Playback.State != Core.Playback.State.Empty)
+                    {
+                        var nextClip = Playback.Clip.NextClip;
+                        if (nextClip != null)
+                        {
+                            if (nextClip.GetType() == typeof(ClipCinemaDNG))
+                                OpenClip<Core.Playback.PlaybackCinemaDNG>(nextClip);
                         }
                     }
                     break;
@@ -542,6 +556,10 @@ namespace Octopus.Player.UI
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
             {
+                // There is a next clip
+                if ( Playback.Clip.NextClip != null )
+                    NativeWindow.SetButtonEnabled("nextButton", true);
+
                 // Show warning about missing framerate
                 if (!Playback.Clip.Metadata.Framerate.HasValue)
                     NativeWindow.Alert(AlertType.Warning, "Clip is missing framerate metadata.\nPlayback framerate will default to: " + Playback.Framerate.ToString(true) + "fps.", "Missing framerate information");

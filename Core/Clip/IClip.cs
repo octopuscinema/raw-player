@@ -14,6 +14,8 @@ namespace Octopus.Player.Core
 		IO.IMetadata Metadata { get; }
 
 		RawParameters? RawParameters { get; set; }
+		IClip NextClip { get; }
+		IClip PreviousClip { get; }
 	}
 }
 
