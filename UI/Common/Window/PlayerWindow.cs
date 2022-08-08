@@ -180,14 +180,15 @@ namespace Octopus.Player.UI
         {
             if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
             {
+                var clipExposure = (float)Math.Round(Playback.Clip.Metadata.ExposureValue);
                 var exposurePresets = new Dictionary<string, float?>()
                 {
                     {"exposureAsShot", null },
-                    {"exposureMinusTwo", -2.0f },
-                    {"exposureMinusOne", -1.0f },
-                    {"exposureZero", 0.0f },
-                    {"exposurePlusOne", 1.0f },
-                    {"exposurePlusTwo", 2.0f }
+                    {"exposureMinusTwo", clipExposure - 2.0f },
+                    {"exposureMinusOne", clipExposure - 1.0f },
+                    {"exposureZero", clipExposure },
+                    {"exposurePlusOne", clipExposure + 1.0f },
+                    {"exposurePlusTwo", clipExposure + 2.0f }
                 };
                 Debug.Assert(exposurePresets.ContainsKey(exposureMenuId));
 
@@ -636,8 +637,16 @@ namespace Octopus.Player.UI
                 var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate, dropFrame);
                 NativeWindow.SetLabelContent("durationLabel", duration.ToString());
 
+                // Show as shot exposure text for menu
                 NativeWindow.SetWindowTitle(Playback.Clip.Metadata.Title);
                 NativeWindow.SetMenuItemTitle("exposureAsShot", "As Shot (" + Playback.Clip.Metadata.ExposureValue.ToString("F") + ")");
+
+                // Set exposure text for manual adjustment
+                NativeWindow.SetMenuItemTitle("exposureMinusTwo", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) -2 ).ToString("+#;-#;0"));
+                NativeWindow.SetMenuItemTitle("exposureMinusOne", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) - 1).ToString("+#;-#;0"));
+                NativeWindow.SetMenuItemTitle("exposureZero", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue)).ToString("+#;-#;0"));
+                NativeWindow.SetMenuItemTitle("exposurePlusOne", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) + 1).ToString("+#;-#;0"));
+                NativeWindow.SetMenuItemTitle("exposurePlusTwo", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) + 2).ToString("+#;-#;0"));
 
                 if (Playback.Clip.Metadata.ColorProfile.HasValue)
                 {
