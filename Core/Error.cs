@@ -16,6 +16,7 @@ namespace Octopus.Player.Core
         BadFrameIndex,
         FrameNotReady,
         FrameRequestError,
-        NotImplmeneted
+        NotImplmeneted,
+        SeekRequestAlreadyActive
     }
 }

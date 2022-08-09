@@ -13,7 +13,7 @@ namespace Octopus.Player.Core.Playback
         public Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
 
         protected uint BufferDurationFrames { get; private set; }
-
+        public State? PreSeekState { get; private set; }
         private PlaybackVelocity velocity;
         public PlaybackVelocity Velocity 
         {
@@ -32,21 +32,10 @@ namespace Octopus.Player.Core.Playback
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
 
-        private long? requestFrame;
-        private long? displayFrame;
+        protected long? requestFrame;
+        protected long? displayFrame;
 
         static private readonly Rational defaultFramerate = new Rational(24000, 1001);
-
-        public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
-        {
-            requestFrame = null;
-            displayFrame = null;
-            State = State.Empty;
-            PlayerWindow = playerWindow;
-            RenderContext = renderContext;
-            BufferDurationFrames = bufferDurationFrames;
-            Velocity = PlaybackVelocity.Forward1x;
-        }
 
         protected GPU.Render.IContext RenderContext { get; private set; }
         protected IPlayerWindow PlayerWindow { get; private set; }
@@ -68,11 +57,25 @@ namespace Octopus.Player.Core.Playback
         public event EventHandler StateChanged;
         public IClip Clip { get; protected set; }
         public bool IsPlaying { get { return State == State.Playing || State == State.PlayingFromBuffer || State == State.Buffering; } }
+        public bool IsSeeking { get { return State == State.PausedSeeking; } }
         public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
+
+        public abstract uint? ActiveSeekRequest { get; protected set; }
 
         public event IPlayback.FrameDisplayedEventHandler FrameDisplayed;
         public event IPlayback.FrameSkippedEventHandler FrameSkipped;
         public event IPlayback.FrameMissingEventHandler FrameMissing;
+
+        public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
+        {
+            requestFrame = null;
+            displayFrame = null;
+            State = State.Empty;
+            PlayerWindow = playerWindow;
+            RenderContext = renderContext;
+            BufferDurationFrames = bufferDurationFrames;
+            Velocity = PlaybackVelocity.Forward1x;
+        }
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -84,6 +87,32 @@ namespace Octopus.Player.Core.Playback
         public abstract event EventHandler ClipClosed;
 
         public abstract bool SupportsClip(IClip clip);
+
+        public virtual void SeekStart()
+        {
+            Debug.Assert(!IsSeeking);
+            PreSeekState = State;
+            if (IsPlaying)
+                Pause();
+            State = State.PausedSeeking;
+        }
+
+        public virtual Error RequestSeek(uint frame)
+        {
+            Debug.Assert(IsSeeking);
+            return Error.NotImplmeneted;
+        }
+
+        public virtual void SeekEnd()
+        {
+            Debug.Assert(IsSeeking && PreSeekState.HasValue);
+            if (PreSeekState == State.Playing || PreSeekState == State.PlayingFromBuffer || PreSeekState == State.Buffering)
+                Play();
+            else
+                State = State.Paused;
+            PreSeekState = null;
+        }
+
         public virtual void Stop()
         {
             Debug.Assert(State != State.Stopped && State != State.Empty);
@@ -123,7 +152,7 @@ namespace Octopus.Player.Core.Playback
             if (Velocity.IsForward() && State == State.PausedEnd)
                 Stop();
 
-            Debug.Assert(State == State.Stopped || State == State.Paused || State == State.PausedEnd);
+            Debug.Assert(State == State.Stopped || State == State.Paused || State == State.PausedEnd || State == State.PausedSeeking);
             Debug.Assert(FrameRequestTimer == null && FrameDisplayTimer == null);
 
             // Resuming from paused, continue from the last displayed frame

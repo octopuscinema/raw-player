@@ -531,7 +531,15 @@ namespace Octopus.Player.UI.Windows
         private void Slider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(Slider));
-            PlayerWindow.SliderDragDelta(((Slider)sender).Name);
+            var slider = (Slider)sender;
+            PlayerWindow.SliderDragDelta(slider.Name, slider.Value);
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            var slider = (Slider)sender;
+            PlayerWindow.SliderValueChanged(slider.Name, e.NewValue);
         }
     }
 }

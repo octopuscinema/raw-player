@@ -454,18 +454,32 @@ namespace Octopus.Player.UI
         {
             if (Playback == null || id != "seekBar")
                 return;
+            Playback.SeekStart();
         }
 
         public void SliderDragComplete(string id)
         {
             if (Playback == null || id != "seekBar")
                 return;
+            Playback.SeekEnd();
         }
 
-        public void SliderDragDelta(string id)
+        public void SliderDragDelta(string id, double value)
         {
             if (Playback == null || id != "seekBar")
                 return;
+
+            // Dont do anything if clip is only 1 frame long
+            if (Playback.LastFrame == Playback.FirstFrame)
+                return;
+
+            var frame = (uint)Math.Round(Playback.FirstFrame + (Playback.LastFrame - Playback.FirstFrame) * value);
+            Playback.RequestSeek(frame);
+        }
+
+        public void SliderValueChanged(string id, double value)
+        {
+            
         }
 
         private Error OpenCinemaDNG(string dngPath)
@@ -529,6 +543,13 @@ namespace Octopus.Player.UI
             Debug.Assert(Playback != null);
             switch (Playback.State)
             {
+                /*case Core.Playback.State.PausedSeeking:
+                    if ( Playback.PreSeekState == Core.Playback.State.Playing || Playback.PreSeekState == Core.Playback.State.PlayingFromBuffer || Playback.PreSeekState == Core.Playback.State.Buffering )
+                    {
+                        NativeWindow.SetButtonVisibility("pauseButton", true);
+                        NativeWindow.SetButtonVisibility("playButton", false);
+                    }
+                    break;*/
                 case Core.Playback.State.Stopped:
                     NativeWindow.SetSliderValue("seekBar", 0.0f);
                     NativeWindow.SetButtonVisibility("pauseButton", false);

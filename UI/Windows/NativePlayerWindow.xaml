@@ -173,7 +173,7 @@
                 <!-- Seek bar -->
                 <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" 
                         IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" Background="{x:Null}" TabIndex="7" Grid.Row="0" 
-                        ToolTip="Seek" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted" Thumb.DragDelta="Slider_DragDelta"/>
+                        ToolTip="Seek" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted" Thumb.DragDelta="Slider_DragDelta" ValueChanged="Slider_ValueChanged"/>
             </Grid>
         </Border>
 
