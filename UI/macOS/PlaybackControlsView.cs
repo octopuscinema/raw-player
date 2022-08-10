@@ -7,13 +7,19 @@ using Foundation;
 using AppKit;
 using CoreAnimation;
 using OpenGL;
+using System.Diagnostics;
 
 namespace Octopus.Player.UI.macOS
 {
     public partial class PlaybackControlsView : AppKit.NSVisualEffectView
     {
-        CGPoint? startPoint;
-        CGPoint? frameOrigin;
+        public event EventHandler MouseEnter;
+        public event EventHandler MouseExit;
+
+        private CGPoint? startPoint;
+        private CGPoint? frameOrigin;
+
+        private NSTrackingArea trackingArea;
 
         public PlaybackControlsView(IntPtr handle) : base(handle)
         {
@@ -25,6 +31,12 @@ namespace Octopus.Player.UI.macOS
         {
         }
 
+        ~PlaybackControlsView()
+        {
+            if (trackingArea != null)
+                trackingArea.Dispose();
+        }
+
         public override void AwakeFromNib()
         {
             base.AwakeFromNib();
@@ -34,6 +46,18 @@ namespace Octopus.Player.UI.macOS
             BlendingMode = NSVisualEffectBlendingMode.WithinWindow;
             Material = NSVisualEffectMaterial.Menu;
             State = NSVisualEffectState.FollowsWindowActiveState;
+        }
+
+        public override void UpdateTrackingAreas()
+        {
+            if (trackingArea != null)
+            {
+                RemoveTrackingArea(trackingArea);
+                trackingArea.Dispose();
+            }
+
+            trackingArea = new NSTrackingArea(Frame, NSTrackingAreaOptions.ActiveInKeyWindow | NSTrackingAreaOptions.MouseEnteredAndExited | NSTrackingAreaOptions.MouseMoved, this, null);
+            AddTrackingArea(trackingArea);
         }
 
         public override void MouseDown(NSEvent theEvent)
@@ -71,6 +95,18 @@ namespace Octopus.Player.UI.macOS
         {
             startPoint = null;
             frameOrigin = null;
+        }
+
+        public override void MouseExited(NSEvent theEvent)
+        {
+            base.MouseExited(theEvent);
+            MouseExit?.Invoke(this, new EventArgs());
+        }
+
+        public override void MouseEntered(NSEvent theEvent)
+        {
+            base.MouseEntered(theEvent);
+            MouseEnter?.Invoke(this, new EventArgs());
         }
     }
 }

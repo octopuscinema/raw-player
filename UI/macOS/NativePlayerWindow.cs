@@ -5,6 +5,7 @@ using AppKit;
 using System.Diagnostics;
 using OpenTK.Mathematics;
 using CoreAnimation;
+using System.Collections.Generic;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -20,32 +21,59 @@ namespace Octopus.Player.UI.macOS
 
 		private ITheme Theme { get { return PlayerWindow.Theme; } }
 
-		// Called when created from unmanaged code
-		public NativePlayerWindow (IntPtr handle) : base(handle)
+        public bool MouseInsidePlaybackControls { get; private set; }
+
+		private Dictionary<NSTextField, NSFont> labelFonts = new Dictionary<NSTextField, NSFont>();
+
+        // Called when created from unmanaged code
+        public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
-			ControlsAnimationState = ControlsAnimationState.In;
+			OnCreate();
+        }
 
-			// Create platform independant window logic
-			PlayerWindow = new PlayerWindow(this);
-			PlayerWindow.OnLoad();
-			WillClose += OnClose;
-		}
-
-		// Called when created directly from a XIB file
-		[Export("initWithCoder:")]
+        // Called when created directly from a XIB file
+        [Export("initWithCoder:")]
 		public NativePlayerWindow(NSCoder coder) : base(coder)
 		{
-			ControlsAnimationState = ControlsAnimationState.In;
+			OnCreate();	
+        }
 
-			// Create platform independant window logic
-			PlayerWindow = new PlayerWindow(this);
-			PlayerWindow.OnLoad();
-            WillClose += OnClose;
-		}
-
-		private void OnClose(object sender, EventArgs e)
+		private void OnCreate()
         {
-			Debug.Assert(PlayerWindow != null);
+            ControlsAnimationState = ControlsAnimationState.In;
+
+            // Create platform independant window logic
+            PlayerWindow = new PlayerWindow(this);
+            PlayerWindow.OnLoad();
+            WillClose += OnClose;
+
+            // Subscribe to playback control view mouse enter/exit
+            var playbackControls = (PlaybackControlsView)FindView(ContentView, "playbackControls");
+            playbackControls.MouseEnter += OnPlaybackControlsMouseEnter;
+            playbackControls.MouseExit += OnPlaybackControlsMouseExit;
+        }
+
+        private void OnPlaybackControlsMouseExit(object sender, EventArgs e)
+        {
+			MouseInsidePlaybackControls = false;
+        }
+
+        private void OnPlaybackControlsMouseEnter(object sender, EventArgs e)
+        {
+			MouseInsidePlaybackControls = true;
+        }
+
+        private void OnClose(object sender, EventArgs e)
+        {
+			// Delete additionally created label fonts
+			foreach (var entry in labelFonts)
+			{
+                entry.Key.Font.Dispose();
+				entry.Key.Font = entry.Value;
+			}
+			labelFonts.Clear();
+
+            Debug.Assert(PlayerWindow != null);
 			PlayerWindow.Dispose();
 			PlayerWindow = null;
 		}
@@ -226,7 +254,7 @@ namespace Octopus.Player.UI.macOS
 			return (T)FindView(root, id);
 		}
 
-		public void SetLabelContent(string id, string content, Vector3? colour = null)
+		public void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null)
 		{
 			InvokeOnMainThread(() =>
 			{
@@ -236,8 +264,26 @@ namespace Octopus.Player.UI.macOS
 					label.StringValue = content;
 					if (colour.HasValue)
 						label.TextColor = NSColor.FromRgb(colour.Value.X, colour.Value.Y, colour.Value.Z);
-				}
-			});
+
+					// Switch to fixed width digit font
+					if (fixedWidthDigitHint.HasValue)
+					{
+						bool useFixedWidthDigit = fixedWidthDigitHint.Value;
+
+                        if ( !labelFonts.ContainsKey(label) && useFixedWidthDigit )
+                        {
+							labelFonts[label] = label.Font;
+                            label.Font = NSFont.MonospacedDigitSystemFontOfSize(labelFonts[label].PointSize, NSFontWeight.Regular);
+                        }
+						else if ( labelFonts.ContainsKey(label) && !useFixedWidthDigit )
+                        {
+							label.Font.Dispose();
+							label.Font = labelFonts[label];
+                            labelFonts.Remove(label);
+                        }
+					}
+                }
+            });
 		}
 
 		public void SetButtonVisibility(string id, bool visible)
