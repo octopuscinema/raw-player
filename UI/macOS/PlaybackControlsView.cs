@@ -56,7 +56,7 @@ namespace Octopus.Player.UI.macOS
                 trackingArea.Dispose();
             }
 
-            trackingArea = new NSTrackingArea(Frame, NSTrackingAreaOptions.ActiveInKeyWindow | NSTrackingAreaOptions.MouseEnteredAndExited | NSTrackingAreaOptions.MouseMoved, this, null);
+            trackingArea = new NSTrackingArea(Bounds, NSTrackingAreaOptions.ActiveInKeyWindow | NSTrackingAreaOptions.MouseEnteredAndExited, this, null);
             AddTrackingArea(trackingArea);
         }
 
@@ -68,6 +68,8 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDragged(NSEvent theEvent)
         {
+            base.MouseDragged(theEvent);
+
             // Allow for dragging the view around
             if (startPoint.HasValue && frameOrigin.HasValue)
             {
@@ -110,4 +112,3 @@ namespace Octopus.Player.UI.macOS
         }
     }
 }
-

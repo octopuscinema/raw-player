@@ -25,6 +25,8 @@ namespace Octopus.Player.UI.macOS
 
 		private Dictionary<NSTextField, NSFont> labelFonts = new Dictionary<NSTextField, NSFont>();
 
+		private PlaybackControlsView PlaybackControls { get; set; }
+
         // Called when created from unmanaged code
         public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
@@ -48,19 +50,19 @@ namespace Octopus.Player.UI.macOS
             WillClose += OnClose;
 
             // Subscribe to playback control view mouse enter/exit
-            var playbackControls = (PlaybackControlsView)FindView(ContentView, "playbackControls");
-            playbackControls.MouseEnter += OnPlaybackControlsMouseEnter;
-            playbackControls.MouseExit += OnPlaybackControlsMouseExit;
+            PlaybackControls = (PlaybackControlsView)FindView(ContentView, "playbackControls");
+            PlaybackControls.MouseEnter += OnPlaybackControlsMouseEnter;
+            PlaybackControls.MouseExit += OnPlaybackControlsMouseExit;
         }
 
         private void OnPlaybackControlsMouseExit(object sender, EventArgs e)
         {
-			MouseInsidePlaybackControls = false;
+            MouseInsidePlaybackControls = false;
         }
 
         private void OnPlaybackControlsMouseEnter(object sender, EventArgs e)
         {
-			MouseInsidePlaybackControls = true;
+            MouseInsidePlaybackControls = true;
         }
 
         private void OnClose(object sender, EventArgs e)
@@ -263,8 +265,8 @@ namespace Octopus.Player.UI.macOS
 				{
 					label.StringValue = content;
 					if (colour.HasValue)
-						label.TextColor = NSColor.FromRgb(colour.Value.X, colour.Value.Y, colour.Value.Z);
-
+						label.TextColor = NSColor.FromRgba(colour.Value.X, colour.Value.Y, colour.Value.Z, label.TextColor.AlphaComponent);
+					
 					// Switch to fixed width digit font
 					if (fixedWidthDigitHint.HasValue)
 					{
@@ -348,8 +350,7 @@ namespace Octopus.Player.UI.macOS
 			{
 				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
-				var playbackControls = FindView(ContentView, "playbackControls");
-				((NSView)playbackControls.Animator).AlphaValue = 1.0f;
+				((NSView)PlaybackControls.Animator).AlphaValue = 1.0f;
 			});
 		}
 
@@ -363,8 +364,7 @@ namespace Octopus.Player.UI.macOS
 			{
 				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
-				var playbackControls = FindView(ContentView, "playbackControls");
-				((NSView)playbackControls.Animator).AlphaValue = 0.0f;
+				((NSView)PlaybackControls.Animator).AlphaValue = 0.0f;
 			});
 		}
     }

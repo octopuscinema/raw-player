@@ -118,6 +118,13 @@ namespace Octopus.Player.UI.macOS
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.MouseMove(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
         }
+        
+        public override void MouseDragged(NSEvent theEvent)
+        {
+            base.MouseDragged(theEvent);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.MouseMove(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
+        }
 
         public override void MouseExited(NSEvent theEvent)
         {

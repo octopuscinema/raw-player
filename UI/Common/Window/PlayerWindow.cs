@@ -44,8 +44,8 @@ namespace Octopus.Player.UI
         public void OnLoad()
         {
             NativeWindow.EnableMenuItem("clip", false);
-            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--");
-            NativeWindow.SetLabelContent("durationLabel", "--:--:--");
+            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", null, true);
+            NativeWindow.SetLabelContent("durationLabel", "--:--:--", null, true);
             NativeWindow.SetLabelContent("fastForwardLabel", "");
             NativeWindow.SetLabelContent("fastRewindLabel", "");
             NativeWindow.SetButtonEnabled("playButton", false);
@@ -543,13 +543,6 @@ namespace Octopus.Player.UI
             Debug.Assert(Playback != null);
             switch (Playback.State)
             {
-                /*case Core.Playback.State.PausedSeeking:
-                    if ( Playback.PreSeekState == Core.Playback.State.Playing || Playback.PreSeekState == Core.Playback.State.PlayingFromBuffer || Playback.PreSeekState == Core.Playback.State.Buffering )
-                    {
-                        NativeWindow.SetButtonVisibility("pauseButton", true);
-                        NativeWindow.SetButtonVisibility("playButton", false);
-                    }
-                    break;*/
                 case Core.Playback.State.Stopped:
                     NativeWindow.SetSliderValue("seekBar", 0.0f);
                     NativeWindow.SetButtonVisibility("pauseButton", false);
