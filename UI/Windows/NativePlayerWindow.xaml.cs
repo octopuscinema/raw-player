@@ -287,7 +287,7 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
-        public void SetLabelContent(string id, string content, Vector3? colour = null)
+        public void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -525,7 +525,8 @@ namespace Octopus.Player.UI.Windows
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(Slider));
-            PlayerWindow.SliderDragComplete(((Slider)sender).Name);
+            var slider = (Slider)sender;
+            PlayerWindow.SliderDragComplete(slider.Name, slider.Value);
         }
 
         private void Slider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)

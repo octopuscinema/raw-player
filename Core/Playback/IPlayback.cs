@@ -49,7 +49,7 @@ namespace Octopus.Player.Core.Playback
 		// Seek controls
 		State? PreSeekState { get; }
 		void SeekStart();
-		Error RequestSeek(uint frame);
+		Error RequestSeek(uint frame, bool force = false);
 		void SeekEnd();
 		uint? ActiveSeekRequest { get; }
 

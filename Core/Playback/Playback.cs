@@ -97,7 +97,7 @@ namespace Octopus.Player.Core.Playback
             State = State.PausedSeeking;
         }
 
-        public virtual Error RequestSeek(uint frame)
+        public virtual Error RequestSeek(uint frame, bool force = false)
         {
             Debug.Assert(IsSeeking);
             return Error.NotImplmeneted;
@@ -219,6 +219,24 @@ namespace Octopus.Player.Core.Playback
             return new TimeCode(globalFrameNumber, Framerate, dropFrame, true);
         }
 
+        protected void OnSeekFrameDisplay(Error frameDecodeResult, TimeCode? frameTimeCode)
+        {
+            if (!frameTimeCode.HasValue)
+                frameTimeCode = GenerateTimeCode((uint)displayFrame.Value);
+
+            switch (frameDecodeResult)
+            {
+                case Error.None:
+                    //FrameDisplayed?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    break;
+                case Error.FrameNotPresent:
+                    //FrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void OnFrameDisplay(object obj)
         {
             PlayerWindow.InvokeOnUIThread(() =>
@@ -311,7 +329,7 @@ namespace Octopus.Player.Core.Playback
 
         public abstract void OnRenderFrame(double timeInterval);
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (IsOpen())
                 Close();

@@ -80,10 +80,11 @@ namespace Octopus.Player.Core.Playback
             if (result != Error.None)
                 System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImage[0], 0, (uint)decodedImage.Length);
             LastError = result;
+            NeedsGPUCopy = true;
             return result;
         }
 
-        public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, Action postCopyAction = null)
+        public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null)
         {
             // Copy to staging array if supplied
             if (stagingImage != null)
@@ -94,7 +95,7 @@ namespace Octopus.Player.Core.Playback
             else
                 stagingImage = decodedImage;
 
-            renderContext.EnqueueRenderAction(() =>
+            Action renderAction = () =>
             {
                 // Tiled DNG
                 var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
@@ -117,11 +118,16 @@ namespace Octopus.Player.Core.Playback
                 }
                 else
                     gpuImage.Modify(renderContext, Vector2i.Zero, gpuImage.Dimensions, stagingImage);
-
                 if (postCopyAction != null)
                     postCopyAction();
-            });
+            };
 
+            if (immediate)
+                renderAction.Invoke();
+            else
+                renderContext.EnqueueRenderAction(renderAction);
+
+            NeedsGPUCopy = false;
             return Error.None;
         }
     }

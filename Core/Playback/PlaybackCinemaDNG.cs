@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
@@ -13,8 +14,10 @@ namespace Octopus.Player.Core.Playback
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
 
-        private SequenceStreamWorker SeekWork { get; set; }
+        private Worker<Error> SeekWork { get; set; }
         private SequenceFrameDNG SeekFrame { get; set; }
+        private Mutex SeekFrameMutex { get; set; }
+
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
         private ITexture LinearizeTableTest { get; set; }
@@ -31,15 +34,24 @@ namespace Octopus.Player.Core.Playback
 
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
+        
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
             : base(playerWindow, renderContext, bufferDurationFrames)
         {
+            SeekFrameMutex = new Mutex();
+        }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            SeekFrameMutex.Dispose();
+            SeekFrameMutex = null;
         }
 
         public override void Close()
         {
+            RenderContext.ClearRenderActions();
             if (State != State.Stopped && State != State.Empty)
                 Stop();
             Debug.Assert(IsOpen());
@@ -129,7 +141,7 @@ namespace Octopus.Player.Core.Playback
                 previewFrame = null;
             };
             if (cinemaDNGMetadata.TileCount > 0)
-                previewFrame.CopyToGPU(clip, RenderContext, displayFrameGPU, null, discardPreviewFrame);
+                previewFrame.CopyToGPU(clip, RenderContext, displayFrameGPU, null, false, discardPreviewFrame);
             else
                 discardPreviewFrame();
 
@@ -147,57 +159,88 @@ namespace Octopus.Player.Core.Playback
 
         public override void SeekStart()
         {
-            Trace.WriteLine("SeekStart");
             base.SeekStart();
 
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
                 SeekFrame = new SequenceFrameDNG(RenderContext, Clip, displayFrameGPU.Format);
 
-            Func<FrameRequestResult> processSeekFrameRequests = () =>
+            // Decode seek frame processing
+            Func<Error> decodeSeekFrame = () =>
             {
                 if (!ActiveSeekRequest.HasValue)
-                    return FrameRequestResult.NoRequests;
+                    return Error.None;
 
-                SeekFrame.frameNumber = ActiveSeekRequest.Value;
-                ActiveSeekRequest = null;
-
-                Trace.WriteLine("Decoding seek frame: " + SeekFrame.frameNumber);
-                var decodeResult = SeekFrame.Decode(Clip);
-
-                return decodeResult == Error.None ? FrameRequestResult.Success : FrameRequestResult.ErrorDecodingFrame;
+                try
+                {
+                    SeekFrameMutex.WaitOne();
+                    SeekFrame.frameNumber = ActiveSeekRequest.Value;
+                    ActiveSeekRequest = null;
+                    var decodeResult = SeekFrame.Decode(Clip);
+#if SEEK_TRACE
+                    if ( decodeResult == Error.None )
+                        Trace.WriteLine("Decoded seek frame: " + SeekFrame.frameNumber);
+#endif
+                    PlayerWindow.InvokeOnUIThread(() => RenderContext.RequestRender());
+                    return decodeResult;
+                }
+                finally
+                {
+                    SeekFrameMutex.ReleaseMutex();
+                }
             };
 
+            // Create new seek work
             Debug.Assert(SeekWork == null);
             if (SeekWork != null)
                 SeekWork.Dispose();
-            SeekWork = new SequenceStreamWorker(processSeekFrameRequests, true);
+            SeekWork = new Worker<Error>(decodeSeekFrame, true);
         }
 
-        public override Error RequestSeek(uint frame)
+        public override Error RequestSeek(uint frame, bool force = false)
         {
-            Trace.WriteLine("RequestSeek");
-            base.RequestSeek(frame);
             Debug.Assert(SeekWork != null);
+
+            base.RequestSeek(frame, force);
             if (SeekWork == null)
                 return Error.FrameRequestError;
 
-            if (ActiveSeekRequest.HasValue)
-                return Error.SeekRequestAlreadyActive;
+            // Nothing to do
+            if (SeekFrame != null && SeekFrame.frameNumber == frame)
+                return Error.None;
 
+            // If forced, wait for previous work to finish
+            if ( SeekWork.IsBusy && !force)
+                return Error.SeekRequestAlreadyActive;
+            else if (SeekWork.IsBusy && force)
+                SeekWork.WaitForWork();
+
+            Debug.Assert(!SeekWork.IsBusy);
+            Debug.Assert(!ActiveSeekRequest.HasValue);
+#if SEEK_TRACE
             Trace.WriteLine("Requesting seek frame: " + frame);
+#endif
+            // Set the new seek request
             ActiveSeekRequest = frame;
-            SeekWork.Resume();
+            if (SeekWork.IsSleeping)
+                SeekWork.Resume();
 
             return Error.None;
         }
 
         public override void SeekEnd()
         {
-            Trace.WriteLine("SeekEnd");
             Debug.Assert(SeekFrame != null && SeekWork != null);
 
-            // Set the next frame to be requested
+            // Allow any final seeking work to complete and stop the worker
+            if (SeekWork != null)
+            {
+                if (SeekWork.IsBusy)
+                    SeekWork.WaitForWork();
+                SeekWork.Stop(false);
+            }
+
+            // Set the new next frame to be requested/displayed
             if (SeekFrame != null)
             {
                 requestFrame = SeekFrame.frameNumber;
@@ -206,6 +249,7 @@ namespace Octopus.Player.Core.Playback
             
             base.SeekEnd();
             
+            // Done with the seek work
             if (SeekWork != null)
             {
                 SeekWork.Dispose();
@@ -278,6 +322,29 @@ namespace Octopus.Player.Core.Playback
         {
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && displayFrameGPU != null && displayFrameGPU.Valid && Clip != null)
             {
+                // Seek frame needs uploading to GPU
+                if ( SeekFrame != null && SeekFrame.NeedsGPUCopy)
+                {
+                    try
+                    {
+                        SeekFrameMutex.WaitOne();
+#if SEEK_TRACE
+                        Trace.WriteLine("Copying seek frame: " + SeekFrame.frameNumber + " to GPU");
+#endif
+                        SeekFrame.CopyToGPU(Clip, RenderContext, displayFrameGPU, null, true);
+                        if (!IsPlaying)
+                        {
+                            displayFrame = SeekFrame.frameNumber;
+                            requestFrame = SeekFrame.frameNumber;
+                            //OnSeekFrameDisplay(SeekFrame.LastError, SeekFrame.timeCode);
+                        }
+                    }
+                    finally
+                    {
+                        SeekFrameMutex.ReleaseMutex();
+                    }
+                }
+
                 // Calculate and apply exposure
                 var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)Clip.Metadata;
                 var exposure = Math.Pow(2.0, Clip.RawParameters.Value.exposure.HasValue ? Clip.RawParameters.Value.exposure.Value : cinemaDNGMetadata.ExposureValue );

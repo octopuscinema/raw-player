@@ -8,6 +8,7 @@ namespace Octopus.Player.Core.Playback
     public abstract class SequenceFrame : IDisposable
     {
 		public Error LastError { get; protected set; }
+		public bool NeedsGPUCopy { get; protected set; }
 		public volatile uint frameNumber;
 		public byte[] decodedImage;
 		public TimeCode? timeCode;
@@ -32,6 +33,6 @@ namespace Octopus.Player.Core.Playback
 
 		public abstract Error Decode(IClip clip);
 
-		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, Action postCopyAction = null);
+		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null);
     }
 }

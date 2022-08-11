@@ -46,6 +46,7 @@ namespace Octopus.Player.GPU.Render
         void DestroyShader(IShader shader);
         
         void EnqueueRenderAction(Action action);
+        void ClearRenderActions();
 
         void OnRenderFrame(double timeInterval);
         void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size);

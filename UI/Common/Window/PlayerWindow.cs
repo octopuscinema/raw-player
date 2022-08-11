@@ -363,9 +363,9 @@ namespace Octopus.Player.UI
                         }
                         else
                         {
-                            bool resume = Playback.IsPlaying;
+                            bool playFromStart = Playback.IsPlaying;
                             Playback.Stop();
-                            if (resume)
+                            if (playFromStart)
                                 Playback.Play();
                         }
                     }
@@ -457,10 +457,18 @@ namespace Octopus.Player.UI
             Playback.SeekStart();
         }
 
-        public void SliderDragComplete(string id)
+        public void SliderDragComplete(string id, double value)
         {
             if (Playback == null || id != "seekBar")
                 return;
+
+            // Perform final forced seek request
+            if (Playback.LastFrame != Playback.FirstFrame)
+            {
+                var frame = (uint)Math.Round(Playback.FirstFrame + (Playback.LastFrame - Playback.FirstFrame) * value);
+                Playback.RequestSeek(frame, true);
+            }
+
             Playback.SeekEnd();
         }
 

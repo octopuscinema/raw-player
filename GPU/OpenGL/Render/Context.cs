@@ -181,6 +181,14 @@ namespace Octopus.Player.GPU.OpenGL.Render
             ForceRender?.Invoke();
         }
 
+        public void ClearRenderActions()
+        {
+            lock (renderActionsLock)
+            {
+                RenderActions.Clear();
+            }
+        }
+
         public void OnRenderFrame(double timeInterval)
         {
             if (RenderActions != null && RenderActions.Any())

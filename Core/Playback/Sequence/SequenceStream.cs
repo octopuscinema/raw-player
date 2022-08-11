@@ -19,7 +19,7 @@ namespace Octopus.Player.Core.Playback
 
         uint BufferDurationFrames { get; set; }
 
-        List<SequenceStreamWorker> Workers { get; set; }
+        List<Worker<FrameRequestResult>> Workers { get; set; }
 
         public SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint? workerThreadCount = null)
         {
@@ -54,7 +54,6 @@ namespace Octopus.Player.Core.Playback
                 SequenceFrame frame;
                 if (!Pool.TryTake(out frame))
                     return FrameRequestResult.ErrorBufferFull;
-                //Trace.WriteLine("Pool size: " + Pool.Count);
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
@@ -74,9 +73,9 @@ namespace Octopus.Player.Core.Playback
             // Create worker threads
             if (workerThreadCount == null)
                 workerThreadCount = Math.Min((uint)bufferDurationFrames, (uint)Environment.ProcessorCount);
-            Workers = new List<SequenceStreamWorker>((int)workerThreadCount.Value);
+            Workers = new List<Worker<FrameRequestResult>>((int)workerThreadCount.Value);
             for (uint i = 0; i < workerThreadCount.Value; i++)
-                Workers.Add(new SequenceStreamWorker(processFrameRequests));
+                Workers.Add(new Worker<FrameRequestResult>(processFrameRequests));
 
             // Allocate frame pool
             for (int i = 0; i < bufferDurationFrames; i++)
