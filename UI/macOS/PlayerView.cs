@@ -19,6 +19,8 @@ namespace Octopus.Player.UI.macOS
 
         private NSTrackingArea trackingArea;
 
+        private HashSet<string> activeSliders = new HashSet<string>();
+
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
         {
@@ -152,6 +154,36 @@ namespace Octopus.Player.UI.macOS
         {
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.ButtonClick(sender.Identifier);
+        }
+
+        partial void SliderDrag(NSSlider sender)
+        {
+            if (NativePlayerWindow == null)
+                return;
+
+            // Drag has ended if there are no mouse button events
+            bool dragEnd = (NSEvent.CurrentPressedMouseButtons == 0);
+
+            if ( dragEnd )
+            {
+                if (activeSliders.Contains(sender.Identifier))
+                {
+                    activeSliders.Remove(sender.Identifier);
+                    NativePlayerWindow.PlayerWindow.SliderDragComplete(sender.Identifier, sender.FloatValue);
+                }
+                else
+                    NativePlayerWindow.PlayerWindow.SliderSetValue(sender.Identifier, sender.FloatValue);
+                
+                return;
+            }
+                
+            if ( activeSliders.Contains(sender.Identifier) )
+                NativePlayerWindow.PlayerWindow.SliderDragDelta(sender.Identifier, sender.FloatValue);
+            else
+            {
+                activeSliders.Add(sender.Identifier);
+                NativePlayerWindow.PlayerWindow.SliderDragStart(sender.Identifier);
+            }
         }
     }
 }

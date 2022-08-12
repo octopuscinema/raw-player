@@ -485,7 +485,7 @@ namespace Octopus.Player.UI
             Playback.RequestSeek(frame);
         }
 
-        public void SliderValueChanged(string id, double value)
+        public void SliderSetValue(string id, double value)
         {
             
         }

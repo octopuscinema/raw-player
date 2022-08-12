@@ -34,7 +34,10 @@
                                     <slider identifier="seekBar" verticalHuggingPriority="750" id="QCu-tS-Z3a">
                                         <rect key="frame" x="20" y="7" width="440" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <sliderCell key="cell" controlSize="mini" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
+                                        <sliderCell key="cell" controlSize="mini" continuous="YES" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
+                                        <connections>
+                                            <action selector="SliderDrag:" target="8" id="Kbp-Ec-yFB"/>
+                                        </connections>
                                     </slider>
                                     <button identifier="fastForwardButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
                                         <rect key="frame" x="262" y="32" width="27.5" height="40"/>

@@ -32,5 +32,10 @@ namespace Octopus.Player.UI.macOS
 		#pragma warning disable 0169
 		[Foundation.Export("ButtonClick:")]
 		partial void ButtonClick (AppKit.NSButton sender);
-	}
+
+		#pragma warning disable 0169
+        [Foundation.Export("SliderDrag:")]
+        partial void SliderDrag(AppKit.NSSlider sender);
+
+    }
 }
