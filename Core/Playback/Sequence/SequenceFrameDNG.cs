@@ -9,7 +9,7 @@ namespace Octopus.Player.Core.Playback
 {
     public class SequenceFrameDNG : SequenceFrame
     {
-        private Core.IO.DNG.Reader DNGReader { get; set; }
+        private IO.DNG.Reader DNGReader { get; set; }
 
         public SequenceFrameDNG(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
             : base(gpuContext, clip, gpuFormat)
@@ -118,6 +118,7 @@ namespace Octopus.Player.Core.Playback
                 }
                 else
                     gpuImage.Modify(renderContext, Vector2i.Zero, gpuImage.Dimensions, stagingImage);
+
                 if (postCopyAction != null)
                     postCopyAction();
             };
