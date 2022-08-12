@@ -363,10 +363,12 @@ namespace Octopus.Player.UI
                         }
                         else
                         {
-                            bool playFromStart = Playback.IsPlaying;
+                            bool wasPlaying = Playback.IsPlaying;
                             Playback.Stop();
-                            if (playFromStart)
+                            if (wasPlaying)
                                 Playback.Play();
+                            else
+                                SliderSetValue("seekBar", 0.0f);
                         }
                     }
                     break;
@@ -487,7 +489,21 @@ namespace Octopus.Player.UI
 
         public void SliderSetValue(string id, double value)
         {
-            
+            if (Playback == null || id != "seekBar" )
+                return;
+
+            // Don't hide controls while seeking
+            lastInteraction = DateTime.Now;
+            if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
+                NativeWindow.AnimateInControls();
+
+            if (Playback.LastFrame == Playback.FirstFrame)
+                return;
+
+            Playback.SeekStart();
+            var frame = (uint)Math.Round(Playback.FirstFrame + (Playback.LastFrame - Playback.FirstFrame) * value);
+            Playback.RequestSeek(frame, true);
+            Playback.SeekEnd();
         }
 
         private Error OpenCinemaDNG(string dngPath)

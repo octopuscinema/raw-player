@@ -21,7 +21,7 @@ namespace Octopus.Player.Core.Playback
         {
             Work = work;
             Sleep = new AutoResetEvent(!paused);
-            Busy = new ManualResetEvent(paused);
+            Busy = new ManualResetEvent(!paused);
             Thread = new Thread(WorkLoop);
             Thread.Start();
         }

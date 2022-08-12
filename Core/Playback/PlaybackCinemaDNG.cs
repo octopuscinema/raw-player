@@ -161,6 +161,10 @@ namespace Octopus.Player.Core.Playback
         {
             base.SeekStart();
 
+            // Do nothing if there is only 1 frame
+            if (FirstFrame == LastFrame)
+                return;
+
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
                 SeekFrame = new SequenceFrameDNG(RenderContext, Clip, displayFrameGPU.Format);
@@ -201,6 +205,10 @@ namespace Octopus.Player.Core.Playback
         {
             Debug.Assert(SeekWork != null);
 
+            // Don't try to seek if theres only 1 frame
+            if (FirstFrame == LastFrame)
+                return Error.None;
+
             base.RequestSeek(frame, force);
             if (SeekWork == null)
                 return Error.FrameRequestError;
@@ -230,14 +238,13 @@ namespace Octopus.Player.Core.Playback
 
         public override void SeekEnd()
         {
-            Debug.Assert(SeekFrame != null && SeekWork != null);
-
             // Allow any final seeking work to complete and stop the worker
             if (SeekWork != null)
             {
                 if (SeekWork.IsBusy)
                     SeekWork.WaitForWork();
                 SeekWork.Stop(false);
+                ActiveSeekRequest = null;
             }
 
             // Set the new next frame to be requested/displayed
@@ -246,7 +253,7 @@ namespace Octopus.Player.Core.Playback
                 requestFrame = SeekFrame.frameNumber;
                 displayFrame = SeekFrame.frameNumber;
             }
-            
+
             base.SeekEnd();
             
             // Done with the seek work

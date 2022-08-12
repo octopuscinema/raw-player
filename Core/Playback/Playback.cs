@@ -109,7 +109,7 @@ namespace Octopus.Player.Core.Playback
             if (PreSeekState == State.Playing || PreSeekState == State.PlayingFromBuffer || PreSeekState == State.Buffering)
                 Play();
             else
-                State = State.Paused;
+                State = (FirstFrame==LastFrame) ? State.Stopped : State.Paused;
             PreSeekState = null;
         }
 

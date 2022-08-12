@@ -34,6 +34,8 @@ namespace Octopus.Player.UI.Windows
 
         private IntPtr? hwnd;
 
+        private HashSet<Slider> activeSliders = new HashSet<Slider>();
+
         public NativePlayerWindow()
         {
             ControlsAnimationState = ControlsAnimationState.In;
@@ -331,7 +333,11 @@ namespace Octopus.Player.UI.Windows
             {
                 var slider = FindControl<Slider>(id);
                 if (slider != null)
+                {
+                    activeSliders.Add(slider);
                     slider.Value = value * slider.Maximum;
+                    activeSliders.Remove(slider);
+                }
             });
         }
 
@@ -518,15 +524,22 @@ namespace Octopus.Player.UI.Windows
 
         private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
+            Trace.WriteLine("Slider_DragStarted");
             Debug.Assert(sender.GetType() == typeof(Slider));
             PlayerWindow.SliderDragStart(((Slider)sender).Name);
+
+            Debug.Assert(!activeSliders.Contains((Slider)sender));
+            activeSliders.Add((Slider)sender);
         }
 
         private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
+            Trace.WriteLine("Slider_DragCompleted");
             Debug.Assert(sender.GetType() == typeof(Slider));
             var slider = (Slider)sender;
             PlayerWindow.SliderDragComplete(slider.Name, slider.Value);
+
+            activeSliders.Remove((Slider)sender);
         }
 
         private void Slider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
@@ -540,7 +553,10 @@ namespace Octopus.Player.UI.Windows
         {
             Debug.Assert(sender.GetType() == typeof(Slider));
             var slider = (Slider)sender;
-            PlayerWindow.SliderValueChanged(slider.Name, e.NewValue);
+
+            // Only fire callback if slider isnt actively from another source
+            if ( !activeSliders.Contains(slider))
+                PlayerWindow.SliderSetValue(slider.Name, e.NewValue);
         }
     }
 }
