@@ -18,6 +18,9 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 - Blackmagic Ursa Mini 4K
 - OCTOPUSCAMERA 8K/4K/MONO
 
+For more information, please visit the wiki:
+http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
+
 # Getting started for Users
 
 ## Basic system requirements
@@ -31,8 +34,8 @@ OCTOPUS RAW Player releases are usually installed by launching the Windows ```.m
 The OCTOPUS RAW Player is built into a single-file ```.exe``` with no dependencies executable which can be run without installation.
 
 ### User Guide
-For more information about the OCTOPUS RAW Player, please see the wiki:
-http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
+Please see the user guide wiki page:
+http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
 
 ## Sample CinemaDNG Files
 ~~Sample CinemaDNG sequences for testing with OCTOPUS RAW Player are downloadable from:
