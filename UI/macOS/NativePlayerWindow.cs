@@ -6,6 +6,7 @@ using System.Diagnostics;
 using OpenTK.Mathematics;
 using CoreAnimation;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -27,6 +28,10 @@ namespace Octopus.Player.UI.macOS
 
 		private PlaybackControlsView PlaybackControls { get; set; }
 
+		private bool IsDarkMode { get { return EffectiveAppearance.Name.Contains("dark", StringComparison.CurrentCultureIgnoreCase); } }
+
+		private IDisposable appearanceObserver;
+
         // Called when created from unmanaged code
         public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
@@ -44,8 +49,8 @@ namespace Octopus.Player.UI.macOS
         {
             ControlsAnimationState = ControlsAnimationState.In;
 
-            // Create platform independant window logic
-            PlayerWindow = new PlayerWindow(this);
+			// Create platform independant window logic
+            PlayerWindow = new PlayerWindow(this, (IsDarkMode) ? (ITheme)new DefaultThemeDark() : null);
             PlayerWindow.OnLoad();
             WillClose += OnClose;
 
@@ -53,6 +58,14 @@ namespace Octopus.Player.UI.macOS
             PlaybackControls = (PlaybackControlsView)FindView(ContentView, "playbackControls");
             PlaybackControls.MouseEnter += OnPlaybackControlsMouseEnter;
             PlaybackControls.MouseExit += OnPlaybackControlsMouseExit;
+
+            // Catch dark mode
+            appearanceObserver = AddObserver("effectiveAppearance", Foundation.NSKeyValueObservingOptions.New, OnAppearanceChanged);
+        }
+
+		private void OnAppearanceChanged(Foundation.NSObservedChange obj)
+        {
+			PlayerWindow.Theme = IsDarkMode ? (ITheme)new DefaultThemeDark() : (ITheme)new DefaultTheme();
         }
 
         private void OnPlaybackControlsMouseExit(object sender, EventArgs e)
@@ -78,7 +91,10 @@ namespace Octopus.Player.UI.macOS
             Debug.Assert(PlayerWindow != null);
 			PlayerWindow.Dispose();
 			PlayerWindow = null;
-		}
+
+			appearanceObserver.Dispose();
+			appearanceObserver = null;
+        }
 
 		public void LockAspect(Core.Maths.Rational ratio)
         {

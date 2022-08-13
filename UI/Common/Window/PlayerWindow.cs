@@ -13,9 +13,21 @@ namespace Octopus.Player.UI
     {
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
-        public ITheme Theme { get; private set; }
         private GPU.Render.IContext RenderContext { get; set; }
         private Timer AnimateOutControlsTimer { get; set; }
+        private ITheme theme;
+        public ITheme Theme
+        {
+            get { return theme; }
+            set
+            {
+                if (theme != value)
+                {
+                    theme = value;
+                    OnThemeChanged();
+                }
+            }
+        }
 
         private DateTime lastInteraction;
 
@@ -58,6 +70,15 @@ namespace Octopus.Player.UI
 
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
+        }
+
+        private void OnThemeChanged()
+        {
+            if (RenderContext != null)
+            {
+                RenderContext.BackgroundColor = (Playback != null && Playback.IsOpen()) ? Theme.ClipBackground : Theme.EmptyBackground;
+                RenderContext.RequestRender();
+            }
         }
 
         private void AnimateOutControls(object obj)
