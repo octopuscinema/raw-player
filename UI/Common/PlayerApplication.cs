@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Octopus.Player.UI
 {
@@ -16,6 +17,8 @@ namespace Octopus.Player.UI
             get
             {
 #if TRACE_TO_FILE
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Logs/OCTOPUS RAW Player.log");
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player.log");
 #else
                 return null;

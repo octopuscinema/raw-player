@@ -10,9 +10,11 @@ namespace Octopus.Player.UI.macOS
     public partial class AppDelegate : NSApplicationDelegate
     {
         PlayerWindowController PlayerWindowController { get; set; }
+        public PlayerApplication PlayerApplication { get; private set; }
 
         public AppDelegate()
         {
+            PlayerApplication = new PlayerApplication();
         }
 
         public override void DidFinishLaunching(NSNotification notification)
@@ -26,7 +28,6 @@ namespace Octopus.Player.UI.macOS
 
             NSEvent.AddLocalMonitorForEventsMatchingMask(NSEventMask.KeyDown, (NSEvent theEvent) =>
             {
-                //Console.WriteLine(theEvent);
                 if (keyNames.ContainsKey(theEvent.KeyCode))
                     return PlayerWindowController.PlayerWindow.PlayerWindow.PreviewKeyDown(keyNames[theEvent.KeyCode]) ? null : theEvent;
                 return theEvent;
@@ -36,6 +37,12 @@ namespace Octopus.Player.UI.macOS
         public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender)
         {
             return true;
+        }
+
+        public override void WillTerminate(NSNotification notification)
+        {
+            PlayerApplication.Dispose();
+            PlayerApplication = null;
         }
 
         [Export("doClick:")]

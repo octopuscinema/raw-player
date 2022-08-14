@@ -298,11 +298,45 @@
                                     </items>
                                 </menu>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="RNX-nM-Buc"/>
+                            <menuItem title="Develop" id="VUQ-Pe-mhU">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Develop" id="NmR-MM-27w">
+                                    <items>
+                                        <menuItem title="OCTOPUSCINEMA GitHub" identifier="visitGithub" id="Jbe-n4-Osj">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="8dt-P4-CpR"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="wvb-nc-IvL"/>
-                            <menuItem title="OCTOPUSCINEMA GitHub" identifier="visitGithub" id="Jbe-n4-Osj">
+                            <menuItem title="Troubleshooting" id="HDd-Sb-3fM">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Troubleshooting" id="UsH-DQ-H64">
+                                    <items>
+                                        <menuItem title="OpenGL Information" identifier="openglInfo" id="uqk-dL-XO0">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="WwH-hd-qqp"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="View Log" identifier="viewLog" id="M1v-Tz-2Dt">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="H3G-39-W04"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="6ma-fc-dVg"/>
+                            <menuItem title="License" identifier="license" id="oyK-hq-jKP">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="doClick:" target="-1" id="8dt-P4-CpR"/>
+                                    <action selector="doClick:" target="-1" id="ZuB-99-AXf"/>
                                 </connections>
                             </menuItem>
                         </items>

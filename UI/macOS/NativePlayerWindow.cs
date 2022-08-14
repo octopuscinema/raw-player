@@ -30,7 +30,9 @@ namespace Octopus.Player.UI.macOS
 
 		private bool IsDarkMode { get { return EffectiveAppearance.Name.Contains("dark", StringComparison.CurrentCultureIgnoreCase); } }
 
-		private IDisposable appearanceObserver;
+        public PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
+
+        private IDisposable appearanceObserver;
 
         // Called when created from unmanaged code
         public NativePlayerWindow (IntPtr handle) : base(handle)
@@ -182,13 +184,26 @@ namespace Octopus.Player.UI.macOS
 			alert?.RunModal();
 		}
 
+		public void DisplayAboutPopup()
+        {
+			//NSApplication.optio
+            var options = new NSDictionary();
+			NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions2(options);
+            //NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions()
+        }
+
         public void OpenUrl(string url)
         {
 			NSError urlError;
 			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
-		private NSMenuItem FindMenuItem(NSMenu root, string id)
+        public void OpenTextEditor(string textFilePath)
+        {
+			NSWorkspace.SharedWorkspace.OpenFile(textFilePath);
+        }
+
+        private NSMenuItem FindMenuItem(NSMenu root, string id)
         {
 			if (root == null)
 				return null;
