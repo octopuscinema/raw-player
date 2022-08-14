@@ -32,6 +32,8 @@ namespace Octopus.Player.UI.Windows
         public bool MouseInsidePlaybackControls { get; private set; }
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
+        public PlayerApplication PlayerApplication { get { return ((App)Application.Current).PlayerApplication; } }
+
         private IntPtr? hwnd;
 
         private HashSet<Slider> activeSliders = new HashSet<Slider>();
@@ -390,6 +392,18 @@ namespace Octopus.Player.UI.Windows
                 Process.Start("explorer.exe", url);
             }
             catch(Exception e)
+            {
+                Trace.WriteLine(e.Message);
+            }
+        }
+
+        public void OpenTextEditor(string textFilePath)
+        {
+            try
+            {
+                Process.Start("notepad.exe", textFilePath);
+            }
+            catch (Exception e)
             {
                 Trace.WriteLine(e.Message);
             }

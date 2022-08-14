@@ -243,6 +243,7 @@
                 <Separator />
                 <MenuItem Header="_Troubleshooting">
                     <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
+                    <MenuItem Header="_View Log" Name="viewLog" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>

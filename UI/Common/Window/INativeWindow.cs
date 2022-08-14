@@ -40,6 +40,7 @@ namespace Octopus.Player.UI
 		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenUrl(string url);
+		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();
 		void AnimateOutControls();
 		ControlsAnimationState ControlsAnimationState { get; }
@@ -47,6 +48,7 @@ namespace Octopus.Player.UI
 		Vector2i FramebufferSize { get; }
 		bool MouseInsidePlaybackControls { get; }
 		void InvokeOnUIThread(Action action, bool async = true);
+		PlayerApplication PlayerApplication { get; }
 	}
 }
 

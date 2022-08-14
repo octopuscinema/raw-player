@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Octopus.Player.UI
@@ -315,6 +316,10 @@ namespace Octopus.Player.UI
                             NativeWindow.Alert(AlertType.Information, renderApiInfo, "OpenGL information");
                             break;
                     }
+                    break;
+                case "viewLog":
+                    if (NativeWindow.PlayerApplication.LogPath != null)
+                        NativeWindow.OpenTextEditor(NativeWindow.PlayerApplication.LogPath);
                     break;
                 case "about":
                     string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;
