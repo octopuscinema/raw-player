@@ -153,9 +153,9 @@ namespace Octopus.Player.UI
                             Playback.Velocity = Core.Playback.PlaybackVelocity.Forward1x;
                             Playback.Play();
                         }
+                        handled = true;
+                        showControls = true;
                     }
-                    handled = true;
-                    showControls = true;
                     break;
             }
 
