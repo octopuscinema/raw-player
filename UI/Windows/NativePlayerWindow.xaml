@@ -15,6 +15,76 @@
         Title="OCTOPUS RAW Player" Height="450" Width="800">
 
     <Window.Resources>
+        <MenuItem Header="_Clip" IsEnabled="False" x:Shared="False" x:Key="clip" Name="clip">
+            <MenuItem Header="_White Balance" Name="whiteBalance">
+                <MenuItem Header="_As Shot" Name="whiteBalanceAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Shade (7500K, Tint: +10)" Name="whiteBalanceShade" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Cloud (6500K, Tint: +10)" Name="whiteBalanceCloud" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Daylight (5500K, Tint: +10)" Name="whiteBalanceDaylight" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Fluorescent (3800K, Tint: +21)" Name="whiteBalanceFluorescent" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Tungsten (3200K)" Name="whiteBalanceTungsten" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+            </MenuItem>
+            <MenuItem Header="_Exposure (+/-)">
+                <MenuItem Header="_As Shot" Name="exposureAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_ -2" Name="exposureMinusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_ -1" Name="exposureMinusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_  0" Name="exposureZero" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_+1" Name="exposurePlusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_+2" Name="exposurePlusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Advanced">
+                <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Colour Space" Name="colorSpace">
+                    <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <MenuItem Header="_Gamma">
+                    <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Debayer Quality" Name="debayerQuality">
+                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
+                </MenuItem>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
+        </MenuItem>
+        <MenuItem x:Key="view" x:Shared="False" Header="_View">
+            <MenuItem Header="_Toggle Full screen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
+        </MenuItem>
+        <MenuItem x:Key="help" x:Shared="False" Header="_Help">
+            <MenuItem Header="_Visit OCTOPUS RAW Player Website"  Name="visitWebsite" Click="MenuItem_Click"/>
+            <MenuItem Header="_Join Us on Social Media">
+                <MenuItem Header="_Instagram" Name="visitInstagram" Click="MenuItem_Click"/>
+                <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Develop">
+                <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Troubleshooting">
+                <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
+                <MenuItem Header="_View Log" Name="viewLog" Click="MenuItem_Click"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
+            <Separator />
+            <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
+        </MenuItem>
+        <ContextMenu x:Key="PlayerContextMenu">
+            <StaticResourceExtension ResourceKey="clip"/>
+            <StaticResourceExtension ResourceKey="view"/>
+            <StaticResourceExtension ResourceKey="help"/>
+        </ContextMenu>
         <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />
             <Setter Property="OverridesDefaultStyle" Value="true" />
@@ -179,77 +249,15 @@
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" MouseMove="GLControl_MouseMove">
             <MenuItem Header="_File" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" Click="MenuItem_Click"/>
+                <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" InputGestureText="Ctrl+O" Click="MenuItem_Click"/>
                 <Separator />
                 <MenuItem Header="_Clear Recent Files" Name="clearRecent" IsEnabled="False"/>
                 <Separator />
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="_Clip" IsEnabled="False" Name="clip">
-                <MenuItem Header="_White Balance" Name="whiteBalance">
-                    <MenuItem Header="_As Shot" Name="whiteBalanceAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Shade (7500K, Tint: +10)" Name="whiteBalanceShade" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Cloud (6500K, Tint: +10)" Name="whiteBalanceCloud" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Daylight (5500K, Tint: +10)" Name="whiteBalanceDaylight" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Fluorescent (3800K, Tint: +21)" Name="whiteBalanceFluorescent" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Tungsten (3200K)" Name="whiteBalanceTungsten" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <MenuItem Header="_Exposure (+/-)">
-                    <MenuItem Header="_As Shot" Name="exposureAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_ -2" Name="exposureMinusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_ -1" Name="exposureMinusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_  0" Name="exposureZero" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_+1" Name="exposurePlusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_+2" Name="exposurePlusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Advanced">
-                    <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Colour Space" Name="colorSpace">
-                        <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                    <MenuItem Header="_Gamma">
-                        <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                    <Separator />
-                    <MenuItem Header="_Debayer Quality" Name="debayerQuality">
-                        <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                        <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
-            </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_Visit OCTOPUS RAW Player Website"  Name="visitWebsite" Click="MenuItem_Click"/>
-                <MenuItem Header="_Join Us on Social Media">
-                    <MenuItem Header="_Instagram" Name="visitInstagram" Click="MenuItem_Click"/>
-                    <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Develop">
-                    <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Troubleshooting">
-                    <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
-                    <MenuItem Header="_View Log" Name="viewLog" Click="MenuItem_Click"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
-                <Separator />
-                <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
-            </MenuItem>
+            <StaticResourceExtension ResourceKey="clip"/>
+            <StaticResourceExtension ResourceKey="view"/>
+            <StaticResourceExtension ResourceKey="help"/>
         </Menu>
     </Grid>
 </base:AspectRatioWindow>

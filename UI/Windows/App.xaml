@@ -4,6 +4,9 @@
              xmlns:local="clr-namespace:Octopus.Player.UI.Windows"
              StartupUri="NativePlayerWindow.xaml">
     <Application.Resources>
-         
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Top" />
+        </Style>
     </Application.Resources>
 </Application>

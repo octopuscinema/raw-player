@@ -39,6 +39,7 @@ namespace Octopus.Player.UI
 		void SetSliderValue(string id, float value);
 		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
+		void OpenContextMenu(string id);
 		void OpenUrl(string url);
 		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();

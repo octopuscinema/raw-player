@@ -111,6 +111,10 @@ namespace Octopus.Player.UI
             lastInteraction = DateTime.Now;
             if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
                 NativeWindow.AnimateInControls();
+
+            // Open clip context menu if we have a clip loaded
+            if ( Playback != null && Playback.State != Core.Playback.State.Empty )
+                NativeWindow.OpenContextMenu("PlayerContextMenu");
         }
 
         public void MouseMove(in Vector2 localPosition)
@@ -131,13 +135,24 @@ namespace Octopus.Player.UI
 
         }
 
-        public bool PreviewKeyDown(string id)
+        public bool PreviewKeyDown(string id, List<string> modifiers)
         {
             bool handled = false;
             bool showControls = false;
 
             switch (id)
             {
+                case "O":
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && modifiers.Count == 1 && modifiers.Contains("Control"))
+                        MenuItemClick("openCinemaDNG");
+                    break;
+                case "F11":
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        NativeWindow.ToggleFullscreen();
+                        handled = true;
+                    }
+                    break;
                 case "Tab":
                     showControls = true;
                     break;

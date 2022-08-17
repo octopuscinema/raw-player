@@ -72,7 +72,16 @@ namespace Octopus.Player.UI.Windows
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            e.Handled = PlayerWindow.PreviewKeyDown(e.Key.ToString());
+            List<string> modifiers = new List<string>();
+
+            var modifierKeys = Enum.GetValues(typeof(ModifierKeys)).Cast<ModifierKeys>();
+            foreach(var key in modifierKeys)
+            {
+                if ((Keyboard.Modifiers & key) != 0)
+                    modifiers.Add(key.ToString());
+            }
+
+            e.Handled = PlayerWindow.PreviewKeyDown(e.Key.ToString(), modifiers);
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -243,17 +252,48 @@ namespace Octopus.Player.UI.Windows
             return null;
         }
 
+        private ContextMenu? FindContextMenu(string? id = null)
+        {
+            if ( id != null)
+                return (ContextMenu)FindResource(id);
+
+            foreach (System.Collections.DictionaryEntry resourceEntry in Resources)
+            {
+                if (resourceEntry.Value is ContextMenu)
+                    return (ContextMenu)resourceEntry.Value;
+            }
+
+            return null;
+        }
+
+        MenuItem? FindContextMenuItem(string id, string? contextMenuId = null)
+        {
+            var contextMenu = FindContextMenu(contextMenuId);
+            return contextMenu == null ? null : FindMenuItem(contextMenu.Items, id);
+        }
+
         public void EnableMenuItem(string id, bool enable)
         {
             var item = FindMenuItem(PlayerMenu.Items, id);
             if (item != null)
                 item.IsEnabled = enable;
+
+            var contextMenuItem = FindContextMenuItem(id);
+            if (contextMenuItem != null)
+                contextMenuItem.IsEnabled = enable;
         }
 
         public void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true)
         {
-            var item = FindMenuItem(PlayerMenu.Items, id);
-            if (item != null)
+            List<MenuItem> items = new List<MenuItem>();
+            var menuItem = FindMenuItem(PlayerMenu.Items, id);
+            if (menuItem != null)
+                items.Add(menuItem);
+            var contextMenuItem = FindContextMenuItem(id);
+            if (contextMenuItem != null)
+                items.Add(contextMenuItem);
+
+            foreach(var item in items)
             {
                 item.IsChecked = check;
                 if (uncheckSiblings)
@@ -287,6 +327,10 @@ namespace Octopus.Player.UI.Windows
         public void SetMenuItemTitle(string id, string name)
         {
             var item = FindMenuItem(PlayerMenu.Items, id);
+            if (item != null)
+                item.Header = "_" + name;
+
+            item = FindContextMenuItem(id);
             if (item != null)
                 item.Header = "_" + name;
         }
@@ -383,6 +427,12 @@ namespace Octopus.Player.UI.Windows
                 default:
                     break;
             }
+        }
+
+        public void OpenContextMenu(string id)
+        {
+            var contextMenu = (ContextMenu)FindResource(id);
+            contextMenu.IsOpen = true;
         }
 
         public void OpenUrl(string url)
