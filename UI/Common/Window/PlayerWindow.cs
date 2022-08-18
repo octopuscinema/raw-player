@@ -142,8 +142,15 @@ namespace Octopus.Player.UI
 
             switch (id)
             {
+                case "F":
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && modifiers.Count == 1 && modifiers.Contains("Command"))
+                    {
+                        NativeWindow.ToggleFullscreen();
+                        handled = true;
+                    }
+                    break;
                 case "O":
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && modifiers.Count == 1 && modifiers.Contains("Control"))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && modifiers.Count == 1 && modifiers.Contains("Control") )
                         MenuItemClick("openCinemaDNG");
                     break;
                 case "F11":

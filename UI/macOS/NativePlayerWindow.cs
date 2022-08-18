@@ -398,6 +398,11 @@ namespace Octopus.Player.UI.macOS
 				((NSView)PlaybackControls.Animator).AlphaValue = 0.0f;
 			});
 		}
+
+        public void OpenContextMenu(string id)
+        {
+            //throw new NotImplementedException();
+        }
     }
 }
 

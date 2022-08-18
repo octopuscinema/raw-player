@@ -66,8 +66,7 @@
                 <menuItem title="File" id="83">
                     <menu key="submenu" title="File" id="81">
                         <items>
-                            <menuItem title="Open CinemaDNG Sequence..." identifier="openCinemaDNG" id="4Ld-fG-0SO">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Open CinemaDNG Sequence..." keyEquivalent="o" identifier="openCinemaDNG" id="4Ld-fG-0SO">
                                 <connections>
                                     <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
                                 </connections>
