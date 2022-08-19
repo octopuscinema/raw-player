@@ -34,6 +34,8 @@ namespace Octopus.Player.UI.macOS
 
         private IDisposable appearanceObserver;
 
+		private NSMenu contextMenu;
+
         // Called when created from unmanaged code
         public NativePlayerWindow (IntPtr handle) : base(handle)
 		{
@@ -96,6 +98,12 @@ namespace Octopus.Player.UI.macOS
 
 			appearanceObserver.Dispose();
 			appearanceObserver = null;
+
+			if (contextMenu != null)
+            {
+				contextMenu.Dispose();
+				contextMenu = null;
+            }
         }
 
 		public void LockAspect(Core.Maths.Rational ratio)
@@ -399,9 +407,20 @@ namespace Octopus.Player.UI.macOS
 			});
 		}
 
-        public void OpenContextMenu(string id)
-        {
-            //throw new NotImplementedException();
+		public void OpenContextMenu(string id)
+		{
+			throw new NotSupportedException();
+		}
+
+		public void OpenContextMenu(List<string> mainMenuItems)
+		{
+            if (contextMenu != null)
+                contextMenu.Dispose();
+
+            contextMenu = new NSMenu();
+			foreach(var mainMenuItem in mainMenuItems)
+                contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
+            contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
         }
     }
 }

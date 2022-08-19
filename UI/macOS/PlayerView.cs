@@ -104,12 +104,16 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDown(NSEvent theEvent)
         {
+            base.MouseDown(theEvent);
+            var modifiers = theEvent.ModifierFlags.ToModifierNameList();
             if (NativePlayerWindow != null)
-                NativePlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount);
+                NativePlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount, modifiers);
         }
 
         public override void RightMouseDown(NSEvent theEvent)
         {
+            base.RightMouseDown(theEvent);
+            var modifiers = theEvent.ModifierFlags.ToModifierNameList();
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
         }

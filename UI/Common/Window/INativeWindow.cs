@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using OpenTK.Mathematics;
 
@@ -40,7 +41,8 @@ namespace Octopus.Player.UI
 		void SetSliderEnabled(string id, bool enabled);
 		void Alert(AlertType alertType, string message, string title);
 		void OpenContextMenu(string id);
-		void OpenUrl(string url);
+		void OpenContextMenu(List<string> mainMenuItems);
+        void OpenUrl(string url);
 		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();
 		void AnimateOutControls();

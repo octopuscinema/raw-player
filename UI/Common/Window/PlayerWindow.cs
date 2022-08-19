@@ -95,7 +95,7 @@ namespace Octopus.Player.UI
             }
         }
 
-        public void LeftMouseDown(uint clickCount)
+        public void LeftMouseDown(uint clickCount, List<string> modifiers)
         {
             lastInteraction = DateTime.Now;
             if (NativeWindow.ControlsAnimationState == ControlsAnimationState.Out)
@@ -104,6 +104,13 @@ namespace Octopus.Player.UI
             // Double click to go full screen
             if (clickCount == 2)
                 NativeWindow.ToggleFullscreen();
+
+            // Catch control-click on OSX
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && Playback != null && Playback.State != Core.Playback.State.Empty &&
+                modifiers.Contains("Control") && modifiers.Count == 1 )
+            {
+                NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" });
+            }
         }
 
         public void RightMouseDown(uint clickCount)
@@ -113,8 +120,13 @@ namespace Octopus.Player.UI
                 NativeWindow.AnimateInControls();
 
             // Open clip context menu if we have a clip loaded
-            if ( Playback != null && Playback.State != Core.Playback.State.Empty )
-                NativeWindow.OpenContextMenu("PlayerContextMenu");
+            if (Playback != null && Playback.State != Core.Playback.State.Empty)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    NativeWindow.OpenContextMenu("PlayerContextMenu");
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" });
+            }
         }
 
         public void MouseMove(in Vector2 localPosition)
