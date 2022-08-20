@@ -6,7 +6,8 @@ using System.Diagnostics;
 using OpenTK.Mathematics;
 using CoreAnimation;
 using System.Collections.Generic;
-using static System.Net.Mime.MediaTypeNames;
+using System.Linq;
+using CoreText;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -192,12 +193,47 @@ namespace Octopus.Player.UI.macOS
 			alert?.RunModal();
 		}
 
-		public void DisplayAboutPopup()
+
+        public void OpenContextMenu(string id)
         {
-			//NSApplication.optio
-            var options = new NSDictionary();
-			NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions2(options);
-            //NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions()
+            throw new NotSupportedException();
+        }
+
+        public void OpenContextMenu(List<string> mainMenuItems)
+        {
+            if (contextMenu != null)
+                contextMenu.Dispose();
+
+            contextMenu = new NSMenu();
+            foreach (var mainMenuItem in mainMenuItems)
+                contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
+            contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
+        }
+
+        public void OpenAboutPanel(string license)
+        {
+			string version = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleVersion").ToString();
+            string applicationVersion = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString();
+			string applicationName = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleDisplayName").ToString();
+            string copyright = NSBundle.MainBundle.ObjectForInfoDictionary("NSHumanReadableCopyright").ToString();
+            
+            var systemFont = NSFont.SystemFontOfSize(NSFont.SmallSystemFontSize);
+			var creditsAttributes = new CTStringAttributes()
+			{
+				ForegroundColorFromContext = true,
+				Font = new CTFont(systemFont.FontName, systemFont.PointSize)
+			};
+
+            var options = new Dictionary<string, object>()
+            {
+				{ "ApplicationName", applicationName },
+				{ "Version", version },
+				{ "ApplicationVersion", applicationVersion },
+				{ "Copyright", copyright },
+				{ "Credits", new NSAttributedString(license, creditsAttributes) }
+            };
+
+            NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions2(NSDictionary.FromObjectsAndKeys(options.Values.ToArray(), options.Keys.ToArray()));
         }
 
         public void OpenUrl(string url)
@@ -406,22 +442,6 @@ namespace Octopus.Player.UI.macOS
 				((NSView)PlaybackControls.Animator).AlphaValue = 0.0f;
 			});
 		}
-
-		public void OpenContextMenu(string id)
-		{
-			throw new NotSupportedException();
-		}
-
-		public void OpenContextMenu(List<string> mainMenuItems)
-		{
-            if (contextMenu != null)
-                contextMenu.Dispose();
-
-            contextMenu = new NSMenu();
-			foreach(var mainMenuItem in mainMenuItems)
-                contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
-            contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
-        }
     }
 }
 

@@ -17,17 +17,13 @@
                 <menuItem title="OCTOPUS RAW Player" id="56">
                     <menu key="submenu" title="OCTOPUS RAW Player" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About OCTOPUS RAW Player" id="58">
+                            <menuItem title="About OCTOPUS RAW Player" identifier="about" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                    <action selector="doClick:" target="-1" id="Ywt-p8-WGH"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="129"/>
-                            <menuItem isSeparatorItem="YES" id="143">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
                             <menuItem title="Services" id="131">

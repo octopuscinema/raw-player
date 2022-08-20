@@ -42,6 +42,7 @@ namespace Octopus.Player.UI
 		void Alert(AlertType alertType, string message, string title);
 		void OpenContextMenu(string id);
 		void OpenContextMenu(List<string> mainMenuItems);
+		void OpenAboutPanel(string license);
         void OpenUrl(string url);
 		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();

@@ -43,7 +43,6 @@ namespace Octopus.Player.UI
                 return versionParts.Length > 0 ? versionParts[0] : "";
             }
         }
-        public string Company { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute)).OfType<AssemblyCompanyAttribute>().FirstOrDefault().Company; } }
         public string License { get { return "MIT License"; } }
         public string Copyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
 
@@ -356,8 +355,13 @@ namespace Octopus.Player.UI
                         NativeWindow.OpenTextEditor(NativeWindow.PlayerApplication.LogPath);
                     break;
                 case "about":
-                    string versionText = VersionMajor == "0" ?  "Pre-release  " + Version : "Release " + Version;
-                    NativeWindow.Alert(AlertType.Blank, versionText + "\n" + License + "\n" + Copyright, "About " + ProductName);
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                        NativeWindow.OpenAboutPanel(License);
+                    else
+                    {
+                        string versionText = VersionMajor == "0" ? "Pre-release  " + Version : "Release " + Version;
+                        NativeWindow.Alert(AlertType.Blank, versionText + "\n" + License + "\n" + Copyright, "About " + ProductName);
+                    }
                     break;
                 case "visitInstagram":
                     NativeWindow.OpenUrl("https://www.instagram.com/octopuscinema/");
