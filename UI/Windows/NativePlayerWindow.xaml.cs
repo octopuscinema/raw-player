@@ -16,6 +16,23 @@ using OpenTK.Wpf;
 
 namespace Octopus.Player.UI.Windows
 {
+    static partial class Extensions
+    {
+        public static List<string> ToModifierList(this ModifierKeys modifiers)
+        {
+            List<string> modifierList = new List<string>();
+
+            var modifierKeys = Enum.GetValues(typeof(ModifierKeys)).Cast<ModifierKeys>();
+            foreach (var key in modifierKeys)
+            {
+                if ((modifiers & key) != 0)
+                    modifierList.Add(key.ToString());
+            }
+
+            return modifierList;
+        }
+    }
+     
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
     {
         [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
@@ -72,14 +89,7 @@ namespace Octopus.Player.UI.Windows
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            List<string> modifiers = new List<string>();
-
-            var modifierKeys = Enum.GetValues(typeof(ModifierKeys)).Cast<ModifierKeys>();
-            foreach(var key in modifierKeys)
-            {
-                if ((Keyboard.Modifiers & key) != 0)
-                    modifiers.Add(key.ToString());
-            }
+            var modifiers = Keyboard.Modifiers.ToModifierList();
 
             e.Handled = PlayerWindow.PreviewKeyDown(e.Key.ToString(), modifiers);
         }
@@ -106,7 +116,7 @@ namespace Octopus.Player.UI.Windows
             switch(e.ChangedButton)
             {
                 case MouseButton.Left:
-                    PlayerWindow.LeftMouseDown((uint)e.ClickCount);
+                    PlayerWindow.LeftMouseDown((uint)e.ClickCount, Keyboard.Modifiers.ToModifierList());
                     break;
                 case MouseButton.Right:
                     PlayerWindow.RightMouseDown((uint)e.ClickCount);
@@ -433,6 +443,11 @@ namespace Octopus.Player.UI.Windows
         {
             var contextMenu = (ContextMenu)FindResource(id);
             contextMenu.IsOpen = true;
+        }
+
+        public void OpenContextMenu(List<string> mainMenuItems)
+        {
+            throw new NotSupportedException();
         }
 
         public void OpenUrl(string url)
