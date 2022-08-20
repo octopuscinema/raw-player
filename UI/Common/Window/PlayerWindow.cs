@@ -32,20 +32,6 @@ namespace Octopus.Player.UI
 
         private DateTime lastInteraction;
 
-        // Application info (Maybe move to a separate class)
-        public string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
-        public string Version { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
-        public string VersionMajor 
-        { 
-            get 
-            {
-                var versionParts = Version.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                return versionParts.Length > 0 ? versionParts[0] : "";
-            }
-        }
-        public string License { get { return "MIT License"; } }
-        public string Copyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
-
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
             NativeWindow = nativeWindow;
@@ -356,11 +342,13 @@ namespace Octopus.Player.UI
                     break;
                 case "about":
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                        NativeWindow.OpenAboutPanel(License);
+                        NativeWindow.OpenAboutPanel(NativeWindow.PlayerApplication.ProductLicense);
                     else
                     {
-                        string versionText = VersionMajor == "0" ? "Pre-release  " + Version : "Release " + Version;
-                        NativeWindow.Alert(AlertType.Blank, versionText + "\n" + License + "\n" + Copyright, "About " + ProductName);
+                        string versionText = NativeWindow.PlayerApplication.ProductVersionMajor == "0" ? 
+                            "Pre-release  " + NativeWindow.PlayerApplication.ProductVersion : "Release " + NativeWindow.PlayerApplication.ProductVersion;
+                        NativeWindow.Alert(AlertType.Blank, versionText + "\n" + NativeWindow.PlayerApplication.ProductLicense + "\n" + NativeWindow.PlayerApplication.ProductCopyright, 
+                            "About " + NativeWindow.PlayerApplication.ProductName);
                     }
                     break;
                 case "visitInstagram":

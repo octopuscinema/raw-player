@@ -474,6 +474,11 @@ namespace Octopus.Player.UI.Windows
             }
         }
 
+        public void OpenAboutPanel(string license)
+        {
+            throw new NotSupportedException();
+        }
+
         private void GLControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);

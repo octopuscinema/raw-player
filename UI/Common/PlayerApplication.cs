@@ -1,8 +1,11 @@
 ﻿#define TRACE_TO_FILE
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Octopus.Player.UI
@@ -25,6 +28,20 @@ namespace Octopus.Player.UI
 #endif
             }
         }
+
+        public virtual string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
+        public virtual string ProductVersion { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
+        public string ProductVersionMajor
+        {
+            get
+            {
+                var versionParts = ProductVersion.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                return versionParts.Length > 0 ? versionParts[0] : "";
+            }
+        }
+        public virtual string ProductBuildVersion { get { return ProductVersion; } }
+        public virtual string ProductCopyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
+        public string ProductLicense { get { return "MIT License"; } }
 
         public PlayerApplication()
         {
