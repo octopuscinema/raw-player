@@ -6,9 +6,21 @@ using ObjCRuntime;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
+using System.IO;
 
 namespace Octopus.Player.UI.macOS
 {
+    internal class PlayerApplication : Player.UI.PlayerApplication
+    {
+        public override string LogPath {  get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Library/Logs/OCTOPUS RAW Player.log"); } }
+
+        public override string ProductName { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleDisplayName").ToString(); } }
+        public override string ProductVersion { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString(); } }
+        public override string ProductBuildVersion { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleVersion").ToString(); } }
+        public override string ProductCopyright { get { return NSBundle.MainBundle.ObjectForInfoDictionary("NSHumanReadableCopyright").ToString(); } }
+    }
+
     static partial class Extensions
     {
         public static List<string> ToModifierNameList(this NSEventModifierMask modifierFlags)
@@ -37,7 +49,7 @@ namespace Octopus.Player.UI.macOS
     public partial class AppDelegate : NSApplicationDelegate
     {
         PlayerWindowController PlayerWindowController { get; set; }
-        public PlayerApplication PlayerApplication { get; private set; }
+        public Player.UI.PlayerApplication PlayerApplication { get; private set; }
 
         public AppDelegate()
         {

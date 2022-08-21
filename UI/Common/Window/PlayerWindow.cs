@@ -342,7 +342,7 @@ namespace Octopus.Player.UI
                     break;
                 case "about":
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                        NativeWindow.OpenAboutPanel(NativeWindow.PlayerApplication.ProductLicense);
+                        NativeWindow.OpenAboutPanel();
                     else
                     {
                         string versionText = NativeWindow.PlayerApplication.ProductVersionMajor == "0" ? 

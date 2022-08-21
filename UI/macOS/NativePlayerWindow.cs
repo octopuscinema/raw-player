@@ -31,7 +31,7 @@ namespace Octopus.Player.UI.macOS
 
 		private bool IsDarkMode { get { return EffectiveAppearance.Name.Contains("dark", StringComparison.CurrentCultureIgnoreCase); } }
 
-        public PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
+        public Player.UI.PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
 
         private IDisposable appearanceObserver;
 
@@ -210,14 +210,9 @@ namespace Octopus.Player.UI.macOS
             contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
         }
 
-        public void OpenAboutPanel(string license)
+        public void OpenAboutPanel()
         {
-			string version = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleVersion").ToString();
-            string applicationVersion = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString();
-			string applicationName = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleDisplayName").ToString();
-            string copyright = NSBundle.MainBundle.ObjectForInfoDictionary("NSHumanReadableCopyright").ToString();
-            
-            var systemFont = NSFont.SystemFontOfSize(NSFont.SmallSystemFontSize);
+			var systemFont = NSFont.SystemFontOfSize(NSFont.SmallSystemFontSize);
 			var creditsAttributes = new CTStringAttributes()
 			{
 				ForegroundColorFromContext = true,
@@ -226,11 +221,11 @@ namespace Octopus.Player.UI.macOS
 
             var options = new Dictionary<string, object>()
             {
-				{ "ApplicationName", applicationName },
-				{ "Version", version },
-				{ "ApplicationVersion", applicationVersion },
-				{ "Copyright", copyright },
-				{ "Credits", new NSAttributedString(license, creditsAttributes) }
+				{ "ApplicationName", PlayerApplication.ProductName },
+				{ "Version", PlayerApplication.ProductBuildVersion },
+				{ "ApplicationVersion", PlayerApplication.ProductVersion },
+				{ "Copyright", PlayerApplication.ProductCopyright },
+				{ "Credits", new NSAttributedString(PlayerApplication.ProductLicense, creditsAttributes) }
             };
 
             NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions2(NSDictionary.FromObjectsAndKeys(options.Values.ToArray(), options.Keys.ToArray()));

@@ -12,25 +12,18 @@ namespace Octopus.Player.UI
 {
     public class PlayerApplication : IDisposable
     {
-#if TRACE_TO_FILE
         private TextWriterTraceListener textTraceListener;
-#endif
-        public string LogPath
+
+        public virtual string LogPath
         {
-            get
-            {
-#if TRACE_TO_FILE
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Logs/OCTOPUS RAW Player.log");
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player.log");
-#else
-                return null;
-#endif
-            }
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player.log"); }
         }
 
         public virtual string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
         public virtual string ProductVersion { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
+        public virtual string ProductBuildVersion { get { return ProductVersion; } }
+        public virtual string ProductCopyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
+        public string ProductLicense { get { return "MIT License"; } }
         public string ProductVersionMajor
         {
             get
@@ -39,9 +32,6 @@ namespace Octopus.Player.UI
                 return versionParts.Length > 0 ? versionParts[0] : "";
             }
         }
-        public virtual string ProductBuildVersion { get { return ProductVersion; } }
-        public virtual string ProductCopyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
-        public string ProductLicense { get { return "MIT License"; } }
 
         public PlayerApplication()
         {
