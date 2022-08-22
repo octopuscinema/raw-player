@@ -304,7 +304,28 @@ namespace Octopus.Player.UI.macOS
 				item.Title = name;
 		}
 
-		internal NSView FindView(NSView root, string id)
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        {
+			var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+			var menuItem = new NSMenuItem(name);
+			menuItem.Activated += (sender, e) => { onClick(); };
+
+			if (index.HasValue)
+                parentMenu.InsertItem(menuItem, (nint)index.Value);
+			else
+                parentMenu.AddItem(menuItem);
+        }
+
+        public void AddMenuSeperator(string parentId, uint? index)
+		{
+            var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+            if (index.HasValue)
+                parentMenu.InsertItem(NSMenuItem.SeparatorItem, (nint)index.Value);
+            else
+                parentMenu.AddItem(NSMenuItem.SeparatorItem);
+        }
+
+        internal NSView FindView(NSView root, string id)
 		{
 			if (root == null)
 				return null;

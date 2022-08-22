@@ -67,11 +67,17 @@
                                     <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="VUG-9U-ceB"/>
-                            <menuItem title="Clear Recent Files" enabled="NO" id="126">
-                                <connections>
-                                    <action selector="clearRecentDocuments:" target="-1" id="127"/>
-                                </connections>
+                            <menuItem title="Open Recent" identifier="openRecent" id="5co-Zb-qVp">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Open Recent" identifier="openRecent" id="qrp-Jb-ncl">
+                                    <items>
+                                        <menuItem title="Clear Menu" enabled="NO" identifier="clearRecent" id="126">
+                                            <connections>
+                                                <action selector="clearRecentDocuments:" target="-1" id="127"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
                             </menuItem>
                         </items>
                     </menu>

@@ -54,6 +54,11 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("previousButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
 
+            // Add recent files menu items, placeholder
+            NativeWindow.AddMenuItem("openRecent", "File1 path", 0, () => { });
+            NativeWindow.AddMenuItem("openRecent", "File2 path", 1, () => { });
+            NativeWindow.AddMenuSeperator("openRecent", 2);
+
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
         }

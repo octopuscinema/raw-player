@@ -34,7 +34,9 @@ namespace Octopus.Player.UI
 		bool MenuItemIsChecked(string id);
 		void ToggleMenuItemChecked(string id);
 		void SetMenuItemTitle(string id, string name);
-		void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null);
+		void AddMenuItem(string parentId, string name, uint? index, Action onClick);
+		void AddMenuSeperator(string parentId, uint? index);
+        void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null);
 		void SetButtonVisibility(string id, bool visible);
 		void SetButtonEnabled(string id, bool enabled);
 		void SetSliderValue(string id, float value);
