@@ -12,8 +12,19 @@ namespace Octopus.Player.UI.macOS
 {
     internal class PlayerApplication : Player.UI.PlayerApplication
     {
-        public override string LogPath {  get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "Library/Logs/OCTOPUS RAW Player.log"); } }
+        public override string LogPath
+        {
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library/Logs/OCTOPUS RAW Player.log"); }
+        }
+
+        public override string RecentFilesJsonPath
+        {
+            get
+            {
+                string relativePath = "Library/Application Support/OCTOPUSCINEMA/OCTOPUS RAW Player/recent files.json";
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), relativePath);
+            }
+        }
 
         public override string ProductName { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleDisplayName").ToString(); } }
         public override string ProductVersion { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString(); } }

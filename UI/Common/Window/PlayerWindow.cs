@@ -32,11 +32,21 @@ namespace Octopus.Player.UI
 
         private DateTime lastInteraction;
 
+        public event IPlayerWindow.ClipOpenedEventHandler ClipOpened;
+
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             lastInteraction = DateTime.Now;
+            /*
+            RecentFiles recentFilesTest = new RecentFiles();
+            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath/folder"));
+            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath2/folder2"));
+            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath3/folder3"));
+            string testSerialise = recentFilesTest.Serialise();
+            Trace.WriteLine(testSerialise);
+            */
         }
 
         public void OnLoad()
@@ -769,6 +779,8 @@ namespace Octopus.Player.UI
 
             RenderContext.BackgroundColor = Theme.ClipBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+
+            ClipOpened?.Invoke(Playback.Clip);
         }
 
         private void OnPlaybackVelocityChanged(object sender, EventArgs e)
