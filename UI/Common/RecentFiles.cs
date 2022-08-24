@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Newtonsoft.Json;
 using Octopus.Player.Core;
 
@@ -18,13 +20,6 @@ namespace Octopus.Player.UI
             LastOpened = DateTime.Now;
         }
 
-        public RecentFileEntry(string jsonData)
-        {
-            Path = "";
-            Type = "";
-            LastOpened = DateTime.Now;
-        }
-
         public void Touch(DateTime? touchTime = null)
         {
             LastOpened = touchTime.HasValue ? touchTime.Value : DateTime.Now;
@@ -35,6 +30,7 @@ namespace Octopus.Player.UI
     {
         public IReadOnlyCollection<RecentFileEntry> Entries { get { return entries; } }
         private List<RecentFileEntry> entries;
+        private string jsonPath;
 
         public static readonly uint maxEntries = 10;
 
@@ -42,7 +38,8 @@ namespace Octopus.Player.UI
         {
             entries = new List<RecentFileEntry>();
             playerWindow.ClipOpened += OnClipOpened;
-            //var jsonPath = playerWindow.NativeWindow.PlayerApplication.RecentFilesJsonPath
+            jsonPath = playerWindow.NativeWindow.PlayerApplication.RecentFilesJsonPath;
+            Deserialise();
         }
 
         public RecentFileEntry? FindEntry(IClip clip)
@@ -68,18 +65,30 @@ namespace Octopus.Player.UI
 
         private void Serialise()
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(jsonPath));
             var json = JsonConvert.SerializeObject(entries);
+//            File.Dire
         }
 
         private void Deserialise()
         {
-            //JsonConvert.DeserializeObject()
+            try
+            {
+                if (File.Exists(jsonPath))
+                {
+                    string json = File.ReadAllText(jsonPath);
+                    entries = JsonConvert.DeserializeObject<List<RecentFileEntry>>(json);
+                }
+            }
+            catch
+            {
+                Trace.WriteLine("Failed to read recent files json from: '" + jsonPath + "'");
+            }
         }
 
         public void Dispose()
         {
-            // TODO: Serialise here
-            //Serialise();
+            Serialise();
         }
 
         private void Sort()

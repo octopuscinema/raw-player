@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Xml.Linq;
 using Octopus.Player.Core.Maths;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
@@ -345,6 +346,33 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        {
+            var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
+            if (parentItem != null)
+            {
+                MenuItem item = new MenuItem();
+                item.Header = name;
+                item.Click += (object sender, RoutedEventArgs e) => { onClick(); };
+                if ( index.HasValue )
+                    parentItem.Items.Insert((int)index.Value, item);
+                else
+                    parentItem.Items.Add(item);
+            }
+        }
+
+        public void AddMenuSeperator(string parentId, uint? index)
+        {
+            var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
+            if (parentItem != null)
+            {
+                if (index.HasValue)
+                    parentItem.Items.Insert((int)index.Value, new Separator());
+                else
+                    parentItem.Items.Add(new Separator());
+            }
+        }
+
         public void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -446,6 +474,11 @@ namespace Octopus.Player.UI.Windows
         }
 
         public void OpenContextMenu(List<string> mainMenuItems)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void OpenAboutPanel()
         {
             throw new NotSupportedException();
         }
