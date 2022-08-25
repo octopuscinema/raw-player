@@ -61,13 +61,21 @@ namespace Octopus.Player.UI
             else
                 entries.Add(new RecentFileEntry(clip));
             Sort();
+            OnChanged();
         }
 
         private void Serialise()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(jsonPath));
-            var json = JsonConvert.SerializeObject(entries);
-//            File.Dire
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(jsonPath));
+                var json = JsonConvert.SerializeObject(entries);
+                File.WriteAllText(jsonPath, json);
+            }
+            catch
+            {
+                Trace.WriteLine("Failed to write recent files json to: '" + jsonPath + "'");
+            }
         }
 
         private void Deserialise()
@@ -96,6 +104,11 @@ namespace Octopus.Player.UI
             entries.Sort((a, b) => DateTime.Compare(a.LastOpened, b.LastOpened));
             if ( entries.Count > maxEntries)
                 entries.RemoveRange((int)maxEntries, entries.Count - (int)maxEntries);
+        }
+
+        private void OnChanged()
+        {
+            Serialise();
         }
     }
 }

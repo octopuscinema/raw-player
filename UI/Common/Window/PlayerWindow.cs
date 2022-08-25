@@ -29,6 +29,7 @@ namespace Octopus.Player.UI
                 }
             }
         }
+        public RecentFiles RecentFiles { get; private set; }
 
         private DateTime lastInteraction;
 
@@ -39,14 +40,7 @@ namespace Octopus.Player.UI
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             lastInteraction = DateTime.Now;
-            /*
-            RecentFiles recentFilesTest = new RecentFiles();
-            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath/folder"));
-            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath2/folder2"));
-            recentFilesTest.OnClipOpened(new ClipCinemaDNG("/somepath3/folder3"));
-            string testSerialise = recentFilesTest.Serialise();
-            Trace.WriteLine(testSerialise);
-            */
+            RecentFiles = new RecentFiles(this);
         }
 
         public void OnLoad()
@@ -65,10 +59,15 @@ namespace Octopus.Player.UI
             NativeWindow.SetSliderEnabled("seekBar", false);
 
             // Add recent files menu items, placeholder
+            foreach(var recentFile in RecentFiles.Entries)
+            {
+                //NativeWindow
+            }
+            //NativeWindow.AddMenuSeperator("openRecent", (uint)RecentFiles.Entries.Count);
+            /*
             NativeWindow.AddMenuItem("openRecent", "File1 path", 0, () => { });
             NativeWindow.AddMenuItem("openRecent", "File2 path", 1, () => { });
-            NativeWindow.AddMenuSeperator("openRecent", 2);
-
+            */
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
         }
@@ -812,6 +811,9 @@ namespace Octopus.Player.UI
 
         public void Dispose()
         {
+            RecentFiles.Dispose();
+            RecentFiles = null;
+
             if (AnimateOutControlsTimer != null)
             {
                 using (var waitHandle = new ManualResetEvent(false))
