@@ -755,13 +755,24 @@ namespace Octopus.Player.UI
                 if (Playback.Clip.Metadata.ColorProfile.HasValue)
                 {
                     isColour = true;
-                    var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
-                    if (asShotWhiteBalance.Item2 == 0.0)
-                        NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K)");
+                    bool asShotPresent = true;
+                    if (asShotPresent)
+                    {
+                        var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
+                        if (asShotWhiteBalance.Item2 == 0.0)
+                            NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K)");
+                        else
+                            NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K, Tint: " +
+                                asShotWhiteBalance.Item2.ToString("+#;-#;0") + ")");
+                        NativeWindow.CheckMenuItem("whiteBalanceAsShot");
+                        NativeWindow.EnableMenuItem("whiteBalanceAsShot", true);
+                    }
                     else
-                        NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K, Tint: " +
-                            asShotWhiteBalance.Item2.ToString("+#;-#;0") + ")");
-                    NativeWindow.CheckMenuItem("whiteBalanceAsShot");
+                    {
+                        NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (Unknown)");
+                        NativeWindow.EnableMenuItem("whiteBalanceAsShot", false);
+                        MenuWhiteBalanceClick("whiteBalanceDaylight");
+                    }
                 }
                 NativeWindow.LockAspect(Playback.Clip.Metadata.AspectRatio);
             }
