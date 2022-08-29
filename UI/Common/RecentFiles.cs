@@ -4,13 +4,19 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using Octopus.Player.Core;
+using static JpegLibrary.JpegHuffmanDecodingTable;
 
 namespace Octopus.Player.UI
 {
     public struct RecentFileEntry
     {
+        [JsonProperty("Path")]
         public string Path { get; private set; }
+
+        [JsonProperty("Type")]
         public string Type { get; private set; }
+
+        [JsonProperty("LastOpened")]
         public DateTime LastOpened { get; private set; }
 
         public RecentFileEntry(IClip clip)
@@ -40,6 +46,12 @@ namespace Octopus.Player.UI
             playerWindow.ClipOpened += OnClipOpened;
             jsonPath = playerWindow.NativeWindow.PlayerApplication.RecentFilesJsonPath;
             Deserialise();
+        }
+
+        public void Clear()
+        {
+            entries.Clear();
+            Serialise();
         }
 
         public RecentFileEntry? FindEntry(IClip clip)
@@ -86,6 +98,7 @@ namespace Octopus.Player.UI
                 {
                     string json = File.ReadAllText(jsonPath);
                     entries = JsonConvert.DeserializeObject<List<RecentFileEntry>>(json);
+                    entries.RemoveAll(entry => (string.IsNullOrEmpty(entry.Path) || string.IsNullOrEmpty(entry.Type))) ;
                 }
             }
             catch

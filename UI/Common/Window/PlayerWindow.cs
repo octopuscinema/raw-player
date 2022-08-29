@@ -58,16 +58,22 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("previousButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
 
-            // Add recent files menu items, placeholder
-            foreach(var recentFile in RecentFiles.Entries)
+            // Setup recent files menu items
+            if (RecentFiles.Entries.Count > 0)
             {
-                //NativeWindow
+                uint recentFileIndex = 0;
+                foreach (var recentFile in RecentFiles.Entries)
+                {
+                    Action openClip = () =>
+                    {
+                        if (recentFile.Type == typeof(ClipCinemaDNG).ToString())
+                            OpenCinemaDNG(recentFile.Path);
+                    };
+                    NativeWindow.AddMenuItem("openRecent", recentFile.Path, recentFileIndex++, openClip);
+                }
+                NativeWindow.EnableMenuItem("openRecent", true);
             }
-            //NativeWindow.AddMenuSeperator("openRecent", (uint)RecentFiles.Entries.Count);
-            /*
-            NativeWindow.AddMenuItem("openRecent", "File1 path", 0, () => { });
-            NativeWindow.AddMenuItem("openRecent", "File2 path", 1, () => { });
-            */
+
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
         }
@@ -389,6 +395,12 @@ namespace Octopus.Player.UI
                     var dngPath = NativeWindow.OpenFolderDialogue("Select folder containing CinemaDNG sequence", Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     if (dngPath != null)
                         OpenCinemaDNG(dngPath);
+                    break;
+
+                // Clear recent files
+                case "clearRecent":
+                    RecentFiles.Clear();
+                    NativeWindow.EnableMenuItem("openRecent", false);
                     break;
 
                 // Clip
