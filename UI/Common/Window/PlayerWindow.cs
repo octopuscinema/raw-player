@@ -755,8 +755,7 @@ namespace Octopus.Player.UI
                 if (Playback.Clip.Metadata.ColorProfile.HasValue)
                 {
                     isColour = true;
-                    bool asShotPresent = true;
-                    if (asShotPresent)
+                    if (Playback.Clip.Metadata.ColorProfile.Value.asShotWhiteXY.HasValue)
                     {
                         var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
                         if (asShotWhiteBalance.Item2 == 0.0)
