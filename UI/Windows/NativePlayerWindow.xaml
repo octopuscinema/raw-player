@@ -251,7 +251,6 @@
             <MenuItem Header="_File" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
                 <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" InputGestureText="Ctrl+O" Click="MenuItem_Click"/>
                 <MenuItem Header="_Open Recent" Name="openRecent" IsEnabled="False">
-                    <Separator />
                     <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />

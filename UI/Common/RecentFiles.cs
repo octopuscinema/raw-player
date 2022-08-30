@@ -51,27 +51,25 @@ namespace Octopus.Player.UI
         public void Clear()
         {
             entries.Clear();
-            Serialise();
-        }
-
-        public RecentFileEntry? FindEntry(IClip clip)
-        {
-            foreach(var entry in Entries)
-            {
-                if (entry.Path == clip.Path)
-                    return entry;
-            }
-
-            return null;
+            OnChanged();
         }
 
         public void OnClipOpened(IClip clip)
         {
-            var entry = FindEntry(clip);
-            if (entry != null)
-                entry.Value.Touch();
-            else
-                entries.Add(new RecentFileEntry(clip));
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i].Path == clip.Path)
+                {
+                    var entry = entries[i];
+                    entry.Touch();
+                    entries[i] = entry;
+                    Sort();
+                    OnChanged();
+                    return;
+                }
+            }
+
+            entries.Add(new RecentFileEntry(clip));
             Sort();
             OnChanged();
         }
@@ -114,7 +112,7 @@ namespace Octopus.Player.UI
 
         private void Sort()
         {
-            entries.Sort((a, b) => DateTime.Compare(a.LastOpened, b.LastOpened));
+            entries.Sort((a, b) => DateTime.Compare(b.LastOpened, a.LastOpened));
             if ( entries.Count > maxEntries)
                 entries.RemoveRange((int)maxEntries, entries.Count - (int)maxEntries);
         }
