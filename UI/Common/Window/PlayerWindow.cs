@@ -70,7 +70,7 @@ namespace Octopus.Player.UI
                         if (recentFile.Type == typeof(ClipCinemaDNG).ToString())
                             OpenCinemaDNG(recentFile.Path);
                     };
-                    NativeWindow.AddMenuItem("openRecent", recentFile.Path, recentFileIndex++, openClip);
+                    NativeWindow.AddMenuItem("openRecent", PlayerApplication.ShortenPath(recentFile.Path), recentFileIndex++, openClip);
                 }
                 NativeWindow.AddMenuSeperator("openRecent", recentFileIndex);
                 NativeWindow.EnableMenuItem("openRecent", true);
