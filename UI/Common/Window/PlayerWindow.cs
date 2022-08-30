@@ -71,6 +71,7 @@ namespace Octopus.Player.UI
                     };
                     NativeWindow.AddMenuItem("openRecent", recentFile.Path, recentFileIndex++, openClip);
                 }
+                NativeWindow.AddMenuSeperator("openRecent", recentFileIndex);
                 NativeWindow.EnableMenuItem("openRecent", true);
             }
 
