@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading;
 
 namespace Octopus.Player.UI
@@ -275,9 +276,6 @@ namespace Octopus.Player.UI
                 case "highlightRecovery":
                     rawParameters.highlightRecovery = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRecovery.On : Core.HighlightRecovery.Off;
                     break;
-                case "highlightRollOff":
-                    rawParameters.highlightRollOff = NativeWindow.MenuItemIsChecked(id) ? Core.HighlightRollOff.Low : Core.HighlightRollOff.Off;
-                    break;
                 case "toneMapping":
                     rawParameters.toneMappingOperator = NativeWindow.MenuItemIsChecked(id) ? Core.ToneMappingOperator.SDR : Core.ToneMappingOperator.None;
                     break;
@@ -292,6 +290,32 @@ namespace Octopus.Player.UI
             RenderContext.RequestRender();
         }
 
+        private void MenuHighlightRollOffClick(string id)
+        {
+            if (Playback == null || Playback.Clip == null || !Playback.Clip.RawParameters.HasValue)
+                return;
+
+            var rawParameters = Playback.Clip.RawParameters.Value;
+            switch (id)
+            {
+                case "highlightRollOffNone":
+                    rawParameters.highlightRollOff = HighlightRollOff.Off;
+                    break;
+                case "highlightRollOffLow":
+                    rawParameters.highlightRollOff = HighlightRollOff.Low;
+                    break;
+                case "highlightRollOffHigh":
+                    rawParameters.highlightRollOff = HighlightRollOff.Medium;
+                    break;
+                default:
+                    Debug.Assert(false, "Unhandled menu item: " + id);
+                    return;
+            }
+            NativeWindow.CheckMenuItem(id, true);
+            Playback.Clip.RawParameters = rawParameters;
+            RenderContext.RequestRender();
+        }
+
         public void MenuItemClick(string id)
         {
             lastInteraction = DateTime.Now;
@@ -302,10 +326,17 @@ namespace Octopus.Player.UI
             {
                 // Advanced raw paramters
                 case "highlightRecovery":
-                case "highlightRollOff":
                 case "toneMapping":
                 case "gamutCompression":
                     MenuAdvancedRawParameterClick(id);
+                    break;
+
+                // Highlight Roll Off
+                case "highlightRollOffNone":
+                case "highlightRollOffLow":
+                case "highlightRollOffHigh":
+                    if (!NativeWindow.MenuItemIsChecked(id))
+                        MenuHighlightRollOffClick(id);
                     break;
 
                 // White balance
@@ -796,7 +827,7 @@ namespace Octopus.Player.UI
             NativeWindow.EnableMenuItem("gamutCompression", isColour);
             NativeWindow.EnableMenuItem("highlightRollOff", isColour);
             NativeWindow.CheckMenuItem("highlightRecovery", isColour, false);
-            NativeWindow.CheckMenuItem("highlightRollOff", isColour, false);
+            NativeWindow.CheckMenuItem("highlightRollOffLow", isColour);
             NativeWindow.CheckMenuItem("gamutCompression", isColour, false);
 
             RenderContext.BackgroundColor = Theme.ClipBackground;

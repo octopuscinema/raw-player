@@ -37,7 +37,12 @@
             <Separator />
             <MenuItem Header="_Advanced">
                 <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff">
+                    <MenuItem Header="_Low" Name="highlightRollOffLow" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_High" Name="highlightRollOffHigh" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <Separator />
+                    <MenuItem Header="_None" Name="highlightRollOffNone" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                 <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
