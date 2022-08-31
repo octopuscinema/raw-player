@@ -65,6 +65,8 @@ namespace Octopus.Player.Core.Playback
         public event IPlayback.FrameDisplayedEventHandler FrameDisplayed;
         public event IPlayback.FrameSkippedEventHandler FrameSkipped;
         public event IPlayback.FrameMissingEventHandler FrameMissing;
+        public event IPlayback.FrameDisplayedEventHandler SeekFrameDisplayed;
+        public event IPlayback.FrameMissingEventHandler SeekFrameMissing;
 
         public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {
@@ -227,10 +229,10 @@ namespace Octopus.Player.Core.Playback
             switch (frameDecodeResult)
             {
                 case Error.None:
-                    //FrameDisplayed?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    SeekFrameDisplayed?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
                     break;
                 case Error.FrameNotPresent:
-                    //FrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    SeekFrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
                     break;
                 default:
                     break;

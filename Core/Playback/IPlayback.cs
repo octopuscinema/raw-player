@@ -69,9 +69,11 @@ namespace Octopus.Player.Core.Playback
 		event FrameDisplayedEventHandler FrameDisplayed;
 		event FrameSkippedEventHandler FrameSkipped;
 		event FrameMissingEventHandler FrameMissing;
+        event FrameDisplayedEventHandler SeekFrameDisplayed;
+        event FrameMissingEventHandler SeekFrameMissing;
 
-		// Clip control
-		Error Open(IClip clip);
+        // Clip control
+        Error Open(IClip clip);
 		bool IsOpen();
 		void Close();
 		bool SupportsClip(IClip clip);

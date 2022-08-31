@@ -179,6 +179,7 @@ namespace Octopus.Player.Core.Playback
                 {
                     SeekFrameMutex.WaitOne();
                     SeekFrame.frameNumber = ActiveSeekRequest.Value;
+                    SeekFrame.timeCode = null;
                     ActiveSeekRequest = null;
                     var decodeResult = SeekFrame.Decode(Clip);
 #if SEEK_TRACE
@@ -343,7 +344,7 @@ namespace Octopus.Player.Core.Playback
                         {
                             displayFrame = SeekFrame.frameNumber;
                             requestFrame = SeekFrame.frameNumber;
-                            //OnSeekFrameDisplay(SeekFrame.LastError, SeekFrame.timeCode);
+                            OnSeekFrameDisplay(SeekFrame.LastError, SeekFrame.timeCode);
                         }
                     }
                     finally

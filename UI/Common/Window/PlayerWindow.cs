@@ -33,7 +33,7 @@ namespace Octopus.Player.UI
         public RecentFiles RecentFiles { get; private set; }
 
         private DateTime lastInteraction;
-
+        private float playhead;
         public event IPlayerWindow.ClipOpenedEventHandler ClipOpened;
 
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
@@ -462,7 +462,7 @@ namespace Octopus.Player.UI
                 case "previousButton":
                     if ( Playback != null && Playback.State != Core.Playback.State.Empty)
                     {
-                        if (Playback.State == Core.Playback.State.Stopped)
+                        if (Playback.State == Core.Playback.State.Stopped || ( Playback.IsPaused && (Playback.FirstFrame==Playback.LastFrame || playhead == 0.0f) ) )
                         {
                             var previousClip = Playback.Clip.PreviousClip;
                             if (previousClip != null)
@@ -638,6 +638,8 @@ namespace Octopus.Player.UI
                 Playback.FrameDisplayed -= OnFrameDisplayed;
                 Playback.FrameSkipped -= OnFrameSkipped;
                 Playback.FrameMissing -= OnFrameMissing;
+                Playback.SeekFrameDisplayed -= OnSeekFrameDisplayed;
+                Playback.SeekFrameMissing -= OnSeekFrameMissing;
                 Playback.VelocityChanged -= OnPlaybackVelocityChanged;
                 Playback.Dispose();
                 Playback = null;
@@ -653,6 +655,8 @@ namespace Octopus.Player.UI
                 Playback.FrameDisplayed += OnFrameDisplayed;
                 Playback.FrameSkipped += OnFrameSkipped;
                 Playback.FrameMissing += OnFrameMissing;
+                Playback.SeekFrameDisplayed += OnSeekFrameDisplayed;
+                Playback.SeekFrameMissing += OnSeekFrameMissing;
                 Playback.VelocityChanged += OnPlaybackVelocityChanged;
             }
             else
@@ -721,11 +725,22 @@ namespace Octopus.Player.UI
             UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.MissingFrameColour);
         }
 
-        private void UpdateFrameUI(uint frame, in Core.Maths.TimeCode timeCode, in Vector3 timeCodeLabelColour)
+        public void OnSeekFrameDisplayed(uint frame, in Core.Maths.TimeCode timeCode)
+        {
+            UpdateFrameUI(frame, timeCode, Theme.LabelColour, false);
+        }
+
+        public void OnSeekFrameMissing(uint frameRequested, in Core.Maths.TimeCode synthesisedTimeCode)
+        {
+            UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.MissingFrameColour, false);
+        }
+
+        private void UpdateFrameUI(uint frame, in Core.Maths.TimeCode timeCode, in Vector3 timeCodeLabelColour, bool updateSeekBar = true)
         {
             // Update seek bar
-            var playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
-            NativeWindow.SetSliderValue("seekBar", playhead);
+            playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
+            if (updateSeekBar)
+                NativeWindow.SetSliderValue("seekBar", playhead);
 
             // Update timecode label
             NativeWindow.SetLabelContent("timeCodeLabel", timeCode.ToString(), timeCodeLabelColour);
@@ -752,13 +767,14 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
+            playhead = 0.0f;
             NativeWindow.SetButtonEnabled("playButton", true);
             NativeWindow.SetButtonEnabled("pauseButton", true);
             NativeWindow.SetButtonEnabled("fastRewindButton", true);
             NativeWindow.SetButtonEnabled("fastForwardButton", true);
             NativeWindow.SetButtonEnabled("previousButton", true);
             NativeWindow.SetSliderEnabled("seekBar", true);
-            NativeWindow.SetSliderValue("seekBar", 0.0f);
+            NativeWindow.SetSliderValue("seekBar", playhead);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
