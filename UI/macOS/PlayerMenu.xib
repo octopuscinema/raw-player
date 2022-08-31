@@ -185,11 +185,31 @@
                                                 <action selector="doClick:" target="-1" id="OtX-mV-fON"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Highlight Roll-Off" state="on" identifier="highlightRollOff" id="siQ-HV-G6N">
+                                        <menuItem title="Highlight Roll-Off" identifier="highlightRollOff" id="wg2-Oo-dfB">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="doClick:" target="-1" id="f6x-EH-Bjh"/>
-                                            </connections>
+                                            <menu key="submenu" title="Highlight Roll-Off" autoenablesItems="NO" id="Tea-DF-VXZ">
+                                                <items>
+                                                    <menuItem title="Low" state="on" identifier="highlightRollOffLow" id="J3I-XL-fIO">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="nTz-27-LyF"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="High" identifier="highlightRollOffHigh" id="ptx-9v-eD5">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="k9B-dt-KUG"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="YPX-oZ-Gaa"/>
+                                                    <menuItem title="None" identifier="highlightRollOffNone" id="Od0-PV-GVz">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="A4b-0N-3fL"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="xbm-xX-IAi"/>
                                         <menuItem title="Rec. 709 Tone Mapping" state="on" identifier="toneMapping" id="gg4-7T-KrU">
