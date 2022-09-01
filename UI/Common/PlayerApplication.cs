@@ -45,6 +45,7 @@ namespace Octopus.Player.UI
             Trace.Listeners.Add(textTraceListener);
 #endif
             Trace.AutoFlush = true;
+            Trace.WriteLine(ProductName + " start [" + DateTime.Now + "]");
         }
 
         public void Dispose()
