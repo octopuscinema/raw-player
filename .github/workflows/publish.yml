@@ -1,10 +1,10 @@
-name: Publish
+name: Release
 
 on:
   push:
-    branches: [ "stable" ]
+    branches: [ "releases/**" ]
   pull_request:
-    branches: [ "stable" ]
+    branches: [ "releases/**" ]
 
 env:
   BUILD_CONFIGURATION: Release
@@ -24,7 +24,7 @@ jobs:
       PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
       ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
       BUILD_PLATFORM: x64
-      BUILD_ARTIFACT_NAME: "Player-win64-standalone-${{github.ref_name}}-${{github.sha}}"
+      BUILD_ARTIFACT_NAME: "Player-win64-standalone"
 
     steps:
     - uses: actions/checkout@v3
@@ -43,10 +43,20 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
   
+    - name: Archive
+      uses: TheDoctor0/zip-release@0.6.2
+      with:
+        directory: ${{ env.ARTIFACT_PATH }}
+        path: "*.exe"
+        type: 'zip'
+        filename: '${{env.BUILD_ARTIFACT_NAME}}.zip'
+  
     - name: Upload artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_ARTIFACT_NAME}}
-        path: ${{ env.ARTIFACT_PATH }}
+        path: |
+          "${{ env.ARTIFACT_PATH }}\\*.zip"
+          "${{ env.ARTIFACT_PATH }}\\*.msi"
         if-no-files-found: error
       
