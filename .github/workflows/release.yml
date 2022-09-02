@@ -23,7 +23,8 @@ jobs:
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
       INSTALLER_PROJECT_PATH: Installer/Installer.vdproj
       PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
-      ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
+      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
+      INSTALLER_ARTIFACT_PATH: "${{ github.workspace }}\\Installer\\"
       BUILD_PLATFORM: x64
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-win64-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-win64-installer"
@@ -50,12 +51,11 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_STANDALONE_ARTIFACT_NAME}}
-        path: "${{ env.ARTIFACT_PATH }}*.exe"
+        path: "${{ env.STANDALONE_ARTIFACT_PATH }}*.exe"
         if-no-files-found: error
     
     # Required to Build VS Installer Projects
-    - name: Disable Out of Process Building
-      run: .\DisableOutOfProcBuild.exe
+    - run: .\DisableOutOfProcBuild.exe
       working-directory: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild
 
     - name: Create Installer
@@ -66,5 +66,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{env.BUILD_INSTALLER_ARTIFACT_NAME}}
-        path: "${{ env.ARTIFACT_PATH }}*.msi"
-        #if-no-files-found: error
+        path: "${{ env.INSTALLER_ARTIFACT_PATH }}*.msi"
+        if-no-files-found: error
