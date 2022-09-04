@@ -28,7 +28,6 @@ namespace Octopus.Player.UI.macOS
 
         public override string ProductName { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleDisplayName").ToString(); } }
         public override string ProductVersion { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString(); } }
-        public override string ProductBuildVersion { get { return NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleVersion").ToString(); } }
         public override string ProductCopyright { get { return NSBundle.MainBundle.ObjectForInfoDictionary("NSHumanReadableCopyright").ToString(); } }
     }
 

@@ -8,11 +8,6 @@ namespace Octopus.Player.Core
 {
     public static class Resource
     {
-        public static Assembly GetAssembly()
-        {
-            return Assembly.GetExecutingAssembly();
-        }
-
         public static string LoadAsciiResource(string resourceFileName, Assembly assembly = null)
         {
             // Default assembly is local assembly (Player.Core)

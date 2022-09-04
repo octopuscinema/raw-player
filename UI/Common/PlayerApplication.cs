@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Octopus.Player.UI
 {
@@ -26,7 +27,14 @@ namespace Octopus.Player.UI
 
         public virtual string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
         public virtual string ProductVersion { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
-        public virtual string ProductBuildVersion { get { return Core.Resource.GetAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion; } }
+        public virtual string ProductBuildVersion
+        {
+            get
+            {
+                var playerCoreAssembly = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Player.Core");
+                return playerCoreAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            }
+        }
         public virtual string ProductCopyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
         public string ProductLicense { get { return "MIT License"; } }
         public string ProductVersionMajor
