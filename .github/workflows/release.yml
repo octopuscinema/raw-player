@@ -38,11 +38,13 @@ jobs:
     
     - name: Apply Version
       shell: pwsh
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       run: .\ApplyVersion.ps1
         
     - shell: pwsh
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        $VER = cat Version
+        $VER = cat .\Version
         echo "PRODUCT_VERSION=$VER" >> $GITHUB_ENV
 
     - name: Restore NuGet packages
