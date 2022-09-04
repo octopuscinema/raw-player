@@ -32,7 +32,8 @@ namespace Octopus.Player.UI
             get
             {
                 var playerCoreAssembly = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Player.Core");
-                return playerCoreAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                var informationalVersion = playerCoreAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                return ProductVersion + informationalVersion.Substring(informationalVersion.IndexOf("-"));
             }
         }
         public virtual string ProductCopyright { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute)).OfType<AssemblyCopyrightAttribute>().FirstOrDefault().Copyright; } }
