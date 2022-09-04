@@ -42,7 +42,7 @@ jobs:
         
     - shell: pwsh
       run: |
-        VER=$(cat Version)
+        $VER = cat Version
         echo "PRODUCT_VERSION=$VER" >> $GITHUB_ENV
 
     - name: Restore NuGet packages
