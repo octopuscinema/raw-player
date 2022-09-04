@@ -28,7 +28,6 @@ jobs:
       BUILD_PLATFORM: x64
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-win64-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-win64-installer"
-      PRODUCT_VERSION: ""
 
     steps:
     - uses: actions/checkout@v3
@@ -36,16 +35,16 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.0.2
     - uses: seanmiddleditch/gha-setup-vsdevenv@v4
     
+    - name: Read Version
+      id: version
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: "${{ github.workspace }}/Version"
+    
     - name: Apply Version
       shell: pwsh
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: .\ApplyVersion.ps1
-        
-    - shell: pwsh
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        $VER = cat .\Version
-        echo "PRODUCT_VERSION=$VER" >> $GITHUB_ENV
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -62,7 +61,7 @@ jobs:
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
-        name: '${{env.BUILD_STANDALONE_ARTIFACT_NAME}}-${{ env.PRODUCT_VERSION }}'
+        name: '${{env.BUILD_STANDALONE_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
         path: "${{ env.STANDALONE_ARTIFACT_PATH }}*.exe"
         if-no-files-found: error
     
@@ -77,6 +76,6 @@ jobs:
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
-        name: '${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ env.PRODUCT_VERSION }}'
+        name: '${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
         path: "${{ env.INSTALLER_ARTIFACT_PATH }}*.msi"
         if-no-files-found: error
