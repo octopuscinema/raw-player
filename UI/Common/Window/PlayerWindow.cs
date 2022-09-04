@@ -398,7 +398,7 @@ namespace Octopus.Player.UI
                     else
                     {
                         string versionText = NativeWindow.PlayerApplication.ProductVersionMajor == "0" ? 
-                            "Pre-release  " + NativeWindow.PlayerApplication.ProductVersion : "Release " + NativeWindow.PlayerApplication.ProductVersion;
+                            "Pre-release  " + NativeWindow.PlayerApplication.ProductBuildVersion : "Release " + NativeWindow.PlayerApplication.ProductBuildVersion;
                         NativeWindow.Alert(AlertType.Blank, versionText + "\n" + NativeWindow.PlayerApplication.ProductLicense + "\n" + NativeWindow.PlayerApplication.ProductCopyright, 
                             "About " + NativeWindow.PlayerApplication.ProductName);
                     }
