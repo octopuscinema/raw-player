@@ -16,7 +16,7 @@ jobs:
   windows:
     name: Windows
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
@@ -39,7 +39,7 @@ jobs:
       id: version
       uses: juliangruber/read-file-action@v1
       with:
-        path: "${{ github.workspace }}/Version"
+        path: "${{ github.workspace }}\\Version"
     
     - name: Apply Version
       shell: pwsh
