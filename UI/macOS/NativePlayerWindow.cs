@@ -171,7 +171,7 @@ namespace Octopus.Player.UI.macOS
 			NSApplication.SharedApplication.Terminate(this);
         }
 
-        public void Alert(AlertType alertType, string message, string title)
+        public AlertResponse Alert(AlertType alertType, string message, string title)
         {
 			NSAlert alert = null;
 			switch (alertType)
@@ -186,11 +186,22 @@ namespace Octopus.Player.UI.macOS
 				case AlertType.Warning:
 					alert = new NSAlert() { AlertStyle = NSAlertStyle.Warning, InformativeText = message, MessageText = title };
 					break;
+				case AlertType.YesNo:
+					alert = NSAlert.WithMessage(title, "Yes", "No", null, message);
+                    break;
 				default:
-					Debug.Assert(false);
-					return;
+					throw new Exception();
 			}
-			alert?.RunModal();
+			
+			switch(alert?.RunModal())
+            {
+				case 1:
+					return AlertResponse.Yes;
+				case 0:
+					return AlertResponse.No;
+				default:
+					return AlertResponse.None;
+            }
 		}
 
 

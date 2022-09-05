@@ -7,7 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Xml;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Octopus.Player.UI
 {
@@ -15,8 +18,7 @@ namespace Octopus.Player.UI
     {
         private TextWriterTraceListener textTraceListener;
 
-        public string LatestVersionURL { get { return "http://www.octopuscinema.com/css/simple.css"; } }
-        public string DownloadURL { get { return "http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#Download"; } }
+        public string LatestVersionURL { get { return "http://www.octopuscinema.com/downloads/OCTOPUS-RAW-Player.Version.xml"; } }
 
         public virtual string LogPath
         {
@@ -151,10 +153,16 @@ namespace Octopus.Player.UI
         public void CheckForUpdates(PlayerWindow window, bool interactive = false)
         {
             Version latestVersion;
+            string downloadPageUrl;
+            
             try
             {
+                var latestVersionXML = new XmlDocument();
                 using (var wc = new System.Net.WebClient())
-                    latestVersion = new Version(wc.DownloadString(LatestVersionURL));
+                    latestVersionXML.LoadXml(wc.DownloadString(LatestVersionURL));
+                //latestVersionXML.Load("../../../../../../../OCTOPUS-RAW-Player.Version.xml");
+                latestVersion = new Version(latestVersionXML.SelectNodes("//Latest/Version")[0].InnerText);
+                downloadPageUrl = latestVersionXML.SelectNodes("//Latest/DownloadPageUrl")[0].InnerText;
             }
             catch (Exception ex)
             {
@@ -166,8 +174,8 @@ namespace Octopus.Player.UI
             var currentVersion = new Version(ProductVersion);
             if ( latestVersion > currentVersion )
             {
-                if (window.NativeWindow.Alert(AlertType.YesNo, "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nYou have version: " + currentVersion + "\nProceed to download page?", "Update Available") == AlertResponse.Yes)
-                    window.NativeWindow.OpenUrl(DownloadURL);
+                if (window.NativeWindow.Alert(AlertType.YesNo, "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nCurrent version: " + currentVersion + "\nProceed to download page?", "Update Available") == AlertResponse.Yes)
+                    window.NativeWindow.OpenUrl(downloadPageUrl);
             }
             else if (interactive)
                 window.NativeWindow.Alert(AlertType.Information, "You have the latest version: " + currentVersion, "Check for Updates");

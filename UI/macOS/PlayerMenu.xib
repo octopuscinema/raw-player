@@ -23,6 +23,12 @@
                                     <action selector="doClick:" target="-1" id="Ywt-p8-WGH"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Check for Updates..." identifier="checkForUpdates" id="v8Z-Y4-59R">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="CfH-1J-T5g"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
