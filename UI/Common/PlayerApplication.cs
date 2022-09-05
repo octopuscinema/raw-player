@@ -15,6 +15,9 @@ namespace Octopus.Player.UI
     {
         private TextWriterTraceListener textTraceListener;
 
+        public string LatestVersionURL { get { return "http://www.octopuscinema.com/css/simple.css"; } }
+        public string DownloadURL { get { return "http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#Download"; } }
+
         public virtual string LogPath
         {
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player.log"); }
@@ -143,6 +146,31 @@ namespace Octopus.Player.UI
             }
 
             return firstPart + ellipsisChars + lastPart;
+        }
+
+        public void CheckForUpdates(PlayerWindow window, bool interactive = false)
+        {
+            Version latestVersion;
+            try
+            {
+                using (var wc = new System.Net.WebClient())
+                    latestVersion = new Version(wc.DownloadString(LatestVersionURL));
+            }
+            catch (Exception ex)
+            {
+                if (interactive)
+                    window.NativeWindow.Alert(AlertType.Warning, "Failed to retrieve update data.\n" + ex.Message, "Check for Updates");
+                return;
+            }
+
+            var currentVersion = new Version(ProductVersion);
+            if ( latestVersion > currentVersion )
+            {
+                if (window.NativeWindow.Alert(AlertType.YesNo, "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nYou have version: " + currentVersion + "\nProceed to download page?", "Update Available") == AlertResponse.Yes)
+                    window.NativeWindow.OpenUrl(DownloadURL);
+            }
+            else if (interactive)
+                window.NativeWindow.Alert(AlertType.Information, "You have the latest version: " + currentVersion, "Check for Updates");
         }
     }
 }

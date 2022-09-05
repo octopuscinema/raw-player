@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -78,6 +79,10 @@ namespace Octopus.Player.UI
 
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
+
+            // Check for updates on startup
+            if (NetworkInterface.GetIsNetworkAvailable())
+                NativeWindow.PlayerApplication.CheckForUpdates(this);
         }
 
         private void OnThemeChanged()
@@ -434,6 +439,11 @@ namespace Octopus.Player.UI
                 case "clearRecent":
                     RecentFiles.Clear();
                     NativeWindow.EnableMenuItem("openRecent", false);
+                    break;
+
+                // Check for updates
+                case "checkForUpdates":
+                    NativeWindow.PlayerApplication.CheckForUpdates(this, true);
                     break;
 
                 // Clip

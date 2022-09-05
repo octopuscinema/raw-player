@@ -446,24 +446,39 @@ namespace Octopus.Player.UI.Windows
                 PlayerWindow.MenuItemClick(menuItem.Name);
         }
 
-        public void Alert(AlertType alertType, string message, string title)
+        private AlertResponse MessageBoxReturn(MessageBoxResult result)
+        {
+            switch (result)
+            {
+                case MessageBoxResult.None:
+                case MessageBoxResult.OK:
+                    return AlertResponse.None;
+                case MessageBoxResult.Yes:
+                    return AlertResponse.Yes;
+                case MessageBoxResult.Cancel:
+                case MessageBoxResult.No:
+                    return AlertResponse.No;
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public AlertResponse Alert(AlertType alertType, string message, string title)
         {
             switch (alertType)
             {
                 case AlertType.Blank:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.None);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.None));
                 case AlertType.Information:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information));
                 case AlertType.Error:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error));
                 case AlertType.Warning:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Warning));
+                case AlertType.YesNo:
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question));
                 default:
-                    break;
+                    throw new Exception();
             }
         }
 

@@ -10,8 +10,16 @@ namespace Octopus.Player.UI
 		Blank,
 		Information,
 		Error,
-		Warning
+		Warning,
+		YesNo
     }
+
+	public enum AlertResponse
+	{
+		None,
+		Yes,
+		No
+	}
 
 	public enum ControlsAnimationState
     {
@@ -41,8 +49,8 @@ namespace Octopus.Player.UI
 		void SetButtonEnabled(string id, bool enabled);
 		void SetSliderValue(string id, float value);
 		void SetSliderEnabled(string id, bool enabled);
-		void Alert(AlertType alertType, string message, string title);
-		void OpenContextMenu(string id);
+        AlertResponse Alert(AlertType alertType, string message, string title);
+        void OpenContextMenu(string id);
 		void OpenContextMenu(List<string> mainMenuItems);
 		void OpenAboutPanel();
         void OpenUrl(string url);

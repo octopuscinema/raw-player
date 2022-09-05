@@ -259,6 +259,8 @@
                     <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
+                <MenuItem Header="_Check for Updates..." Name="checkForUpdates" Click="MenuItem_Click"/>
+                <Separator />
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
             <StaticResourceExtension ResourceKey="clip"/>
