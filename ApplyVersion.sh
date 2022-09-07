@@ -4,16 +4,14 @@
 versionStr=`cat Version`
 
 # Update verison in macOS solution
-sed -i "s/version =.*/version = $versionStr/g" ./Player.macOS.sln
+sed -i '' -e "s/version =.*/version = $versionStr/g" ./Player.macOS.sln
 
-# Update version in info.plist
+# Update CFBundleVersion in Info.plist
+bundleVersionKeyLine=$(awk '/<key>CFBundleVersion<\/key>/{ print NR; exit }' ./UI/macOS/Info.plist)
+bundleVersionKeyLine=$((bundleVersionKeyLine+1))
+sed -i '' -e "${bundleVersionKeyLine}s/.*/	<string>$versionStr<\/string>/" ./UI/macOS/Info.plist
 
-bundleVersionKeyLine = $(awk '/CFBundleVersion/{ print NR; exit }' ./UI/macOS/Info.plist)
-
-#bundleVersionKeyLine = "$(grep -n 'CFBundleVersion' ./UI/macOS/Info.plist | head -n 1 | cut -d: -f1)"
-
-#bundleVersionKeyLine = "$(grep -n "<key>CFBundleVersion</key>" ./UI/macOS/Info.plist | head -n 1 | cut -d: -f1)"
-
-#bundleVersionKeyLine = "$(awk '/line/{ print NR; exit }' ./UI/macOS/Info.plist)"
-
-sed -i "${bundleVersionKeyLine}s/.*/	<string>$versionStr<\/string>/" ./UI/macOS/Info.plist
+# Update CFBundleShortVersionString in Info.plist
+bundleShortVersionKeyLine=$(awk '/<key>CFBundleShortVersionString<\/key>/{ print NR; exit }' ./UI/macOS/Info.plist)
+bundleShortVersionKeyLine=$((bundleShortVersionKeyLine+1))
+sed -i '' -e "${bundleShortVersionKeyLine}s/.*/	<string>$versionStr<\/string>/" ./UI/macOS/Info.plist
