@@ -58,6 +58,6 @@ Global
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		description = OCTOPUS RAW Player
-		version = 0.0.1
+		version = 0.8.0
 	EndGlobalSection
 EndGlobal
