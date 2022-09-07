@@ -75,7 +75,7 @@
                             </menuItem>
                             <menuItem title="Open Recent" identifier="openRecent" id="5co-Zb-qVp">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Open Recent" autoenablesItems="NO" identifier="openRecent" id="qrp-Jb-ncl">
+                                <menu key="submenu" title="Open Recent" autoenablesItems="NO" id="qrp-Jb-ncl">
                                     <items>
                                         <menuItem title="Clear Menu" identifier="clearRecent" id="126">
                                             <connections>
