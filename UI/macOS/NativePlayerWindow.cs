@@ -33,6 +33,8 @@ namespace Octopus.Player.UI.macOS
 
         public Player.UI.PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
 
+		public bool DropAreaVisible { get; set; }
+
         private IDisposable appearanceObserver;
 
 		private NSMenu contextMenu;

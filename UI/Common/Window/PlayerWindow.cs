@@ -219,6 +219,29 @@ namespace Octopus.Player.UI
             
         }
 
+        public bool CanDropFile(string file)
+        {
+            if (Directory.Exists(file))
+                return true;
+            else if (System.IO.File.Exists(file))
+                return string.Compare(Path.GetExtension(file), ".dng", true) == 0;
+            return false;
+        }
+
+        public bool CanDropFiles(string[] files)
+        {
+            if (files.Length == 1)
+                return CanDropFile(files[0]);
+
+            foreach (var file in files)
+            {
+                if (System.IO.File.Exists(file) && string.Compare(Path.GetExtension(file), ".dng", true) == 0)
+                    return true;
+            }
+
+            return false;
+        }
+
         public void DropFile(string file)
         {
             if (Directory.Exists(file))

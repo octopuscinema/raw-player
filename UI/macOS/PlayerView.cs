@@ -8,6 +8,7 @@ using AppKit;
 using CoreAnimation;
 using OpenGL;
 using OpenTK.Mathematics;
+//using GameController;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -51,6 +52,9 @@ namespace Octopus.Player.UI.macOS
             Layer = new CALayer();
             Layer.AddSublayer(GLLayer);
             WantsLayer = true;
+
+            // Register for drag/drop
+            RegisterForDraggedTypes(new string[] { NSPasteboard.NSFilenamesType }); 
         }
 
         public override void UpdateTrackingAreas()
@@ -100,6 +104,25 @@ namespace Octopus.Player.UI.macOS
             }
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.OnFramebufferResize(NativePlayerWindow.FramebufferSize);
+        }
+
+        IEnumerable<string> DraggedFilenames(NSPasteboard pasteboard)
+        {
+            if (Array.IndexOf(pasteboard.Types, NSPasteboard.NSFilenamesType) < 0) yield break;
+            foreach (var i in pasteboard.PasteboardItems) yield return new NSUrl(i.GetStringForType("public.file-url")).Path;
+        }
+
+        public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+        {
+            var files = DraggedFilenames(sender.DraggingPasteboard).ToArray();
+            return NativePlayerWindow.PlayerWindow.CanDropFiles(files) ? NSDragOperation.Link : NSDragOperation.None;
+        }
+
+        public override bool PerformDragOperation(NSDraggingInfo sender)
+        {
+            var files = DraggedFilenames(sender.DraggingPasteboard).ToArray();
+            NativePlayerWindow.PlayerWindow.DropFiles(files);
+            return true;
         }
 
         public override void MouseDown(NSEvent theEvent)
