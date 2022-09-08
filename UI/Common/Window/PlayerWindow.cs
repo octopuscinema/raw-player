@@ -3,11 +3,9 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Threading;
 
 namespace Octopus.Player.UI
@@ -48,8 +46,8 @@ namespace Octopus.Player.UI
         public void OnLoad()
         {
             NativeWindow.EnableMenuItem("clip", false);
-            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", null, true);
-            NativeWindow.SetLabelContent("durationLabel", "--:--:--", null, true);
+            NativeWindow.SetLabelContent("timeCodeLabel", "", null, true);
+            NativeWindow.SetLabelContent("durationLabel", "", null, true);
             NativeWindow.SetLabelContent("fastForwardLabel", "");
             NativeWindow.SetLabelContent("fastRewindLabel", "");
             NativeWindow.SetButtonEnabled("playButton", false);
@@ -219,6 +217,39 @@ namespace Octopus.Player.UI
         public void KeyDown(string id)
         {
             
+        }
+
+        public void DropFile(string file)
+        {
+            if (Directory.Exists(file))
+                OpenCinemaDNG(file);
+            else if (System.IO.File.Exists(file))
+            {
+                var parentFolder = Directory.GetParent(file);
+                if (parentFolder != null)
+                    OpenCinemaDNG(parentFolder.FullName);
+            }
+        }
+
+        public void DropFiles(string[] files)
+        {
+            if (files.Length == 1)
+            {
+                DropFile(files[0]);
+                return;
+            }
+
+            foreach (var file in files)
+            {
+                if (System.IO.File.Exists(file) && string.Compare(Path.GetExtension(file), ".dng", true) == 0)
+                {
+                    var parentFolder = Directory.GetParent(file);
+                    if (parentFolder == null)
+                        continue;
+                    OpenCinemaDNG(parentFolder.FullName);
+                    return;
+                }
+            }
         }
 
         private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
@@ -766,12 +797,13 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("nextButton", false);
             NativeWindow.SetButtonEnabled("previousButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
-            NativeWindow.SetLabelContent("timeCodeLabel", "--:--:--:--", Theme.LabelColour);
-            NativeWindow.SetLabelContent("durationLabel", "--:--:--");
+            NativeWindow.SetLabelContent("timeCodeLabel", "", Theme.LabelColour);
+            NativeWindow.SetLabelContent("durationLabel", "");
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+            NativeWindow.DropAreaVisible = true;
             if (NativeWindow.AspectLocked)
                 NativeWindow.UnlockAspect();
         }
@@ -789,6 +821,7 @@ namespace Octopus.Player.UI
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
+            NativeWindow.DropAreaVisible = false;
 
             bool isColour = false;
             Debug.Assert(Playback != null && Playback.Clip != null);

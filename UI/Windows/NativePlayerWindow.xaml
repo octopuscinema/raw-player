@@ -227,7 +227,19 @@
             MouseMove="GLControl_MouseMove"
             MouseLeave="GLControl_MouseLeave"
             SizeChanged="GLControl_SizeChanged"
-            SnapsToDevicePixels="True" Grid.Row="0"/>
+            Drop="GLControl_Drop"
+            SnapsToDevicePixels="True" AllowDrop="True" Grid.Row="0"/>
+
+        <Border x:Name="dropArea" HorizontalAlignment="Center" VerticalAlignment="Center" Drop="GLControl_Drop" AllowDrop="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label FontFamily="Segoe MDL2 Assets" HorizontalContentAlignment="Center" FontSize="40" Content="&#xE896;" Foreground="LightGray" Grid.Row="0"/>
+                <Label HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="LightGray" Content="Drop CinemaDNG sequence here" Grid.Row="1"/>
+            </Grid>
+        </Border>
 
         <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseEnter="PlaybackControls_MouseEnter" MouseLeave="PlaybackControls_MouseLeave" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="0">
             <Grid>

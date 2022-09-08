@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -32,6 +33,12 @@ namespace Octopus.Player.UI.Windows
 
             return modifierList;
         }
+
+        public static Rect BoundsRelativeTo(this FrameworkElement child, Visual parent)
+        {
+            GeneralTransform gt = child.TransformToAncestor(parent);
+            return gt.TransformBounds(new Rect(0, 0, child.ActualWidth, child.ActualHeight));
+        }
     }
      
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
@@ -52,9 +59,18 @@ namespace Octopus.Player.UI.Windows
 
         public PlayerApplication PlayerApplication { get { return ((App)Application.Current).PlayerApplication; } }
 
+        public bool DropAreaVisible
+        {
+            get { return dropArea.Visibility == Visibility.Visible; }
+            set { dropArea.Visibility = value ? Visibility.Visible : Visibility.Hidden; }
+        }
+
         private IntPtr? hwnd;
 
         private HashSet<Slider> activeSliders = new HashSet<Slider>();
+
+        Point? playbackControlsDragStart;
+        Point? playbackControlsPosition;
 
         public NativePlayerWindow()
         {
@@ -139,8 +155,15 @@ namespace Octopus.Player.UI.Windows
             PlayerWindow.MouseExited(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
         }
 
-        Point? playbackControlsDragStart;
-        Point? playbackControlsPosition;
+        private void GLControl_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if ( files.Length > 0 )
+                PlayerWindow.DropFiles(files);
+            }
+        }
 
         private void PlaybackControls_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -534,6 +557,11 @@ namespace Octopus.Player.UI.Windows
 
             // Force playback controls to bottom centre when resizing
             playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth / 2, 0, 0, Theme.PlaybackControlsMargin);
+
+            // Hide drop area if it overlaps playback controls
+            var playbackControlsRect = playbackControls.BoundsRelativeTo(this);
+            var dropAreaRect = dropArea.BoundsRelativeTo(this);
+            dropArea.Opacity = dropAreaRect.IntersectsWith(playbackControlsRect) ? 0.0 : 1.0;
         }
 
         public void LockAspect(Rational ratio)

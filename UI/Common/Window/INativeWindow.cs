@@ -63,6 +63,7 @@ namespace Octopus.Player.UI
 		bool MouseInsidePlaybackControls { get; }
 		void InvokeOnUIThread(Action action, bool async = true);
 		PlayerApplication PlayerApplication { get; }
+		bool DropAreaVisible { get; set; }
 	}
 }
 
