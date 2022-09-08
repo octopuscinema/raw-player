@@ -88,9 +88,14 @@ namespace Octopus.Player.UI.macOS
             if ( NativePlayerWindow != null )
             {
                 var playbackControls = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "playbackControls");
-                var frame = playbackControls.Frame;
-                frame.Location = new CGPoint(Frame.Width/2 - frame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
-                playbackControls.Frame = frame;
+                var playbackControlsFrame = playbackControls.Frame;
+                playbackControlsFrame.Location = new CGPoint(Frame.Width/2 - playbackControlsFrame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
+                playbackControls.Frame = playbackControlsFrame;
+
+                // Hide drop area of overlapping with playback controls
+                var dropArea = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "dropArea");
+                var dropAreaFrame = dropArea.Frame;
+                dropArea.AlphaValue = dropAreaFrame.IntersectsWith(playbackControlsFrame) ? 0.0f : 1.0f;
             }
         }
 

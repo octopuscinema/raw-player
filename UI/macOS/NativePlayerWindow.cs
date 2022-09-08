@@ -33,7 +33,11 @@ namespace Octopus.Player.UI.macOS
 
         public Player.UI.PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
 
-		public bool DropAreaVisible { get; set; }
+		public bool DropAreaVisible
+		{
+			get { return !FindView(ContentView, "dropArea").Hidden; }
+			set { FindView(ContentView, "dropArea").Hidden = !value; }
+		}
 
         private IDisposable appearanceObserver;
 
