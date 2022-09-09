@@ -34,8 +34,8 @@ jobs:
         # Project
         project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
         # Scheme
-        scheme: "Profile"
+        scheme: "profile"
         # Configuration
-        # configuration: # optional
+        configuration: "Profile"
         # Code sign identity
         # code-sign-identity: # optional, default is -
