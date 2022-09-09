@@ -27,7 +27,7 @@ jobs:
     - name: Xcode Build
       uses: sersoft-gmbh/xcodebuild-action@v2
       with:
-        project: ${{DECODER_LJ92_WORKSPACE_PATH}}
+        project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
         scheme: LJ92
         configuration: Release
         action: build
