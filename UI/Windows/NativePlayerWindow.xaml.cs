@@ -39,6 +39,19 @@ namespace Octopus.Player.UI.Windows
             GeneralTransform gt = child.TransformToAncestor(parent);
             return gt.TransformBounds(new Rect(0, 0, child.ActualWidth, child.ActualHeight));
         }
+
+        public static double DistanceTo(this FrameworkElement child, FrameworkElement to, Visual parent)
+        {
+            var rectA = BoundsRelativeTo(child, parent);
+            var rectB = BoundsRelativeTo(to, parent);
+
+            if (rectA.IntersectsWith(rectB))
+                return 0.0f;
+
+            var horizontalDistance = (rectA.Left > rectB.Right) ? rectA.Left - rectB.Right : rectB.Left - rectA.Right;
+            var verticalDistance = (rectA.Top > rectB.Bottom) ? rectA.Top - rectB.Bottom: rectB.Top - rectA.Bottom;
+            return Math.Max(horizontalDistance, verticalDistance);
+        }
     }
      
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
@@ -559,9 +572,8 @@ namespace Octopus.Player.UI.Windows
             playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth / 2, 0, 0, Theme.PlaybackControlsMargin);
 
             // Hide drop area if it overlaps playback controls
-            var playbackControlsRect = playbackControls.BoundsRelativeTo(this);
-            var dropAreaRect = dropArea.BoundsRelativeTo(this);
-            dropArea.Opacity = dropAreaRect.IntersectsWith(playbackControlsRect) ? 0.0 : 1.0;
+            var dropAreaPlaybackControlsDist = dropArea.DistanceTo(playbackControls, this);
+            dropArea.Opacity = Math.Clamp(dropAreaPlaybackControlsDist / Theme.DropAreaOpacityMargin, 0.0, 1.0);
         }
 
         public void LockAspect(Rational ratio)

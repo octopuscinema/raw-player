@@ -160,14 +160,13 @@ namespace Octopus.Player.UI
                 var latestVersionXML = new XmlDocument();
                 using (var wc = new System.Net.WebClient())
                     latestVersionXML.LoadXml(wc.DownloadString(LatestVersionURL));
-                //latestVersionXML.Load("../../../../../../../OCTOPUS-RAW-Player.Version.xml");
                 latestVersion = new Version(latestVersionXML.SelectNodes("//Latest/Version")[0].InnerText);
                 downloadPageUrl = latestVersionXML.SelectNodes("//Latest/DownloadPageUrl")[0].InnerText;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 if (interactive)
-                    window.NativeWindow.Alert(AlertType.Warning, "Failed to retrieve update data.\n" + ex.Message, "Check for Updates");
+                    window.NativeWindow.Alert(AlertType.Warning, "Failed to retrieve update data.\n" + e.Message, "Check for Updates");
                 return;
             }
 
@@ -175,7 +174,7 @@ namespace Octopus.Player.UI
             if ( latestVersion > currentVersion )
             {
                 if (window.NativeWindow.Alert(AlertType.YesNo, "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nCurrent version: " + currentVersion + "\nProceed to download page?", "Update Available") == AlertResponse.Yes)
-                    window.NativeWindow.OpenUrl(downloadPageUrl);
+                    window.NativeWindow.OpenUrl("\"" + downloadPageUrl + "\"");
             }
             else if (interactive)
                 window.NativeWindow.Alert(AlertType.Information, "You have the latest version: " + currentVersion, "Check for Updates");

@@ -84,12 +84,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             GL3.GenVertexArrays(1, vertexArrays);
             DefaultVertexArrayHandle = (int)vertexArrays[0];
             GL3.BindVertexArray((uint)DefaultVertexArrayHandle);
-            CheckError();
 #else
             DefaultVertexArrayHandle = GL.GenVertexArray();
             GL.BindVertexArray(DefaultVertexArrayHandle);
-            CheckError();
 #endif
+            CheckError();
 
             // Create vertex buffer for 2D drawing
             var vertexFormat = new VertexFormat();
