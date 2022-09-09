@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [ "dev/ci-macos" ]
+  pull_request:
+    branches: [ "dev/ci-macos" ]
+
+env:
+  BUILD_CONFIGURATION: Release
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
