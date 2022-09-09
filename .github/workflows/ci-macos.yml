@@ -25,17 +25,9 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Xcode Build
-      # You may pin to the exact commit or the version.
-      # uses: devbotsxyz/xcode-build@2138f429e7bebe426d65985aca0dbad5370aa697
-      uses: devbotsxyz/xcode-build@v1.0.0
+      uses: sersoft-gmbh/xcodebuild-action@v2
       with:
-        # Workspace
-        # workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        # Project
-        project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
-        # Scheme
-        scheme: "LJ92"
-        # Configuration
-        configuration: "Release"
-        # Code sign identity
-        # code-sign-identity: # optional, default is -
+        project: ${{DECODER_LJ92_WORKSPACE_PATH}}
+        scheme: LJ92
+        configuration: Release
+        action: build
