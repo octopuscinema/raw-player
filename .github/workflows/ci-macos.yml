@@ -30,4 +30,5 @@ jobs:
         project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
         scheme: LJ92
         configuration: Release
+        target: LJ92
         action: build
