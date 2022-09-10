@@ -44,14 +44,8 @@ jobs:
         scheme: LJ92
         archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
     
-    - name: Files Finder
-      uses: jeertmans/filesfinder@v0.3.1-rc.2
-      id: ff
-      with:
-        args: "libLJ92.dylib"
-        
-    - name: Print files
-      run: echo "${{ steps.ff.outputs.files }}"
+    - name: List files
+      run: ls ${{env.DECODER_LJ92_ARCHIVE_PATH}}
         
     # - name: "Export LJ92 native library"
     #  run: xcodebuild -exportArchive -archivePath ${{env.DECODER_LJ92_ARCHIVE_PATH}} -exportPath .
