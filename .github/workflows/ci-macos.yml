@@ -45,9 +45,13 @@ jobs:
         archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
         
     - name: "Export LJ92 native library"
-      uses: devbotsxyz/xcode-export-archive@main
-      with:
-        project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
-        scheme: LJ92
-        archive-path: ${{ github.workspace }}/${{env.DECODER_LJ92_ARCHIVE_PATH}}
-        export-path: ${{ github.workspace }}/Decoders/
+      run: xcodebuild -exportArchive -archivePath ${{env.DECODER_LJ92_ARCHIVE_PATH}} -exportPath .
+
+        
+   # - name: "Export LJ92 native library"
+   #   uses: devbotsxyz/xcode-export-archive@main
+   #   with:
+   #     project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
+   #     scheme: LJ92
+   #     archive-path: ${{ github.workspace }}/${{env.DECODER_LJ92_ARCHIVE_PATH}}
+   #     export-path: ${{ github.workspace }}/Decoders/
