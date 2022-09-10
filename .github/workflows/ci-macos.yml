@@ -28,7 +28,7 @@ jobs:
       DECODER_LJ92_ARCHIVE_PATH: Decoders/LJ92.xcarchive
       DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
-      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/UI/macOS/bin/Release"
 
     steps:
     - uses: actions/checkout@v3
