@@ -49,5 +49,5 @@ jobs:
       with:
         project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
         scheme: LJ92
-        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
-        export-path: Decoders/
+        archive-path: ${{ github.workspace }}/${{env.DECODER_LJ92_ARCHIVE_PATH}}
+        export-path: ${{ github.workspace }}/Decoders/
