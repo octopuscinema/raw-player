@@ -31,4 +31,4 @@ jobs:
         # scheme: LJ92
         configuration: Release
         target: LJ92
-        action: build
+        action: archive
