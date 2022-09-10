@@ -24,28 +24,30 @@ jobs:
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      DECODER_LJ92_ARCHIVE_PATH: Decoders/LJ92.xcarchive
+      DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
 
     steps:
     - uses: actions/checkout@v3
     
-    - name: "Import Certificate: Distribution"
+    - name: "Import distribution certificate"
       uses: devbotsxyz/import-signing-certificate@main
       with:
         certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         certificate-passphrase: ${{ secrets.P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
-    - name: "Archive"
+    - name: "Archive LJ92 native library"
       uses: devbotsxyz/xcode-archive@v1
       with:
         project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
         scheme: LJ92
-    
-   # - name: Xcode Build
-    #  uses: sersoft-gmbh/xcodebuild-action@v2
-    #  with:
-    #    project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
-        # scheme: LJ92
-    #    configuration: Release
-    #    target: LJ92
-    #    action: archive
+        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+        
+    - name: "Export LJ92 native library"
+      uses: devbotsxyz/xcode-export-archive@main
+      with:
+        project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
+        scheme: LJ92
+        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+        export-path: Decoders/
