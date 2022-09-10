@@ -139,11 +139,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\..\Decoders\LJ92\DerivedData\LJ92.macOS\Build\Products\Release\libLJ92.dylib">
+    <NativeReference Include="..\..\Decoders\LJ92\Build\Products\Release\libLJ92.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
-    <NativeReference Include="..\..\Decoders\Unpack\DerivedData\Unpack.macOS\Build\Products\Release\libUnpack.dylib">
+    <NativeReference Include="..\..\Decoders\Unpack\Build\Products\Release\libUnpack.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

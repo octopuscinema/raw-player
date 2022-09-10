@@ -52,3 +52,5 @@ Decoders/Unpack/Unpack.macOS.xcodeproj/project.xcworkspace/xcuserdata
 Decoders/Unpack/x64
 Decoders/Decoders.macOS.xcworkspace/xcuserdata
 *.msi
+Decoders/LJ92/Build
+Decoders/Unpack/Build
