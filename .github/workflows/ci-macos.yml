@@ -57,25 +57,15 @@ jobs:
       
     - name: List Unpack build files
       run: ls ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
-      
-    - name: Check xamarin version
-      run: ls /Library/Frameworks/Xamarin.Mac.framework/Versions
-      
-    - name: Set default Xamarin SDK versions
+
+    - name: Set Xamarin version
       run: |
         $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=latest
         
-    - name: Install dependencies
+    - name: Restore NuGet packages
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
         
-    # - name: "Export LJ92 native library"
-    #  run: xcodebuild -exportArchive -archivePath ${{env.DECODER_LJ92_ARCHIVE_PATH}} -exportPath .
-
-        
-   # - name: "Export LJ92 native library"
-   #   uses: devbotsxyz/xcode-export-archive@main
-   #   with:
-   #     project: ${{env.DECODER_LJ92_WORKSPACE_PATH}}
-   #     scheme: LJ92
-   #     archive-path: ${{ github.workspace }}/${{env.DECODER_LJ92_ARCHIVE_PATH}}
-   #     export-path: ${{ github.workspace }}/Decoders/
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release
+      #/p:CreatePackage=true
