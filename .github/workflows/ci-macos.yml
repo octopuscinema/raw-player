@@ -27,6 +27,8 @@ jobs:
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       DECODER_LJ92_ARCHIVE_PATH: Decoders/LJ92.xcarchive
       DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
+      BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
+      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
 
     steps:
     - uses: actions/checkout@v3
@@ -67,5 +69,13 @@ jobs:
         
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release
+      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
+      #/p:ArchiveOnBuild=true
       #/p:CreatePackage=true
+      
+    - name: Upload standalone artifacts
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: '${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}'
+        path: "${{ env.STANDALONE_ARTIFACT_PATH }}"
+        if-no-files-found: error
