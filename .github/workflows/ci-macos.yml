@@ -58,9 +58,12 @@ jobs:
     - name: List Unpack build files
       run: ls ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
       
+    - name: Check xamarin version
+      run: ls /Library/Frameworks/Xamarin.Mac.framework/Versions
+      
     - name: Set default Xamarin SDK versions
       run: |
-        $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
+        $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=latest
         
     - name: Install dependencies
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
