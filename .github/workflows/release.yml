@@ -79,7 +79,7 @@ jobs:
         name: '${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
         path: "${{ env.INSTALLER_ARTIFACT_PATH }}*.msi"
         if-no-files-found: error
-
+    
   macos:
     name: macOS
     runs-on: macOS-12
