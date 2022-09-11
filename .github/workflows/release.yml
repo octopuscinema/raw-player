@@ -182,7 +182,7 @@ jobs:
         path: ${{ env.STANDALONE_BUILD_DMG_PATH }}
         if-no-files-found: error
 
-     - name: Upload .PKG artifact
+    - name: Upload .PKG artifact
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{ env.BUILD_INSTALLER_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
