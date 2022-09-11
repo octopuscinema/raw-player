@@ -29,6 +29,7 @@ jobs:
       DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_ZIP_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.zip"
       STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/artifact/standalone"
 
     steps:
@@ -73,14 +74,20 @@ jobs:
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       #/p:ArchiveOnBuild=true
       #/p:CreatePackage=true
+      
+    - name: "Notarize standalone .app preparation"
+      run: /usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
     
     - name: "Notarize standalone .app"
-      uses: devbotsxyz/xcode-notarize@v1
-      with:
-        product-path: ${{ env.STANDALONE_BUILD_PATH }}
-        appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-        appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-        verbose: true
+      run: xcrun notarytool submit "${{ env.STANDALONE_BUILD_ZIP_PATH }}" --keychain-profile ${{ env.KEYCHAIN_PASSWORD }} --wait
+    
+   # - name: "Notarize standalone .app"
+   #   uses: devbotsxyz/xcode-notarize@v1
+   #   with:
+   #     product-path: ${{ env.STANDALONE_BUILD_PATH }}
+   #     appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
+   #     appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
+   #     verbose: true
     
     - name: Prepare standalone artifacts
       run: |
