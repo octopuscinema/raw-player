@@ -74,13 +74,14 @@ jobs:
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       #/p:ArchiveOnBuild=true
       #/p:CreatePackage=true
-      
-    - name: "Notarize standalone .app preparation"
-      run: /usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
-    
+
     - name: "Notarize standalone .app"
-      run: xcrun notarytool submit "${{ env.STANDALONE_BUILD_ZIP_PATH }}" --keychain-profile ${{ env.KEYCHAIN_PASSWORD }} --wait
+      run: |
+        /usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
+        xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password ${{ secrets.NOTARIZATION_PASSWORD }}
+        xcrun notarytool submit "${{ env.STANDALONE_BUILD_ZIP_PATH }}" --keychain-profile "AC_PASSWORD" --wait
     
+  #--team-id <WWDRTeamID>
    # - name: "Notarize standalone .app"
    #   uses: devbotsxyz/xcode-notarize@v1
    #   with:
