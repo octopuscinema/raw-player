@@ -95,6 +95,13 @@ jobs:
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_DMG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
         xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
         
+    - name: Prepare artifact name
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        name="${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}"
+        name=$(echo -n "$name" | sed -e 's/[ \t:\/\\"<>|*?]/-/g' -e 's/--*/-/g')
+        echo "BUILD_STANDALONE_ARTIFACT_NAME=$name" >> $GITHUB_ENV
+        
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
