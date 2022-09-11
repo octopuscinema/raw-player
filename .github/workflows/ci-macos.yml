@@ -15,7 +15,7 @@ permissions:
 jobs:
   macos:
     name: macOS
-    runs-on: macos-latest
+    runs-on: macOS-12
     timeout-minutes: 10
     
     env:
@@ -64,7 +64,7 @@ jobs:
 
     - name: Set Xamarin version
       run: |
-        $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=latest
+        $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
         
     - name: Restore NuGet packages
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
@@ -85,7 +85,7 @@ jobs:
     - name: Prepare standalone artifacts
       run: |
         mkdir -p "${{ env.STANDALONE_ARTIFACT_PATH }}"
-        cp "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_ARTIFACT_PATH }}"
+        cp -R "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_ARTIFACT_PATH }}"
       
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
