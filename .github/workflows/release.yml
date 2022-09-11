@@ -66,7 +66,7 @@ jobs:
         if-no-files-found: error
 
     - name: Prepare Installer
-      working-directory: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild
+      working-directory: "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild"
       run: .\DisableOutOfProcBuild.exe
 
     - name: Create Installer
@@ -112,7 +112,7 @@ jobs:
       id: version
       uses: juliangruber/read-file-action@v1
       with:
-        path: "${{ github.workspace }}\\Version"
+        path: "${{ github.workspace }}/Version"
 
     - name: Apply Version
       shell: bash
