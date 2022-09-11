@@ -41,7 +41,7 @@ jobs:
         
     - name: Apply Version
       shell: bash
-      run: .\ApplyVersion.sh
+      run: ./ApplyVersion.sh
     
     - name: "Import distribution certificate"
       uses: devbotsxyz/import-signing-certificate@main
