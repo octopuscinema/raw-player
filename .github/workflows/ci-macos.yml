@@ -40,7 +40,7 @@ jobs:
         lfs: 'true'
         
     - name: Apply Version
-      shell: pwsh
+      shell: bash
       run: .\ApplyVersion.sh
     
     - name: "Import distribution certificate"
