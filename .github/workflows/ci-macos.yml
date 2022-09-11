@@ -31,7 +31,6 @@ jobs:
       DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
-      STANDALONE_BUILD_ZIP_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.zip"
       STANDALONE_BUILD_DMG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.dmg"
       STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/artifact/standalone"
 
@@ -79,26 +78,19 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       #/p:ArchiveOnBuild=true
-      #/p:CreatePackage=true
       
-    - name: Create DMG
+    - name: Create standalone .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         brew install create-dmg
-        create-dmg --volname "OCTOPUS RAW Player 1.0.0" --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
+        create-dmg --volname "OCTOPUS RAW Player" --window-pos 100 100 --window-size 800 400 --icon-size 100 --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 600 185 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
     - name: Notarize standalone
       run: |
-        #/usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
         xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_DMG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
         xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
-
-   # - name: Prepare standalone artifacts
-   #   run: |
-   #     mkdir -p "${{ env.STANDALONE_ARTIFACT_PATH }}"
-   #     cp -R "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_ARTIFACT_PATH }}"
-      
+        
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
