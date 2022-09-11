@@ -55,6 +55,7 @@
     <CodeSignProvision></CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <XamMacArch>x86_64</XamMacArch>
+    <UseHardenedRuntime>true</UseHardenedRuntime>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
