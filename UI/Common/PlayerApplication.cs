@@ -31,7 +31,13 @@ namespace Octopus.Player.UI
         }
 
         public virtual string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
-        public virtual string ProductVersion { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
+        public virtual string ProductVersion { 
+            get
+            {
+                var version = Assembly.GetEntryAssembly().GetName().Version;
+                return version.Major + "." + version.Minor + "." + version.Build;
+            }
+        }
         public virtual string ProductBuildVersion
         {
             get

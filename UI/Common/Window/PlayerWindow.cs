@@ -451,13 +451,19 @@ namespace Octopus.Player.UI
                     if (NativeWindow.PlayerApplication.LogPath != null)
                         NativeWindow.OpenTextEditor(NativeWindow.PlayerApplication.LogPath);
                     break;
+                case "reportProblem":
+                    NativeWindow.OpenUrl("https://github.com/octopuscinema/raw-player/issues");
+                    break;
+                case "releaseNotes":
+                    NativeWindow.OpenUrl("https://github.com/octopuscinema/raw-player/releases/tag/v" + NativeWindow.PlayerApplication.ProductVersion);
+                    break;
                 case "about":
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                         NativeWindow.OpenAboutPanel();
                     else
                     {
-                        string versionText = NativeWindow.PlayerApplication.ProductVersionMajor == "0" ? 
-                            "Pre-release " + NativeWindow.PlayerApplication.ProductVersion : "Release " + NativeWindow.PlayerApplication.ProductVersion;
+                        var version = new Version(NativeWindow.PlayerApplication.ProductVersion);
+                        string versionText = version.Major == 0 ? "Pre-release " + version : "Release " + version;
                         versionText += " (" + NativeWindow.PlayerApplication.ProductBuildVersion + ")";
                         NativeWindow.Alert(AlertType.Blank, versionText + "\n" + NativeWindow.PlayerApplication.ProductLicense + "\n" + NativeWindow.PlayerApplication.ProductCopyright, 
                             "About " + NativeWindow.PlayerApplication.ProductName);
@@ -475,9 +481,12 @@ namespace Octopus.Player.UI
                 case "visitGithub":
                     NativeWindow.OpenUrl("https://github.com/octopuscinema");
                     break;
+
                 case "exit":
                     NativeWindow.Exit();
                     break;
+
+                // View
                 case "fullscreen":
                     NativeWindow.ToggleFullscreen();
                     break;

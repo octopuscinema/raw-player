@@ -79,7 +79,10 @@
             <MenuItem Header="_Troubleshooting">
                 <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
                 <MenuItem Header="_View Log" Name="viewLog" Click="MenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="_Report a Problem" Name="reportProblem" Click="MenuItem_Click"/>
             </MenuItem>
+            <MenuItem Header="_Release Notes" Name="releaseNotes" Click="MenuItem_Click"/>
             <Separator />
             <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
             <Separator />
