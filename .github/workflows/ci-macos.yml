@@ -65,7 +65,7 @@ jobs:
       run: |
         mkdir -p ${{ env.DECODER_LJ92_LIB_PATH }}
         mkdir -p ${{ env.DECODER_UNPACK_LIB_PATH }}
-        cp ${{env.DECODER_LJ92_ARCHIVE_PATH}}/Products/usr/local/lib/liLJ92.dylib ${{ env.DECODER_LJ92_LIB_PATH }}
+        cp ${{env.DECODER_LJ92_ARCHIVE_PATH}}/Products/usr/local/lib/libLJ92.dylib ${{ env.DECODER_LJ92_LIB_PATH }}
         cp ${{env.DECODER_UNPACK_ARCHIVE_PATH}}/Products/usr/local/lib/libUnpack.dylib ${{ env.DECODER_UNPACK_LIB_PATH }}
 
     - name: Set Xamarin version
