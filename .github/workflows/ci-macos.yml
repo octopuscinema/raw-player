@@ -78,7 +78,7 @@ jobs:
     - name: "Notarize standalone .app"
       run: |
         /usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
-        xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password ${{ secrets.NOTARIZATION_PASSWORD }}
+        xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "${{ env.NOTARIZATION_USERNAME }}" --password ${{ env.NOTARIZATION_PASSWORD }}
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_ZIP_PATH }}" --keychain-profile "AC_PASSWORD" --wait
     
   #--team-id <WWDRTeamID>
