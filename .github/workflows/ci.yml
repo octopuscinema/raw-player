@@ -125,26 +125,26 @@ jobs:
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       #/p:ArchiveOnBuild=true
       
-    - name: Create standalone .DMG
+    - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         brew install create-dmg
         create-dmg --volname "OCTOPUS RAW Player (dev)" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
-    - name: Notarize standalone
+    - name: Notarize .DMG
       run: |
         xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_DMG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
         xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
         
-    - name: Prepare artifact name
+    - name: Prepare .DMG artifact
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         name="${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}"
         name=$(echo -n "$name" | sed -e 's/[ \t:\/\\"<>|*?]/-/g' -e 's/--*/-/g')
         echo "BUILD_STANDALONE_ARTIFACT_NAME=$name" >> $GITHUB_ENV
         
-    - name: Upload standalone artifacts
+    - name: Upload .DMG artifact
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}
