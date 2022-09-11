@@ -75,25 +75,17 @@ jobs:
       #/p:ArchiveOnBuild=true
       #/p:CreatePackage=true
 
-    - name: "Notarize standalone .app"
+    - name: Notarize standalone
       run: |
         /usr/bin/ditto -c -k --keepParent "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_ZIP_PATH }}"
         xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_ZIP_PATH }}" --keychain-profile "AC_PASSWORD" --wait
-    
-  #--team-id <WWDRTeamID>
-   # - name: "Notarize standalone .app"
-   #   uses: devbotsxyz/xcode-notarize@v1
-   #   with:
-   #     product-path: ${{ env.STANDALONE_BUILD_PATH }}
-   #     appstore-connect-username: ${{ secrets.NOTARIZATION_USERNAME }}
-   #     appstore-connect-password: ${{ secrets.NOTARIZATION_PASSWORD }}
-   #     verbose: true
-    
+        xcrun stapler staple "${{ env.STANDALONE_BUILD_PATH }}"
+
     - name: Prepare standalone artifacts
       run: |
-        mkdir -p ${{ env.STANDALONE_ARTIFACT_PATH }}
-        cp ${{ env.STANDALONE_BUILD_PATH }} ${{ env.STANDALONE_ARTIFACT_PATH }}
+        mkdir -p "${{ env.STANDALONE_ARTIFACT_PATH }}"
+        cp "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_ARTIFACT_PATH }}"
       
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
