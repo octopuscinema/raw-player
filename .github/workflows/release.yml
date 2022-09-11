@@ -118,7 +118,7 @@ jobs:
       shell: bash
       run: |
         ./ApplyVersion.sh
-        pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ ${{ steps.version.outputs.content }} }}"
+        pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}"
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
 
     - name: "Import distribution certificate"
