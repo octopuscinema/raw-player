@@ -99,9 +99,8 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
-      STANDALONE_BUILD_DMG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.dmg"
-      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/artifact/standalone"
-      INSTALLER_BUILD_PKG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+      STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+      INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
 
     steps:
     - uses: actions/checkout@v3
@@ -118,6 +117,8 @@ jobs:
       shell: bash
       run: |
         ./ApplyVersion.sh
+        dmg_path="${{ env.STANDALONE_BUILD_DMG_PATH }}-${{ steps.version.outputs.content }}.dmg"
+        echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
         pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}.pkg"
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
 
@@ -171,7 +172,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         brew install create-dmg
-        create-dmg --volname "OCTOPUS RAW Player (dev)" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
+        create-dmg --volname "OCTOPUS RAW Player ${{ steps.version.outputs.content }}" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
     - name: Notarize .DMG
       run: |
