@@ -43,7 +43,7 @@
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>true</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
-    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnablePackageSigning>true</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
@@ -53,8 +53,8 @@
     <LangVersion>8.0</LangVersion>
     <CodeSigningKey>Developer ID Application: Peartree Studios Ltd (978UCD44M6)</CodeSigningKey>
     <CodeSignProvision></CodeSignProvision>
-    <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <XamMacArch>x86_64,ARM64</XamMacArch>
+    <PackageSigningKey>3rd Party Mac Developer Installer: Peartree Studios Ltd (978UCD44M6)</PackageSigningKey>
     <UseHardenedRuntime>true</UseHardenedRuntime>
   </PropertyGroup>
   <ItemGroup>

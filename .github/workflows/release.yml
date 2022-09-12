@@ -127,6 +127,13 @@ jobs:
         certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         certificate-passphrase: ${{ secrets.P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+    - name: "Import installer certificate"
+      uses: devbotsxyz/import-signing-certificate@main
+      with:
+        certificate-data: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
+        certificate-passphrase: ${{ secrets.P12_PASSWORD }}
+        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
     - name: "Build LJ92 decoder native library"
       uses: devbotsxyz/xcode-archive@v1
