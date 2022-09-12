@@ -179,12 +179,12 @@ jobs:
         p12-file-base64: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
         p12-password: ${{ secrets.INSTALLER_P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-        keychain: "IC_KEYCHAIN"
+        keychain: "${{env.RUNNER_TEMP}}/installer-certificate.keychain-db"
 
     - name: Create .PKG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        productbuild --product UI/macOS/Product.plist --version "${{ steps.version.outputs.content }}" --component "${{ env.STANDALONE_BUILD_PATH }}" /Applications --keychain "IC_KEYCHAIN"  --sign "${{ secrets.DEVELOPER_ID_INSTALLER }}" "${{ env.INSTALLER_BUILD_PKG_PATH }}" 
+        productbuild --product UI/macOS/Product.plist --version "${{ steps.version.outputs.content }}" --component "${{ env.STANDALONE_BUILD_PATH }}" /Applications --keychain "${{env.RUNNER_TEMP}}/installer-certificate.keychain-db"  --sign "${{ secrets.DEVELOPER_ID_INSTALLER }}" "${{ env.INSTALLER_BUILD_PKG_PATH }}" 
         pkgutil --check-signature "${{ env.INSTALLER_BUILD_PKG_PATH }}"
 
     - name: Notarize .PKG
