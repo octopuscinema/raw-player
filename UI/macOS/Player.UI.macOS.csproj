@@ -54,7 +54,7 @@
     <CodeSigningKey>Developer ID Application: Peartree Studios Ltd (978UCD44M6)</CodeSigningKey>
     <CodeSignProvision></CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
-    <XamMacArch>x86_64</XamMacArch>
+    <XamMacArch>x86_64,ARM64</XamMacArch>
     <UseHardenedRuntime>true</UseHardenedRuntime>
   </PropertyGroup>
   <ItemGroup>
