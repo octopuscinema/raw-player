@@ -56,6 +56,7 @@
     <XamMacArch>x86_64,ARM64</XamMacArch>
     <PackageSigningKey>Developer ID Installer: Peartree Studios Ltd (978UCD44M6)</PackageSigningKey>
     <UseHardenedRuntime>true</UseHardenedRuntime>
+    <ProductDefinition>Product.plist</ProductDefinition>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
