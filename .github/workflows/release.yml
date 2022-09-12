@@ -128,13 +128,6 @@ jobs:
         certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         certificate-passphrase: ${{ secrets.P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
-
-    - name: "Import installer certificate"
-      uses: devbotsxyz/import-signing-certificate@main
-      with:
-        certificate-data: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
-        certificate-passphrase: ${{ secrets.INSTALLER_P12_PASSWORD }}
-        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
     - name: "Build LJ92 decoder native library"
       uses: devbotsxyz/xcode-archive@v1
@@ -166,7 +159,7 @@ jobs:
         
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=true
+      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       
     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -179,6 +172,19 @@ jobs:
         xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
         xcrun notarytool submit "${{ env.STANDALONE_BUILD_DMG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
         xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
+
+    - name: "Import installer certificate"
+      uses: devbotsxyz/import-signing-certificate@main
+      with:
+        certificate-data: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
+        certificate-passphrase: ${{ secrets.INSTALLER_P12_PASSWORD }}
+        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+    - name: Create .PKG
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        productbuild --product UI/macOS/Product.plist --version "${{ steps.version.outputs.content }}" --component "${{ env.STANDALONE_BUILD_PATH }}" /Applications --sign "${{ secrets.DEVELOPER_ID_INSTALLER }}" "${{ env.INSTALLER_BUILD_PKG_PATH }}" 
+        pkgutil --check-signature "${{ env.INSTALLER_BUILD_PKG_PATH }}"
 
     - name: Notarize .PKG
       run: |
