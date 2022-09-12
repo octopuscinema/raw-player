@@ -74,6 +74,8 @@ namespace Octopus.Player.UI
                 NativeWindow.AddMenuSeperator("openRecent", recentFileIndex);
                 NativeWindow.EnableMenuItem("openRecent", true);
             }
+            else
+                NativeWindow.EnableMenuItem("openRecent", false);
 
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));

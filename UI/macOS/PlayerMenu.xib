@@ -356,8 +356,21 @@
                                                 <action selector="doClick:" target="-1" id="H3G-39-W04"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="o1T-6k-7zp"/>
+                                        <menuItem title="Report a Problem" identifier="reportProblem" id="FzW-K5-uUU">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="GS3-FX-jZb"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
+                            </menuItem>
+                            <menuItem title="Release Notes" identifier="releaseNotes" id="TA9-bN-jCH">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="hWf-b5-gW2"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="6ma-fc-dVg"/>
                             <menuItem title="License" identifier="license" id="oyK-hq-jKP">
