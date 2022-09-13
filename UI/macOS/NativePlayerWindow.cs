@@ -251,7 +251,7 @@ namespace Octopus.Player.UI.macOS
         public void OpenUrl(string url)
         {
 			NSError urlError;
-			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
+			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url.Replace("\"", "")), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
         public void OpenTextEditor(string textFilePath)
