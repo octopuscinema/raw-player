@@ -139,6 +139,7 @@ namespace Octopus.Player.UI.Windows
             }
 
             PlayerWindow.OnRenderFrame(delta.TotalSeconds);
+            OpenTK.Graphics.OpenGL.GL.Finish();
         }
 
         private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
