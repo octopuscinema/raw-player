@@ -139,7 +139,10 @@ namespace Octopus.Player.UI.Windows
             }
 
             PlayerWindow.OnRenderFrame(delta.TotalSeconds);
-            OpenTK.Graphics.OpenGL.GL.Finish();
+
+            // Fix for intel GPUs not rendering
+            if ( RenderContext.ApiVendor.Contains("intel", StringComparison.CurrentCultureIgnoreCase) )
+                OpenTK.Graphics.OpenGL.GL.Finish();
         }
 
         private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
