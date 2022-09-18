@@ -8,6 +8,7 @@ using AppKit;
 using CoreAnimation;
 using OpenGL;
 using OpenTK.Mathematics;
+//using GameController;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -18,6 +19,8 @@ namespace Octopus.Player.UI.macOS
         private NativePlayerWindow NativePlayerWindow { get { return (NativePlayerWindow)Window; } }
 
         private NSTrackingArea trackingArea;
+
+        private HashSet<string> activeSliders = new HashSet<string>();
 
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
@@ -49,6 +52,9 @@ namespace Octopus.Player.UI.macOS
             Layer = new CALayer();
             Layer.AddSublayer(GLLayer);
             WantsLayer = true;
+
+            // Register for drag/drop
+            RegisterForDraggedTypes(new string[] { NSPasteboard.NSFilenamesType }); 
         }
 
         public override void UpdateTrackingAreas()
@@ -82,9 +88,14 @@ namespace Octopus.Player.UI.macOS
             if ( NativePlayerWindow != null )
             {
                 var playbackControls = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "playbackControls");
-                var frame = playbackControls.Frame;
-                frame.Location = new CGPoint(Frame.Width/2 - frame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
-                playbackControls.Frame = frame;
+                var playbackControlsFrame = playbackControls.Frame;
+                playbackControlsFrame.Location = new CGPoint(Frame.Width/2 - playbackControlsFrame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
+                playbackControls.Frame = playbackControlsFrame;
+
+                // Hide drop area of overlapping with playback controls
+                var dropArea = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "dropArea");
+                var dropAreaFrame = dropArea.Frame;
+                dropArea.AlphaValue = dropAreaFrame.IntersectsWith(playbackControlsFrame) ? 0.0f : 1.0f;
             }
         }
 
@@ -100,14 +111,37 @@ namespace Octopus.Player.UI.macOS
                 NativePlayerWindow.PlayerWindow.OnFramebufferResize(NativePlayerWindow.FramebufferSize);
         }
 
+        IEnumerable<string> DraggedFilenames(NSPasteboard pasteboard)
+        {
+            if (Array.IndexOf(pasteboard.Types, NSPasteboard.NSFilenamesType) < 0) yield break;
+            foreach (var i in pasteboard.PasteboardItems) yield return new NSUrl(i.GetStringForType("public.file-url")).Path;
+        }
+
+        public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+        {
+            var files = DraggedFilenames(sender.DraggingPasteboard).ToArray();
+            return NativePlayerWindow.PlayerWindow.CanDropFiles(files) ? NSDragOperation.Link : NSDragOperation.None;
+        }
+
+        public override bool PerformDragOperation(NSDraggingInfo sender)
+        {
+            var files = DraggedFilenames(sender.DraggingPasteboard).ToArray();
+            NativePlayerWindow.PlayerWindow.DropFiles(files);
+            return true;
+        }
+
         public override void MouseDown(NSEvent theEvent)
         {
+            base.MouseDown(theEvent);
+            var modifiers = theEvent.ModifierFlags.ToModifierNameList();
             if (NativePlayerWindow != null)
-                NativePlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount);
+                NativePlayerWindow.PlayerWindow.LeftMouseDown((uint)theEvent.ClickCount, modifiers);
         }
 
         public override void RightMouseDown(NSEvent theEvent)
         {
+            base.RightMouseDown(theEvent);
+            var modifiers = theEvent.ModifierFlags.ToModifierNameList();
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.RightMouseDown((uint)theEvent.ClickCount);
         }
@@ -115,6 +149,13 @@ namespace Octopus.Player.UI.macOS
         public override void MouseMoved(NSEvent theEvent)
         {
             base.MouseMoved(theEvent);
+            if (NativePlayerWindow != null)
+                NativePlayerWindow.PlayerWindow.MouseMove(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
+        }
+        
+        public override void MouseDragged(NSEvent theEvent)
+        {
+            base.MouseDragged(theEvent);
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.MouseMove(new Vector2((float)theEvent.LocationInWindow.X, (float)theEvent.LocationInWindow.Y));
         }
@@ -145,6 +186,36 @@ namespace Octopus.Player.UI.macOS
         {
             if (NativePlayerWindow != null)
                 NativePlayerWindow.PlayerWindow.ButtonClick(sender.Identifier);
+        }
+
+        partial void SliderDrag(NSSlider sender)
+        {
+            if (NativePlayerWindow == null)
+                return;
+
+            // Drag has ended if there are no mouse button events
+            bool dragEnd = (NSEvent.CurrentPressedMouseButtons == 0);
+
+            if ( dragEnd )
+            {
+                if (activeSliders.Contains(sender.Identifier))
+                {
+                    activeSliders.Remove(sender.Identifier);
+                    NativePlayerWindow.PlayerWindow.SliderDragComplete(sender.Identifier, sender.FloatValue);
+                }
+                else
+                    NativePlayerWindow.PlayerWindow.SliderSetValue(sender.Identifier, sender.FloatValue);
+                
+                return;
+            }
+                
+            if ( activeSliders.Contains(sender.Identifier) )
+                NativePlayerWindow.PlayerWindow.SliderDragDelta(sender.Identifier, sender.FloatValue);
+            else
+            {
+                activeSliders.Add(sender.Identifier);
+                NativePlayerWindow.PlayerWindow.SliderDragStart(sender.Identifier);
+            }
         }
     }
 }

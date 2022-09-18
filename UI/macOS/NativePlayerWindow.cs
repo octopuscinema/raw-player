@@ -5,6 +5,9 @@ using AppKit;
 using System.Diagnostics;
 using OpenTK.Mathematics;
 using CoreAnimation;
+using System.Collections.Generic;
+using System.Linq;
+using CoreText;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -20,35 +23,95 @@ namespace Octopus.Player.UI.macOS
 
 		private ITheme Theme { get { return PlayerWindow.Theme; } }
 
-		// Called when created from unmanaged code
-		public NativePlayerWindow (IntPtr handle) : base(handle)
-		{
-			ControlsAnimationState = ControlsAnimationState.In;
+        public bool MouseInsidePlaybackControls { get; private set; }
 
-			// Create platform independant window logic
-			PlayerWindow = new PlayerWindow(this);
-			PlayerWindow.OnLoad();
-			WillClose += OnClose;
+		private Dictionary<NSTextField, NSFont> labelFonts = new Dictionary<NSTextField, NSFont>();
+
+		private PlaybackControlsView PlaybackControls { get; set; }
+
+		private bool IsDarkMode { get { return EffectiveAppearance.Name.Contains("dark", StringComparison.CurrentCultureIgnoreCase); } }
+
+        public Player.UI.PlayerApplication PlayerApplication { get { return ((AppDelegate)NSApplication.SharedApplication.Delegate).PlayerApplication; } }
+
+		public bool DropAreaVisible
+		{
+			get { return !FindView(ContentView, "dropArea").Hidden; }
+			set { FindView(ContentView, "dropArea").Hidden = !value; }
 		}
 
-		// Called when created directly from a XIB file
-		[Export("initWithCoder:")]
+        private IDisposable appearanceObserver;
+
+		private NSMenu contextMenu;
+
+        // Called when created from unmanaged code
+        public NativePlayerWindow (IntPtr handle) : base(handle)
+		{
+			OnCreate();
+        }
+
+        // Called when created directly from a XIB file
+        [Export("initWithCoder:")]
 		public NativePlayerWindow(NSCoder coder) : base(coder)
 		{
-			ControlsAnimationState = ControlsAnimationState.In;
+			OnCreate();	
+        }
+
+		private void OnCreate()
+        {
+            ControlsAnimationState = ControlsAnimationState.In;
 
 			// Create platform independant window logic
-			PlayerWindow = new PlayerWindow(this);
-			PlayerWindow.OnLoad();
+            PlayerWindow = new PlayerWindow(this, (IsDarkMode) ? (ITheme)new DefaultThemeDark() : null);
+            PlayerWindow.OnLoad();
             WillClose += OnClose;
-		}
 
-		private void OnClose(object sender, EventArgs e)
+            // Subscribe to playback control view mouse enter/exit
+            PlaybackControls = (PlaybackControlsView)FindView(ContentView, "playbackControls");
+            PlaybackControls.MouseEnter += OnPlaybackControlsMouseEnter;
+            PlaybackControls.MouseExit += OnPlaybackControlsMouseExit;
+
+            // Catch dark mode
+            appearanceObserver = AddObserver("effectiveAppearance", Foundation.NSKeyValueObservingOptions.New, OnAppearanceChanged);
+        }
+
+		private void OnAppearanceChanged(Foundation.NSObservedChange obj)
         {
-			Debug.Assert(PlayerWindow != null);
+			PlayerWindow.Theme = IsDarkMode ? (ITheme)new DefaultThemeDark() : (ITheme)new DefaultTheme();
+        }
+
+        private void OnPlaybackControlsMouseExit(object sender, EventArgs e)
+        {
+            MouseInsidePlaybackControls = false;
+        }
+
+        private void OnPlaybackControlsMouseEnter(object sender, EventArgs e)
+        {
+            MouseInsidePlaybackControls = true;
+        }
+
+        private void OnClose(object sender, EventArgs e)
+        {
+			// Delete additionally created label fonts
+			foreach (var entry in labelFonts)
+			{
+                entry.Key.Font.Dispose();
+				entry.Key.Font = entry.Value;
+			}
+			labelFonts.Clear();
+
+            Debug.Assert(PlayerWindow != null);
 			PlayerWindow.Dispose();
 			PlayerWindow = null;
-		}
+
+			appearanceObserver.Dispose();
+			appearanceObserver = null;
+
+			if (contextMenu != null)
+            {
+				contextMenu.Dispose();
+				contextMenu = null;
+            }
+        }
 
 		public void LockAspect(Core.Maths.Rational ratio)
         {
@@ -114,7 +177,7 @@ namespace Octopus.Player.UI.macOS
 			NSApplication.SharedApplication.Terminate(this);
         }
 
-        public void Alert(AlertType alertType, string message, string title)
+        public AlertResponse Alert(AlertType alertType, string message, string title)
         {
 			NSAlert alert = null;
 			switch (alertType)
@@ -129,20 +192,74 @@ namespace Octopus.Player.UI.macOS
 				case AlertType.Warning:
 					alert = new NSAlert() { AlertStyle = NSAlertStyle.Warning, InformativeText = message, MessageText = title };
 					break;
+				case AlertType.YesNo:
+					alert = NSAlert.WithMessage(title, "Yes", "No", null, message);
+                    break;
 				default:
-					Debug.Assert(false);
-					return;
+					throw new Exception();
 			}
-			alert?.RunModal();
+			
+			switch(alert?.RunModal())
+            {
+				case 1:
+					return AlertResponse.Yes;
+				case 0:
+					return AlertResponse.No;
+				default:
+					return AlertResponse.None;
+            }
 		}
+
+
+        public void OpenContextMenu(string id)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void OpenContextMenu(List<string> mainMenuItems)
+        {
+            if (contextMenu != null)
+                contextMenu.Dispose();
+
+            contextMenu = new NSMenu();
+            foreach (var mainMenuItem in mainMenuItems)
+                contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
+            contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
+        }
+
+        public void OpenAboutPanel()
+        {
+			var systemFont = NSFont.SystemFontOfSize(NSFont.SmallSystemFontSize);
+			var creditsAttributes = new CTStringAttributes()
+			{
+				ForegroundColorFromContext = true,
+				Font = new CTFont(systemFont.FontName, systemFont.PointSize)
+			};
+
+            var options = new Dictionary<string, object>()
+            {
+				{ "ApplicationName", PlayerApplication.ProductName },
+				{ "Version", PlayerApplication.ProductBuildVersion },
+				{ "ApplicationVersion", PlayerApplication.ProductVersion },
+				{ "Copyright", PlayerApplication.ProductCopyright },
+				{ "Credits", new NSAttributedString(PlayerApplication.ProductLicense, creditsAttributes) }
+            };
+
+            NSApplication.SharedApplication.OrderFrontStandardAboutPanelWithOptions2(NSDictionary.FromObjectsAndKeys(options.Values.ToArray(), options.Keys.ToArray()));
+        }
 
         public void OpenUrl(string url)
         {
 			NSError urlError;
-			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
+			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url.Replace("\"", "")), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
 		}
 
-		private NSMenuItem FindMenuItem(NSMenu root, string id)
+        public void OpenTextEditor(string textFilePath)
+        {
+			NSWorkspace.SharedWorkspace.OpenFile(textFilePath);
+        }
+
+        private NSMenuItem FindMenuItem(NSMenu root, string id)
         {
 			if (root == null)
 				return null;
@@ -204,7 +321,28 @@ namespace Octopus.Player.UI.macOS
 				item.Title = name;
 		}
 
-		internal NSView FindView(NSView root, string id)
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        {
+			var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+			var menuItem = new NSMenuItem(name);
+			menuItem.Activated += (sender, e) => { onClick(); };
+
+			if (index.HasValue)
+                parentMenu.InsertItem(menuItem, (nint)index.Value);
+			else
+                parentMenu.AddItem(menuItem);
+        }
+
+        public void AddMenuSeperator(string parentId, uint? index)
+		{
+            var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+            if (index.HasValue)
+                parentMenu.InsertItem(NSMenuItem.SeparatorItem, (nint)index.Value);
+            else
+                parentMenu.AddItem(NSMenuItem.SeparatorItem);
+        }
+
+        internal NSView FindView(NSView root, string id)
 		{
 			if (root == null)
 				return null;
@@ -226,7 +364,7 @@ namespace Octopus.Player.UI.macOS
 			return (T)FindView(root, id);
 		}
 
-		public void SetLabelContent(string id, string content, Vector3? colour = null)
+		public void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null)
 		{
 			InvokeOnMainThread(() =>
 			{
@@ -235,9 +373,27 @@ namespace Octopus.Player.UI.macOS
 				{
 					label.StringValue = content;
 					if (colour.HasValue)
-						label.TextColor = NSColor.FromRgb(colour.Value.X, colour.Value.Y, colour.Value.Z);
-				}
-			});
+						label.TextColor = NSColor.FromRgba(colour.Value.X, colour.Value.Y, colour.Value.Z, label.TextColor.AlphaComponent);
+					
+					// Switch to fixed width digit font
+					if (fixedWidthDigitHint.HasValue)
+					{
+						bool useFixedWidthDigit = fixedWidthDigitHint.Value;
+
+                        if ( !labelFonts.ContainsKey(label) && useFixedWidthDigit )
+                        {
+							labelFonts[label] = label.Font;
+                            label.Font = NSFont.MonospacedDigitSystemFontOfSize(labelFonts[label].PointSize, NSFontWeight.Regular);
+                        }
+						else if ( labelFonts.ContainsKey(label) && !useFixedWidthDigit )
+                        {
+							label.Font.Dispose();
+							label.Font = labelFonts[label];
+                            labelFonts.Remove(label);
+                        }
+					}
+                }
+            });
 		}
 
 		public void SetButtonVisibility(string id, bool visible)
@@ -302,8 +458,7 @@ namespace Octopus.Player.UI.macOS
 			{
 				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
-				var playbackControls = FindView(ContentView, "playbackControls");
-				((NSView)playbackControls.Animator).AlphaValue = 1.0f;
+				((NSView)PlaybackControls.Animator).AlphaValue = 1.0f;
 			});
 		}
 
@@ -317,8 +472,7 @@ namespace Octopus.Player.UI.macOS
 			{
 				ctx.Duration = Theme.ControlsAnimation.TotalSeconds;
 				ctx.TimingFunction = CAMediaTimingFunction.FromName(CAMediaTimingFunction.Linear);
-				var playbackControls = FindView(ContentView, "playbackControls");
-				((NSView)playbackControls.Animator).AlphaValue = 0.0f;
+				((NSView)PlaybackControls.Animator).AlphaValue = 0.0f;
 			});
 		}
     }

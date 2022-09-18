@@ -34,10 +34,13 @@
                                     <slider identifier="seekBar" verticalHuggingPriority="750" id="QCu-tS-Z3a">
                                         <rect key="frame" x="20" y="7" width="440" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <sliderCell key="cell" controlSize="mini" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
+                                        <sliderCell key="cell" controlSize="mini" continuous="YES" state="on" alignment="left" maxValue="1" tickMarkPosition="above" sliderType="linear" id="k1N-l9-lkp"/>
+                                        <connections>
+                                            <action selector="SliderDrag:" target="8" id="Kbp-Ec-yFB"/>
+                                        </connections>
                                     </slider>
-                                    <button identifier="skipAheadButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
-                                        <rect key="frame" x="261" y="32" width="27.5" height="40"/>
+                                    <button identifier="fastForwardButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
+                                        <rect key="frame" x="262" y="32" width="27.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="forward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="S0o-x3-Jf1">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -48,9 +51,33 @@
                                             <action selector="ButtonClick:" target="8" id="BiL-GE-kJ2"/>
                                         </connections>
                                     </button>
-                                    <button identifier="skipBackButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
-                                        <rect key="frame" x="191" y="32" width="27.5" height="40"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <button identifier="nextButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ogq-PW-iWs">
+                                        <rect key="frame" x="315" y="32.5" width="27.5" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSTouchBarSkipToEndTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="Nha-1X-gPZ">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="I52-gn-9vu"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="previousButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="466-yA-h5v">
+                                        <rect key="frame" x="137" y="32.5" width="27.5" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSTouchBarSkipToStartTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="z7I-ex-RQF">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="HJP-a8-Q3k"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="fastRewindButton" autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
+                                        <rect key="frame" x="190" y="32" width="27.5" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="backward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="ZVu-TT-ZiP">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system" size="40"/>
@@ -86,21 +113,39 @@
                                             <action selector="ButtonClick:" target="8" id="Q1S-kP-jMN"/>
                                         </connections>
                                     </button>
-                                    <textField identifier="timeCodeLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FdF-sg-6r8">
-                                        <rect key="frame" x="20" y="43" width="84" height="17"/>
+                                    <textField identifier="durationLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2C7-9t-Dgn">
+                                        <rect key="frame" x="401" y="46" width="61" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="left" title="00:00:00:00" usesSingleLineMode="YES" id="1gN-C3-H88">
-                                            <font key="font" size="15" name="HelveticaNeue"/>
-                                            <color key="textColor" white="0.89500251016416754" alpha="1" colorSpace="calibratedWhite"/>
+                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="right" title="00:00:00" usesSingleLineMode="YES" id="mCD-N5-rDO">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
-                                    <textField identifier="durationLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2C7-9t-Dgn">
-                                        <rect key="frame" x="397" y="43" width="63" height="17"/>
+                                    <textField identifier="fastForwardLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ubO-He-5fj">
+                                        <rect key="frame" x="291" y="43" width="24" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="right" title="00:00:00" usesSingleLineMode="YES" id="mCD-N5-rDO">
-                                            <font key="font" size="15" name="HelveticaNeue"/>
-                                            <color key="textColor" white="0.89876529720279719" alpha="1" colorSpace="calibratedWhite"/>
+                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" allowsUndo="NO" alignment="left" title="10×" usesSingleLineMode="YES" id="YeK-Lz-bYo">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField identifier="fastRewindLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q3L-C1-bXP">
+                                        <rect key="frame" x="165" y="43" width="24" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" allowsUndo="NO" alignment="right" title="10×" usesSingleLineMode="YES" id="hlE-YO-l8s">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField identifier="timeCodeLabel" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FdF-sg-6r8">
+                                        <rect key="frame" x="18" y="46" width="85" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" allowsUndo="NO" alignment="left" title="00:00:00:00" usesSingleLineMode="YES" id="1gN-C3-H88">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
@@ -111,6 +156,30 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </customView>
+                            <customView identifier="dropArea" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Goc-HZ-Ha9">
+                                <rect key="frame" x="310" y="215" width="340" height="110"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XT7-kA-f1F">
+                                        <rect key="frame" x="-2" y="0.0" width="344" height="26"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Drop CinemaDNG sequence here" id="Lv6-q7-JNA">
+                                            <font key="font" textStyle="title2" name=".SFNS-Regular"/>
+                                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dk3-Sb-LVO">
+                                        <rect key="frame" x="-2" y="34" width="344" height="76"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="," id="cc3-RP-8BG">
+                                            <font key="font" size="64" name="Wingdings3"/>
+                                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                </subviews>
+                            </customView>
                         </subviews>
                     </customView>
                 </subviews>
@@ -119,9 +188,11 @@
         </window>
     </objects>
     <resources>
+        <image name="NSTouchBarSkipToEndTemplate" width="15" height="13"/>
+        <image name="NSTouchBarSkipToStartTemplate" width="15" height="13"/>
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
-        <image name="pause.fill" catalog="system" width="14" height="17"/>
-        <image name="play.fill" catalog="system" width="15" height="17"/>
+        <image name="pause.fill" catalog="system" width="11" height="13"/>
+        <image name="play.fill" catalog="system" width="12" height="13"/>
     </resources>
 </document>

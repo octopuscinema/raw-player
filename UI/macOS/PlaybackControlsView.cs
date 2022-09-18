@@ -7,13 +7,19 @@ using Foundation;
 using AppKit;
 using CoreAnimation;
 using OpenGL;
+using System.Diagnostics;
 
 namespace Octopus.Player.UI.macOS
 {
     public partial class PlaybackControlsView : AppKit.NSVisualEffectView
     {
-        CGPoint? startPoint;
-        CGPoint? frameOrigin;
+        public event EventHandler MouseEnter;
+        public event EventHandler MouseExit;
+
+        private CGPoint? startPoint;
+        private CGPoint? frameOrigin;
+
+        private NSTrackingArea trackingArea;
 
         public PlaybackControlsView(IntPtr handle) : base(handle)
         {
@@ -23,6 +29,12 @@ namespace Octopus.Player.UI.macOS
         [Export("initWithCoder:")]
         public PlaybackControlsView(NSCoder coder) : base(coder)
         {
+        }
+
+        ~PlaybackControlsView()
+        {
+            if (trackingArea != null)
+                trackingArea.Dispose();
         }
 
         public override void AwakeFromNib()
@@ -36,6 +48,18 @@ namespace Octopus.Player.UI.macOS
             State = NSVisualEffectState.FollowsWindowActiveState;
         }
 
+        public override void UpdateTrackingAreas()
+        {
+            if (trackingArea != null)
+            {
+                RemoveTrackingArea(trackingArea);
+                trackingArea.Dispose();
+            }
+
+            trackingArea = new NSTrackingArea(Bounds, NSTrackingAreaOptions.ActiveInKeyWindow | NSTrackingAreaOptions.MouseEnteredAndExited, this, null);
+            AddTrackingArea(trackingArea);
+        }
+
         public override void MouseDown(NSEvent theEvent)
         {
             startPoint = theEvent.LocationInWindow;
@@ -44,6 +68,8 @@ namespace Octopus.Player.UI.macOS
 
         public override void MouseDragged(NSEvent theEvent)
         {
+            base.MouseDragged(theEvent);
+
             // Allow for dragging the view around
             if (startPoint.HasValue && frameOrigin.HasValue)
             {
@@ -72,6 +98,17 @@ namespace Octopus.Player.UI.macOS
             startPoint = null;
             frameOrigin = null;
         }
+
+        public override void MouseExited(NSEvent theEvent)
+        {
+            base.MouseExited(theEvent);
+            MouseExit?.Invoke(this, new EventArgs());
+        }
+
+        public override void MouseEntered(NSEvent theEvent)
+        {
+            base.MouseEntered(theEvent);
+            MouseEnter?.Invoke(this, new EventArgs());
+        }
     }
 }
-

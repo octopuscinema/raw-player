@@ -13,7 +13,7 @@ namespace Octopus.Player.Core.Playback
         public Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
 
         protected uint BufferDurationFrames { get; private set; }
-
+        public State? PreSeekState { get; private set; }
         private PlaybackVelocity velocity;
         public PlaybackVelocity Velocity 
         {
@@ -32,21 +32,10 @@ namespace Octopus.Player.Core.Playback
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
 
-        private uint? requestFrame;
-        private uint? displayFrame;
+        protected long? requestFrame;
+        protected long? displayFrame;
 
         static private readonly Rational defaultFramerate = new Rational(24000, 1001);
-
-        public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
-        {
-            requestFrame = null;
-            displayFrame = null;
-            State = State.Empty;
-            PlayerWindow = playerWindow;
-            RenderContext = renderContext;
-            BufferDurationFrames = bufferDurationFrames;
-            Velocity = PlaybackVelocity.Forward1x;
-        }
 
         protected GPU.Render.IContext RenderContext { get; private set; }
         protected IPlayerWindow PlayerWindow { get; private set; }
@@ -68,11 +57,27 @@ namespace Octopus.Player.Core.Playback
         public event EventHandler StateChanged;
         public IClip Clip { get; protected set; }
         public bool IsPlaying { get { return State == State.Playing || State == State.PlayingFromBuffer || State == State.Buffering; } }
+        public bool IsSeeking { get { return State == State.PausedSeeking; } }
         public bool IsPaused { get { return State == State.Paused || State == State.PausedEnd; } }
+
+        public abstract uint? ActiveSeekRequest { get; protected set; }
 
         public event IPlayback.FrameDisplayedEventHandler FrameDisplayed;
         public event IPlayback.FrameSkippedEventHandler FrameSkipped;
         public event IPlayback.FrameMissingEventHandler FrameMissing;
+        public event IPlayback.FrameDisplayedEventHandler SeekFrameDisplayed;
+        public event IPlayback.FrameMissingEventHandler SeekFrameMissing;
+
+        public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
+        {
+            requestFrame = null;
+            displayFrame = null;
+            State = State.Empty;
+            PlayerWindow = playerWindow;
+            RenderContext = renderContext;
+            BufferDurationFrames = bufferDurationFrames;
+            Velocity = PlaybackVelocity.Forward1x;
+        }
 
         public abstract void Close();
         public abstract Error Open(IClip clip);
@@ -84,6 +89,32 @@ namespace Octopus.Player.Core.Playback
         public abstract event EventHandler ClipClosed;
 
         public abstract bool SupportsClip(IClip clip);
+
+        public virtual void SeekStart()
+        {
+            Debug.Assert(!IsSeeking);
+            PreSeekState = State;
+            if (IsPlaying)
+                Pause();
+            State = State.PausedSeeking;
+        }
+
+        public virtual Error RequestSeek(uint frame, bool force = false)
+        {
+            Debug.Assert(IsSeeking);
+            return Error.NotImplmeneted;
+        }
+
+        public virtual void SeekEnd()
+        {
+            Debug.Assert(IsSeeking && PreSeekState.HasValue);
+            if (PreSeekState == State.Playing || PreSeekState == State.PlayingFromBuffer || PreSeekState == State.Buffering)
+                Play();
+            else
+                State = (FirstFrame==LastFrame) ? State.Stopped : State.Paused;
+            PreSeekState = null;
+        }
+
         public virtual void Stop()
         {
             Debug.Assert(State != State.Stopped && State != State.Empty);
@@ -119,11 +150,11 @@ namespace Octopus.Player.Core.Playback
         {
             Trace.WriteLine("Playback::Play");
 
-            // Stop first if we're paused at the end
-            if (State == State.PausedEnd)
+            // Stop first if we're trying to play forwards while paused at the end
+            if (Velocity.IsForward() && State == State.PausedEnd)
                 Stop();
 
-            Debug.Assert(State == State.Stopped || State == State.Paused);
+            Debug.Assert(State == State.Stopped || State == State.Paused || State == State.PausedEnd || State == State.PausedSeeking);
             Debug.Assert(FrameRequestTimer == null && FrameDisplayTimer == null);
 
             // Resuming from paused, continue from the last displayed frame
@@ -149,7 +180,7 @@ namespace Octopus.Player.Core.Playback
                 if (!(State == State.Buffering || State == State.Playing))
                     return;
 
-                RequestFrame(requestFrame.Value);
+                RequestFrame((uint)requestFrame.Value);
 
                 // Last frame requested, we're now playing from the buffer
                 if (Velocity.IsForward())
@@ -158,13 +189,19 @@ namespace Octopus.Player.Core.Playback
                         State = State.PlayingFromBuffer;
                     else if (requestFrame < LastFrame)
                     {
-                        requestFrame += (uint)Velocity;
+                        requestFrame += (int)Velocity;
                         requestFrame = Math.Min(requestFrame.Value, LastFrame);
                     }
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    if (requestFrame <= FirstFrame)
+                        State = State.PlayingFromBuffer;
+                    else if (requestFrame > FirstFrame)
+                    {
+                        requestFrame += (int)Velocity;
+                        requestFrame = Math.Max(requestFrame.Value, FirstFrame);
+                    }
                 }
             });
         }
@@ -184,6 +221,24 @@ namespace Octopus.Player.Core.Playback
             return new TimeCode(globalFrameNumber, Framerate, dropFrame, true);
         }
 
+        protected void OnSeekFrameDisplay(Error frameDecodeResult, TimeCode? frameTimeCode)
+        {
+            if (!frameTimeCode.HasValue)
+                frameTimeCode = GenerateTimeCode((uint)displayFrame.Value);
+
+            switch (frameDecodeResult)
+            {
+                case Error.None:
+                    SeekFrameDisplayed?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    break;
+                case Error.FrameNotPresent:
+                    SeekFrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void OnFrameDisplay(object obj)
         {
             PlayerWindow.InvokeOnUIThread(() =>
@@ -193,7 +248,7 @@ namespace Octopus.Player.Core.Playback
 
                 uint frameDisplayed;
                 TimeCode? frameTimeCode;
-                var displayFrameResult = DisplayFrame(displayFrame.Value, out frameDisplayed, out frameTimeCode);
+                var displayFrameResult = DisplayFrame((uint)displayFrame.Value, out frameDisplayed, out frameTimeCode, Velocity);
                 if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
                 switch (displayFrameResult)
@@ -203,10 +258,10 @@ namespace Octopus.Player.Core.Playback
                         FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotReady:
-                        FrameSkipped?.Invoke(displayFrame.Value, frameDisplayed, frameTimeCode.Value);
+                        FrameSkipped?.Invoke((uint)displayFrame.Value, frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotPresent:
-                        FrameMissing?.Invoke(displayFrame.Value, frameTimeCode.Value);
+                        FrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
                         break;
                     default:
                         break;
@@ -219,21 +274,19 @@ namespace Octopus.Player.Core.Playback
                         Pause();
                     else if (displayFrame < LastFrame)
                     {
-                        displayFrame += (uint)Velocity;
+                        displayFrame += (int)Velocity;
                         displayFrame = Math.Min(displayFrame.Value, LastFrame);
                     }
                 }
                 else
                 {
-                    throw new NotImplementedException();
-                    /*
                     if (displayFrame <= FirstFrame)
-                        Pause();
+                        Stop();
                     else if ( displayFrame > FirstFrame )
                     {
-                        displayFrame -= (uint)Math.Abs((int)Velocity);
-                        displayFrame = Math.Min(displayFrame.Value, LastFrame);
-                    }*/
+                        displayFrame += (int)Velocity;
+                        displayFrame = Math.Max(displayFrame.Value, FirstFrame);
+                    }
                 }
 
                 // Buffering becomes playing when the first frame is displayed
@@ -274,11 +327,11 @@ namespace Octopus.Player.Core.Playback
 
         public abstract Error RequestFrame(uint frameNumber);
 
-        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode);
+        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode, PlaybackVelocity playbackVelocity);
 
         public abstract void OnRenderFrame(double timeInterval);
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (IsOpen())
                 Close();

@@ -17,17 +17,19 @@
                 <menuItem title="OCTOPUS RAW Player" id="56">
                     <menu key="submenu" title="OCTOPUS RAW Player" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About OCTOPUS RAW Player" id="58">
+                            <menuItem title="About OCTOPUS RAW Player" identifier="about" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                    <action selector="doClick:" target="-1" id="Ywt-p8-WGH"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Check for Updates..." identifier="checkForUpdates" id="v8Z-Y4-59R">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="CfH-1J-T5g"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Preferences…" keyEquivalent="," id="129"/>
-                            <menuItem isSeparatorItem="YES" id="143">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
                             <menuItem title="Services" id="131">
@@ -66,17 +68,22 @@
                 <menuItem title="File" id="83">
                     <menu key="submenu" title="File" id="81">
                         <items>
-                            <menuItem title="Open CinemaDNG Sequence..." identifier="openCinemaDNG" id="4Ld-fG-0SO">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Open CinemaDNG Sequence..." keyEquivalent="o" identifier="openCinemaDNG" id="4Ld-fG-0SO">
                                 <connections>
                                     <action selector="doClick:" target="-1" id="94W-mI-Q6w"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="VUG-9U-ceB"/>
-                            <menuItem title="Clear Recent Files" enabled="NO" id="126">
-                                <connections>
-                                    <action selector="clearRecentDocuments:" target="-1" id="127"/>
-                                </connections>
+                            <menuItem title="Open Recent" identifier="openRecent" id="5co-Zb-qVp">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Open Recent" autoenablesItems="NO" id="qrp-Jb-ncl">
+                                    <items>
+                                        <menuItem title="Clear Menu" identifier="clearRecent" id="126">
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="gdJ-xF-vNc"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
                             </menuItem>
                         </items>
                     </menu>
@@ -184,11 +191,31 @@
                                                 <action selector="doClick:" target="-1" id="OtX-mV-fON"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Highlight Roll-Off" state="on" identifier="highlightRollOff" id="siQ-HV-G6N">
+                                        <menuItem title="Highlight Roll-Off" identifier="highlightRollOff" id="wg2-Oo-dfB">
                                             <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="doClick:" target="-1" id="f6x-EH-Bjh"/>
-                                            </connections>
+                                            <menu key="submenu" title="Highlight Roll-Off" autoenablesItems="NO" id="Tea-DF-VXZ">
+                                                <items>
+                                                    <menuItem title="Low" state="on" identifier="highlightRollOffLow" id="J3I-XL-fIO">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="nTz-27-LyF"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="High" identifier="highlightRollOffHigh" id="ptx-9v-eD5">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="k9B-dt-KUG"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="YPX-oZ-Gaa"/>
+                                                    <menuItem title="None" identifier="highlightRollOffNone" id="Od0-PV-GVz">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="doClick:" target="-1" id="A4b-0N-3fL"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="xbm-xX-IAi"/>
                                         <menuItem title="Rec. 709 Tone Mapping" state="on" identifier="toneMapping" id="gg4-7T-KrU">
@@ -298,11 +325,58 @@
                                     </items>
                                 </menu>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="RNX-nM-Buc"/>
+                            <menuItem title="Develop" id="VUQ-Pe-mhU">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Develop" id="NmR-MM-27w">
+                                    <items>
+                                        <menuItem title="OCTOPUSCINEMA GitHub" identifier="visitGithub" id="Jbe-n4-Osj">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="8dt-P4-CpR"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="wvb-nc-IvL"/>
-                            <menuItem title="OCTOPUSCINEMA GitHub" identifier="visitGithub" id="Jbe-n4-Osj">
+                            <menuItem title="Troubleshooting" id="HDd-Sb-3fM">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Troubleshooting" id="UsH-DQ-H64">
+                                    <items>
+                                        <menuItem title="OpenGL Information" identifier="openglInfo" id="uqk-dL-XO0">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="WwH-hd-qqp"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="View Log" identifier="viewLog" id="M1v-Tz-2Dt">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="H3G-39-W04"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="o1T-6k-7zp"/>
+                                        <menuItem title="Report a Problem" identifier="reportProblem" id="FzW-K5-uUU">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="GS3-FX-jZb"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Release Notes" identifier="releaseNotes" id="TA9-bN-jCH">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="doClick:" target="-1" id="8dt-P4-CpR"/>
+                                    <action selector="doClick:" target="-1" id="hWf-b5-gW2"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="6ma-fc-dVg"/>
+                            <menuItem title="License" identifier="license" id="oyK-hq-jKP">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="ZuB-99-AXf"/>
                                 </connections>
                             </menuItem>
                         </items>

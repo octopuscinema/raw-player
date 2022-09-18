@@ -2,14 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>OCTOPUS RAW Player</string>
+	<key>XSAppIconAssets</key>
+	<string>Resources/Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.octopus.rawplayer</string>
 	<key>CFBundleName</key>
 	<string>OCTOPUS RAW Player</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.8.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>0.8.0</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.13</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2022 OCTOPUSCINEMA</string>
 	<key>NSMainNibFile</key>
 	<string>PlayerMenu</string>
 	<key>NSPrincipalClass</key>

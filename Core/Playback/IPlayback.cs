@@ -46,24 +46,34 @@ namespace Octopus.Player.Core.Playback
 		IClip Clip { get; }
 		event EventHandler StateChanged;
 
+		// Seek controls
+		State? PreSeekState { get; }
+		void SeekStart();
+		Error RequestSeek(uint frame, bool force = false);
+		void SeekEnd();
+		uint? ActiveSeekRequest { get; }
+
 		// Playback controls
 		void Stop();
 		void Play();
 		void Pause();
 		bool IsPlaying { get; }
+		bool IsPaused { get; }
+		bool IsSeeking { get; }
 		PlaybackVelocity Velocity { get; set; }
 		event EventHandler VelocityChanged;
 
-		bool IsPaused { get; }
 		public delegate void FrameDisplayedEventHandler(uint frame, in Maths.TimeCode timeCode);
 		public delegate void FrameSkippedEventHandler(uint requestedFrame, uint displayedFrame, in Maths.TimeCode synthesisedTimeCode);
 		public delegate void FrameMissingEventHandler(uint requestedFrame, in Maths.TimeCode synthesisedTimeCode);
 		event FrameDisplayedEventHandler FrameDisplayed;
 		event FrameSkippedEventHandler FrameSkipped;
 		event FrameMissingEventHandler FrameMissing;
+        event FrameDisplayedEventHandler SeekFrameDisplayed;
+        event FrameMissingEventHandler SeekFrameMissing;
 
-		// Clip control
-		Error Open(IClip clip);
+        // Clip control
+        Error Open(IClip clip);
 		bool IsOpen();
 		void Close();
 		bool SupportsClip(IClip clip);

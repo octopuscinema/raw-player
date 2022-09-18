@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Octopus.Player.UI.Windows
 {
@@ -13,5 +7,17 @@ namespace Octopus.Player.UI.Windows
     /// </summary>
     public partial class App : Application
     {
+        public PlayerApplication PlayerApplication { get; private set; }
+
+        App() : base()
+        {
+            PlayerApplication = new PlayerApplication();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            PlayerApplication.Dispose();
+        }
     }
 }

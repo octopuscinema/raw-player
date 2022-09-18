@@ -19,7 +19,9 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffFileReader Tiff { get; set; }
         private TiffFieldReader FieldReader { get; set; }
         private TiffImageFileDirectory Ifd { get; set; }
+        private TiffImageFileDirectory ImageDataIfd { get; set; }
         private TiffTagReader TagReader { get; set; }
+        private TiffTagReader ImageDataTagReader { get; set; }
 
         private Vector2i? CachedDimensions { get; set; }
         private bool? CachedContainsFramerate { get; set; }
@@ -66,7 +68,25 @@ namespace Octopus.Player.Core.IO.DNG
             // Set up IFD field reader
             FieldReader = Tiff.CreateFieldReader();
             Ifd = Tiff.ReadImageFileDirectory();
+            ImageDataIfd = Ifd;
             TagReader = new TiffTagReader(FieldReader, Ifd);
+            ImageDataTagReader = TagReader;
+
+            // If this is not the main image, we need to check the subifds
+            var subFileType = TagReader.ReadNewSubfileType();
+            if (subFileType != TiffNewSubfileType.None )
+            {
+                var subIfds = TagReader.ReadSubIFDs();
+                foreach(var subIfd in subIfds)
+                {
+                    var ifd = Tiff.ReadImageFileDirectory(subIfd);
+                    if ( ifd.FindEntry(TiffTag.NewSubfileType).ValueOffset == (long)TiffNewSubfileType.None )
+                    {
+                        ImageDataIfd = ifd;
+                        ImageDataTagReader = new TiffTagReader(FieldReader, ImageDataIfd);
+                    }
+                }
+            }
         }
 
         public Error DecodeImageData(byte[] dataOut)
@@ -76,17 +96,17 @@ namespace Octopus.Player.Core.IO.DNG
 
             // Get offsets to the strip/tile data
             TiffValueCollection<ulong> offsets, byteCounts;
-            if (Ifd.Contains(TiffTag.TileOffsets))
+            if (ImageDataIfd.Contains(TiffTag.TileOffsets))
             {
                 CachedIsTiled = true;
-                offsets = TagReader.ReadTileOffsets();
-                byteCounts = TagReader.ReadTileByteCounts();
+                offsets = ImageDataTagReader.ReadTileOffsets();
+                byteCounts = ImageDataTagReader.ReadTileByteCounts();
                 CachedTileCount = (uint)offsets.Count;
             }
-            else if (Ifd.Contains(TiffTag.StripOffsets))
+            else if (ImageDataIfd.Contains(TiffTag.StripOffsets))
             {
-                offsets = TagReader.ReadStripOffsets();
-                byteCounts = TagReader.ReadStripByteCounts();
+                offsets = ImageDataTagReader.ReadStripOffsets();
+                byteCounts = ImageDataTagReader.ReadStripByteCounts();
                 CachedStripCount = (uint)offsets.Count;
             }
             else
@@ -222,7 +242,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedDimensions.HasValue)
-                    CachedDimensions = new Vector2i((int)TagReader.ReadImageWidth(), (int)TagReader.ReadImageLength());
+                    CachedDimensions = new Vector2i((int)ImageDataTagReader.ReadImageWidth(), (int)ImageDataTagReader.ReadImageLength());
                 return CachedDimensions.Value;
             }
         }
@@ -268,7 +288,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedBitDepth.HasValue)
                 {
-                    var bitDepth = TagReader.ReadShortField(TiffTag.BitsPerSample, 1).GetFirstOrDefault();
+                    var bitDepth = ImageDataTagReader.ReadShortField(TiffTag.BitsPerSample, 1).GetFirstOrDefault();
                     CachedBitDepth = bitDepth;
                 }
                 return CachedBitDepth.Value;
@@ -304,7 +324,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedCFARepeatPatternDimensions.HasValue)
                 {
-                    var repeatpattern = TagReader.ReadShortField((TiffTag)TiffTagDNG.CFARepeatPatternDim);
+                    var repeatpattern = ImageDataTagReader.ReadShortField((TiffTag)TiffTagDNG.CFARepeatPatternDim);
                     CachedCFARepeatPatternDimensions = (repeatpattern.Count == 2) ? new Vector2i(repeatpattern[0], repeatpattern[1]) : new Vector2i(0, 0);
                 }
                 return CachedCFARepeatPatternDimensions.Value;
@@ -318,7 +338,7 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedCFAPattern.HasValue)
                 {
                     // Read CFA tag
-                    var pattern = TagReader.ReadShortField((TiffTag)TiffTagDNG.CFAPattern);
+                    var pattern = ImageDataTagReader.ReadShortField((TiffTag)TiffTagDNG.CFAPattern);
                     switch (pattern.Count)
                     {
                         case 0:
@@ -351,7 +371,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedCompression.HasValue)
                 {
-                    var tiffCompression = TagReader.ReadCompression();
+                    var tiffCompression = ImageDataTagReader.ReadCompression();
                     CachedCompression = (tiffCompression == TiffCompression.NoCompression || tiffCompression == TiffCompression.Jpeg) ?
                         (Compression)tiffCompression : Compression.Unknown;
                 }
@@ -365,7 +385,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedPhotometricInterpretation.HasValue)
                 {
-                    var photometricInterpretation = (PhotometricInterpretation)TagReader.ReadPhotometricInterpretation();
+                    var photometricInterpretation = (PhotometricInterpretation)ImageDataTagReader.ReadPhotometricInterpretation();
                     CachedPhotometricInterpretation = (photometricInterpretation == PhotometricInterpretation.LinearRaw || photometricInterpretation == PhotometricInterpretation.ColorFilterArray) ?
                         photometricInterpretation : PhotometricInterpretation.Unknown;
                 }
@@ -441,11 +461,11 @@ namespace Octopus.Player.Core.IO.DNG
                 {
                     try
                     {
-                        CachedBlackLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : 0);
+                        CachedBlackLevel = (ushort)(ImageDataIfd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? ImageDataTagReader.ReadLongField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : 0);
                     }
                     catch
                     {
-                        var blackLevelRational = Ifd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? TagReader.ReadRationalField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : new TiffRational();
+                        var blackLevelRational = ImageDataIfd.Contains((TiffTag)TiffTagDNG.BlackLevel) ? ImageDataTagReader.ReadRationalField((TiffTag)TiffTagDNG.BlackLevel, 1).First() : new TiffRational();
                         CachedBlackLevel = blackLevelRational.Denominator == 0 ? (ushort)0 : (ushort)(blackLevelRational.Numerator / blackLevelRational.Denominator);
                     }
                 }
@@ -458,7 +478,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedWhiteLevel.HasValue)
-                    CachedWhiteLevel = (ushort)(Ifd.Contains((TiffTag)TiffTagDNG.WhiteLevel) ? TagReader.ReadLongField((TiffTag)TiffTagDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
+                    CachedWhiteLevel = (ushort)(ImageDataIfd.Contains((TiffTag)TiffTagDNG.WhiteLevel) ? ImageDataTagReader.ReadLongField((TiffTag)TiffTagDNG.WhiteLevel, 1).First() : (uint)((1 << (int)BitDepth) - 1));
                 return CachedWhiteLevel.Value;
             }
         }
@@ -654,6 +674,7 @@ namespace Octopus.Player.Core.IO.DNG
         public void Dispose()
         {
             Ifd = null;
+            ImageDataIfd = null;
             Tiff?.Dispose();
             FieldReader?.Dispose();
             Tiff = null;

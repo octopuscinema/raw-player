@@ -24,6 +24,10 @@ namespace Octopus.Player.GPU.Render
     public interface IContext : IDisposable
     {
         Api Api { get; }
+        string ApiVersion { get; }
+        string ApiRenderer { get; }
+        string ApiVendor { get; }
+        string ApiShadingLanguageVersion { get; }
 
         Vector3 BackgroundColor {get; set;}
         RedrawBackground RedrawBackground {get; set;}
@@ -42,6 +46,7 @@ namespace Octopus.Player.GPU.Render
         void DestroyShader(IShader shader);
         
         void EnqueueRenderAction(Action action);
+        void ClearRenderActions();
 
         void OnRenderFrame(double timeInterval);
         void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size);

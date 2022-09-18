@@ -8,11 +8,91 @@
         mc:Ignorable="d"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        KeyDown="Window_KeyDown"
         SnapsToDevicePixels="true"
         xmlns:base="clr-namespace:Octopus.Player.UI.Windows"
         Title="OCTOPUS RAW Player" Height="450" Width="800">
 
     <Window.Resources>
+        <MenuItem Header="_Clip" IsEnabled="False" x:Shared="False" x:Key="clip" Name="clip">
+            <MenuItem Header="_White Balance" Name="whiteBalance">
+                <MenuItem Header="_As Shot" Name="whiteBalanceAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Shade (7500K, Tint: +10)" Name="whiteBalanceShade" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Cloud (6500K, Tint: +10)" Name="whiteBalanceCloud" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Daylight (5500K, Tint: +10)" Name="whiteBalanceDaylight" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Fluorescent (3800K, Tint: +21)" Name="whiteBalanceFluorescent" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Tungsten (3200K)" Name="whiteBalanceTungsten" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+            </MenuItem>
+            <MenuItem Header="_Exposure (+/-)">
+                <MenuItem Header="_As Shot" Name="exposureAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_ -2" Name="exposureMinusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_ -1" Name="exposureMinusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_  0" Name="exposureZero" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_+1" Name="exposurePlusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_+2" Name="exposurePlusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Advanced">
+                <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff">
+                    <MenuItem Header="_Low" Name="highlightRollOffLow" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_High" Name="highlightRollOffHigh" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <Separator />
+                    <MenuItem Header="_None" Name="highlightRollOffNone" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Colour Space" Name="colorSpace">
+                    <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <MenuItem Header="_Gamma">
+                    <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Debayer Quality" Name="debayerQuality">
+                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
+                </MenuItem>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
+        </MenuItem>
+        <MenuItem x:Key="view" x:Shared="False" Header="_View">
+            <MenuItem Header="_Toggle Full screen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
+        </MenuItem>
+        <MenuItem x:Key="help" x:Shared="False" Header="_Help">
+            <MenuItem Header="_Visit OCTOPUS RAW Player Website"  Name="visitWebsite" Click="MenuItem_Click"/>
+            <MenuItem Header="_Join Us on Social Media">
+                <MenuItem Header="_Instagram" Name="visitInstagram" Click="MenuItem_Click"/>
+                <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Develop">
+                <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem Header="_Troubleshooting">
+                <MenuItem Header="_OpenGL Information" Name="openglInfo" Click="MenuItem_Click"/>
+                <MenuItem Header="_View Log" Name="viewLog" Click="MenuItem_Click"/>
+                <Separator />
+                <MenuItem Header="_Report a Problem" Name="reportProblem" Click="MenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Release Notes" Name="releaseNotes" Click="MenuItem_Click"/>
+            <Separator />
+            <MenuItem Header="_License" Name="license" Click="MenuItem_Click"/>
+            <Separator />
+            <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
+        </MenuItem>
+        <ContextMenu x:Key="PlayerContextMenu">
+            <StaticResourceExtension ResourceKey="clip"/>
+            <StaticResourceExtension ResourceKey="view"/>
+            <StaticResourceExtension ResourceKey="help"/>
+        </ContextMenu>
         <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />
             <Setter Property="OverridesDefaultStyle" Value="true" />
@@ -30,6 +110,8 @@
         <Style x:Key="SliderRepeatButton1" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />
             <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="IsTabStop" Value="false" />
+            <Setter Property="Focusable" Value="false" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RepeatButton">
@@ -91,6 +173,16 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="InterfaceFocusStyle">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="-8" StrokeThickness="2" Stroke="White" StrokeDashArray="1 1" RadiusX="5" RadiusY="5" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="InterfaceButtonStyle" TargetType="Button">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -138,90 +230,57 @@
             MouseMove="GLControl_MouseMove"
             MouseLeave="GLControl_MouseLeave"
             SizeChanged="GLControl_SizeChanged"
-            SnapsToDevicePixels="True" Grid.Row="0"/>
+            Drop="GLControl_Drop"
+            SnapsToDevicePixels="True" AllowDrop="True" Grid.Row="0"/>
 
-        <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="0">
+        <Border x:Name="dropArea" HorizontalAlignment="Center" VerticalAlignment="Center" Drop="GLControl_Drop" AllowDrop="True">
             <Grid>
-                <Label x:Name="timeCodeLabel" FontSize="14" Content="00:00:00:00" Foreground="LightGray" Margin="15,15,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                <Label x:Name="durationLabel" FontSize="14" Content="00:00:00" Foreground="LightGray" Margin="0,15,15,0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Label FontFamily="Segoe MDL2 Assets" HorizontalContentAlignment="Center" FontSize="40" Content="&#xE896;" Foreground="LightGray" Grid.Row="0"/>
+                <Label HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="LightGray" Content="Drop CinemaDNG sequence here" Grid.Row="1"/>
+            </Grid>
+        </Border>
 
-                <Label x:Name="fastForwardLabel" FontSize="12" Content="10&#xd7;" Foreground="LightGray" Margin="310,16,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                <Label x:Name="fastRewindLabel" FontSize="12" Content="10&#xd7;" Foreground="LightGray" Margin="0,16,310,0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+        <Border x:Name="playbackControls" HorizontalAlignment="Left" Height="80" MouseEnter="PlaybackControls_MouseEnter" MouseLeave="PlaybackControls_MouseLeave" MouseDown="PlaybackControls_MouseDown" MouseMove="PlaybackControls_MouseMove" MouseUp="PlaybackControls_MouseUp" VerticalAlignment="Bottom" Width="520" Background="{StaticResource PlaybackControlsBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="140,0,0,20"  Grid.Row="0">
+            <Grid>
+                <!-- Labels -->
+                <Label x:Name="timeCodeLabel" FontSize="14" Content="00:00:00:00" Foreground="LightGray" Margin="15,15,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="Timecode"/>
+                <Label x:Name="durationLabel" FontSize="14" Content="00:00:00" Foreground="LightGray" Margin="0,15,15,0" VerticalAlignment="Top" HorizontalAlignment="Right" ToolTip="Clip duration"/>
+                <Label x:Name="fastForwardLabel" FontSize="12" Content="10&#xd7;" Foreground="LightGray" Margin="310,16,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" ToolTip="Fast-forward speed"/>
+                <Label x:Name="fastRewindLabel" FontSize="12" Content="10&#xd7;" Foreground="LightGray" Margin="0,16,310,0" VerticalAlignment="Top" HorizontalAlignment="Right" ToolTip="Rewind speed"/>
 
                 <!-- Interface controls (See: https://docs.microsoft.com/en-us/windows/apps/design/style/segoe-ui-symbol-font for font symbols) -->
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" IsTabStop="False" Grid.Row="0"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipBackButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" IsTabStop="False" Grid.Row="0"/>
-                <Button Style="{StaticResource InterfaceButtonStyle}" Click="Button_Click" x:Name="skipAheadButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" IsTabStop="False" Grid.Row="0"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="playButton" Content="&#xF5B0;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" TabIndex="3" Grid.Row="0" ToolTip="Play"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="pauseButton" Visibility="Hidden" Content="&#xF8AE;" Height="auto" Width="auto" FontSize="32" Margin="0,0,0,35" TabIndex="4" Grid.Row="0" ToolTip="Pause"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="fastRewindButton" Content="&#xEB9E;" Height="auto" Width="auto" FontSize="22" Margin="-80,0,0,39" TabIndex="2" Grid.Row="0" ToolTip="Rewind"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="fastForwardButton" Content="&#xEB9D;" Height="auto" Width="auto" FontSize="22" Margin="80,0,0,39" TabIndex="5" Grid.Row="0" ToolTip="Fast-forward"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="previousButton" Content="&#xE892;" Height="auto" Width="auto" FontSize="22" Margin="-180,0,0,39" TabIndex="1" Grid.Row="0" ToolTip="Previous"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="nextButton" Content="&#xE893;" Height="auto" Width="auto" FontSize="22" Margin="180,0,0,39" TabIndex="6" Grid.Row="0" ToolTip="Next"/>
 
-                <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" IsTabStop="False" Background="{x:Null}" Grid.Row="0"/>
+                <!-- Seek bar -->
+                <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" 
+                        IsMoveToPointEnabled="True"  VerticalAlignment="Bottom" Width="480" TickPlacement="None" Height="auto" Margin="0,0,0,10" Background="{x:Null}" TabIndex="7" Grid.Row="0" 
+                        ToolTip="Seek" Thumb.DragStarted="Slider_DragStarted" Thumb.DragCompleted="Slider_DragCompleted" Thumb.DragDelta="Slider_DragDelta" ValueChanged="Slider_ValueChanged"/>
             </Grid>
         </Border>
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" MouseMove="GLControl_MouseMove">
             <MenuItem Header="_File" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" Click="MenuItem_Click"/>
+                <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" InputGestureText="Ctrl+O" Click="MenuItem_Click"/>
+                <MenuItem Header="_Open Recent" Name="openRecent" IsEnabled="False">
+                    <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>
+                </MenuItem>
                 <Separator />
-                <MenuItem Header="_Clear Recent Files" Name="clearRecent" IsEnabled="False"/>
+                <MenuItem Header="_Check for Updates..." Name="checkForUpdates" Click="MenuItem_Click"/>
                 <Separator />
                 <MenuItem Header="_Exit" Name="exit" Click="MenuItem_Click"/>
             </MenuItem>
-            <MenuItem Header="_Clip" IsEnabled="False" Name="clip">
-                <MenuItem Header="_White Balance" Name="whiteBalance">
-                    <MenuItem Header="_As Shot" Name="whiteBalanceAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Shade (7500K, Tint: +10)" Name="whiteBalanceShade" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Cloud (6500K, Tint: +10)" Name="whiteBalanceCloud" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Daylight (5500K, Tint: +10)" Name="whiteBalanceDaylight" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Fluorescent (3800K, Tint: +21)" Name="whiteBalanceFluorescent" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Tungsten (3200K)" Name="whiteBalanceTungsten" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <MenuItem Header="_Exposure (+/-)">
-                    <MenuItem Header="_As Shot" Name="exposureAsShot" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_ -2" Name="exposureMinusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_ -1" Name="exposureMinusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_  0" Name="exposureZero" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_+1" Name="exposurePlusOne" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_+2" Name="exposurePlusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Advanced">
-                    <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <Separator />
-                    <MenuItem Header="_Colour Space" Name="colorSpace">
-                        <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                    <MenuItem Header="_Gamma">
-                        <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                    <Separator />
-                    <MenuItem Header="_Debayer Quality" Name="debayerQuality">
-                        <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                        <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
-                    </MenuItem>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>
-            </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="_Fullscreen" InputGestureText="F11" Name="fullscreen" Click="MenuItem_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_Visit OCTOPUS RAW Player Website"  Name="visitWebsite" Click="MenuItem_Click"/>
-                <MenuItem Header="_Join Us on Social Media">
-                    <MenuItem Header="_Instagram" Name="visitInstagram" Click="MenuItem_Click"/>
-                    <MenuItem Header="_YouTube" Name="visitYoutube" Click="MenuItem_Click"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_OCTOPUSCINEMA GitHub" Name="visitGithub" Click="MenuItem_Click"/>
-                <Separator />
-                <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
-            </MenuItem>
+            <StaticResourceExtension ResourceKey="clip"/>
+            <StaticResourceExtension ResourceKey="view"/>
+            <StaticResourceExtension ResourceKey="help"/>
         </Menu>
     </Grid>
 </base:AspectRatioWindow>

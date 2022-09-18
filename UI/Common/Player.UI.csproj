@@ -7,9 +7,13 @@
 
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.7.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Player.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Newtonsoft.Json" />
   </ItemGroup>
 </Project>

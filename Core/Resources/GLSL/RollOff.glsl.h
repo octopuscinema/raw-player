@@ -28,20 +28,20 @@ RolloffParams HighlightRolloffParams(eRollOff rolloff)
 {
     RolloffParams params;
     if ( rolloff == RollOffLow) {
-        params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.5);
+        params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(3.0);
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.0);
         params.Power = 0.4;
-        params.Strength = 1.0;
+        params.Strength = 0.75;
     } else if ( rolloff == RollOffHigh) {
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25);
         params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-4.5);
         params.Power = 0.2;
         params.Strength = 1.0;
     } else {
-        params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-3.5);
-        params.Power = 0.25;
-        params.Strength = 1.0;
+        params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(2.5);
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-1.5);
+        params.Power = 0.2;
+        params.Strength = 0.8;
     }
 	return params;
 }

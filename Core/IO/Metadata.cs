@@ -41,7 +41,7 @@ namespace Octopus.Player.Core.IO
                 {
                     case "ColorProfile":
                         if (ColorProfile.HasValue)
-                            text += "\nColor Profile\n-------------" + ColorProfile;
+                            text += "\n-------------\nColor Profile\n-------------" + ColorProfile;
                         break;
                     default:
                         text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";

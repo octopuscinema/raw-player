@@ -1,0 +1,208 @@
+name: Release
+
+on:
+  push:
+    branches: [ "releases/**" ]
+  pull_request:
+    branches: [ "releases/**" ]
+
+env:
+  BUILD_CONFIGURATION: Release
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    
+    env:
+      SOLUTION_FILE_PATH: Player.Windows.sln
+      PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
+      INSTALLER_PROJECT_PATH: Installer/Installer.vdproj
+      PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
+      STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
+      INSTALLER_ARTIFACT_PATH: "${{ github.workspace }}\\Installer\\"
+      BUILD_PLATFORM: x64
+      BUILD_STANDALONE_ARTIFACT_NAME: "Player-win64-standalone"
+      BUILD_INSTALLER_ARTIFACT_NAME: "Player-win64-installer"
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: microsoft/setup-msbuild@v1.0.2
+    - uses: seanmiddleditch/gha-setup-vsdevenv@v4
+    
+    - name: Read Version
+      id: version
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: "${{ github.workspace }}\\Version"
+    
+    - name: Apply Version
+      shell: pwsh
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: .\ApplyVersion.ps1
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild -t:restore ${{env.SOLUTION_FILE_PATH}} -p:PublishReadyToRun=true
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
+      
+    - name: Publish
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
+  
+    - name: Upload standalone artifacts
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: '${{env.BUILD_STANDALONE_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
+        path: "${{ env.STANDALONE_ARTIFACT_PATH }}*.exe"
+        if-no-files-found: error
+
+    - name: Prepare Installer
+      working-directory: 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\VSI\DisableOutOfProcBuild'
+      run: .\DisableOutOfProcBuild.exe
+
+    - name: Create Installer
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
+
+    - name: Upload installer artifacts
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: '${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
+        path: "${{ env.INSTALLER_ARTIFACT_PATH }}*.msi"
+        if-no-files-found: error
+
+  macos:
+    name: macOS
+    runs-on: macOS-12
+    timeout-minutes: 20
+    
+    env:
+      SOLUTION_FILE_PATH: Player.macOS.sln
+      DECODER_WORKSPACE_PATH: Decoders/Decoders.macOS.xcworkspace
+      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      DECODER_LJ92_LIB_PATH: Decoders/LJ92/Build/Products/Release
+      DECODER_UNPACK_LIB_PATH: Decoders/Unpack/Build/Products/Release
+      DECODER_LJ92_ARCHIVE_PATH: Decoders/LJ92.xcarchive
+      DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
+      BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
+      BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
+      STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+      INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: 'true'
+
+    - name: Read Version
+      id: version
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: "${{ github.workspace }}/Version"
+
+    - name: Apply Version
+      shell: bash
+      run: |
+        ./ApplyVersion.sh
+        dmg_path="${{ env.STANDALONE_BUILD_DMG_PATH }}-${{ steps.version.outputs.content }}.dmg"
+        echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
+        pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}.pkg"
+        echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
+
+    - name: "Import distribution certificate"
+      uses: devbotsxyz/import-signing-certificate@main
+      with:
+        certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        certificate-passphrase: ${{ secrets.P12_PASSWORD }}
+        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+        
+    - name: "Build LJ92 decoder native library"
+      uses: devbotsxyz/xcode-archive@v1
+      with:
+        workspace: ${{env.DECODER_WORKSPACE_PATH}}
+        scheme: LJ92
+        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+        
+    - name: "Build Unpack decoder native library"
+      uses: devbotsxyz/xcode-archive@v1
+      with:
+        workspace: ${{env.DECODER_WORKSPACE_PATH}}
+        scheme: Unpack
+        archive-path: ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
+    
+    - name: Prepare decoder native libraries
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        mkdir -p ${{ env.DECODER_LJ92_LIB_PATH }}
+        mkdir -p ${{ env.DECODER_UNPACK_LIB_PATH }}
+        cp ${{env.DECODER_LJ92_ARCHIVE_PATH}}/Products/usr/local/lib/libLJ92.dylib ${{ env.DECODER_LJ92_LIB_PATH }}
+        cp ${{env.DECODER_UNPACK_ARCHIVE_PATH}}/Products/usr/local/lib/libUnpack.dylib ${{ env.DECODER_UNPACK_LIB_PATH }}
+
+    - name: Set Xamarin version
+      run: $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
+        
+    - name: Restore NuGet packages
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+        
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
+      
+    - name: Create .DMG
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        brew install create-dmg
+        create-dmg --volname "OCTOPUS RAW Player ${{ steps.version.outputs.content }}" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
+
+    - name: Notarize .DMG
+      run: |
+        xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
+        xcrun notarytool submit "${{ env.STANDALONE_BUILD_DMG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
+        xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
+
+    - name: "Import installer certificate"
+      uses: apple-actions/import-codesign-certs@v1
+      with: 
+        p12-file-base64: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.INSTALLER_P12_PASSWORD }}
+        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+        keychain: "installer-certificate"
+
+    - name: Create .PKG
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        productbuild --product UI/macOS/Product.plist --version "${{ steps.version.outputs.content }}" --component "${{ env.STANDALONE_BUILD_PATH }}" /Applications --keychain "installer-certificate.keychain-db"  --sign "${{ secrets.DEVELOPER_ID_INSTALLER }}" "${{ env.INSTALLER_BUILD_PKG_PATH }}" 
+        pkgutil --check-signature "${{ env.INSTALLER_BUILD_PKG_PATH }}"
+
+    - name: Notarize .PKG
+      run: |
+        xcrun notarytool store-credentials "AC_PASSWORD" --team-id "${{ secrets.NOTARIZATION_TEAM_ID }}" --apple-id "${{ secrets.NOTARIZATION_USERNAME }}" --password "${{ secrets.NOTARIZATION_PASSWORD }}"
+        xcrun notarytool submit "${{ env.INSTALLER_BUILD_PKG_PATH }}" --keychain-profile "AC_PASSWORD" --wait
+        xcrun stapler staple "${{ env.INSTALLER_BUILD_PKG_PATH }}"
+        
+    - name: Upload .DMG artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: ${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
+        path: ${{ env.STANDALONE_BUILD_DMG_PATH }}
+        if-no-files-found: error
+
+    - name: Upload .PKG artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: ${{ env.BUILD_INSTALLER_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
+        path: ${{ env.INSTALLER_BUILD_PKG_PATH }}
+        if-no-files-found: error

@@ -1,22 +1,64 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Xml.Linq;
 using Octopus.Player.Core.Maths;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
 
 namespace Octopus.Player.UI.Windows
 {
+    static partial class Extensions
+    {
+        public static List<string> ToModifierList(this ModifierKeys modifiers)
+        {
+            List<string> modifierList = new List<string>();
+
+            var modifierKeys = Enum.GetValues(typeof(ModifierKeys)).Cast<ModifierKeys>();
+            foreach (var key in modifierKeys)
+            {
+                if ((modifiers & key) != 0)
+                    modifierList.Add(key.ToString());
+            }
+
+            return modifierList;
+        }
+
+        public static Rect BoundsRelativeTo(this FrameworkElement child, Visual parent)
+        {
+            GeneralTransform gt = child.TransformToAncestor(parent);
+            return gt.TransformBounds(new Rect(0, 0, child.ActualWidth, child.ActualHeight));
+        }
+
+        public static double DistanceTo(this FrameworkElement child, FrameworkElement to, Visual parent)
+        {
+            var rectA = BoundsRelativeTo(child, parent);
+            var rectB = BoundsRelativeTo(to, parent);
+
+            if (rectA.IntersectsWith(rectB))
+                return 0.0f;
+
+            var horizontalDistance = (rectA.Left > rectB.Right) ? rectA.Left - rectB.Right : rectB.Left - rectA.Right;
+            var verticalDistance = (rectA.Top > rectB.Bottom) ? rectA.Top - rectB.Bottom: rectB.Top - rectA.Bottom;
+            return Math.Max(horizontalDistance, verticalDistance);
+        }
+    }
+     
     public partial class NativePlayerWindow : AspectRatioWindow, INativeWindow
     {
+        [DllImport("UXTheme.dll", SetLastError = true, EntryPoint = "#138")]
+        public static extern bool ShouldSystemUseDarkMode();
+
         public ControlsAnimationState ControlsAnimationState { get; private set; }
         public bool AspectLocked { get { return lockedContentAspectRatio.HasValue; } }
 
@@ -25,9 +67,23 @@ namespace Octopus.Player.UI.Windows
         public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
 
         public Vector2i FramebufferSize { get; private set; }
+        public bool MouseInsidePlaybackControls { get; private set; }
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
+        public PlayerApplication PlayerApplication { get { return ((App)Application.Current).PlayerApplication; } }
+
+        public bool DropAreaVisible
+        {
+            get { return dropArea.Visibility == Visibility.Visible; }
+            set { dropArea.Visibility = value ? Visibility.Visible : Visibility.Hidden; }
+        }
+
         private IntPtr? hwnd;
+
+        private HashSet<Slider> activeSliders = new HashSet<Slider>();
+
+        Point? playbackControlsDragStart;
+        Point? playbackControlsPosition;
 
         public NativePlayerWindow()
         {
@@ -35,7 +91,7 @@ namespace Octopus.Player.UI.Windows
             InitializeComponent();
 
             // Create cross platform Window
-            PlayerWindow = new PlayerWindow(this, new DefaultWindowsTheme());
+            PlayerWindow = new PlayerWindow(this, ShouldSystemUseDarkMode() ? new DefaultWindowsThemeDark() : new DefaultWindowsTheme());
             Closed += OnClose;
 
             // Save the startup window state
@@ -45,7 +101,7 @@ namespace Octopus.Player.UI.Windows
             var mainSettings = new GLWpfControlSettings 
             { 
                 MajorVersion = 3, 
-                MinorVersion = 3,
+                MinorVersion = 2,
                 RenderContinuously = false 
             };
             GLControl.Start(mainSettings);
@@ -61,6 +117,18 @@ namespace Octopus.Player.UI.Windows
                 PlayerWindow.Dispose();
         }
 
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var modifiers = Keyboard.Modifiers.ToModifierList();
+
+            e.Handled = PlayerWindow.PreviewKeyDown(e.Key.ToString(), modifiers);
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            PlayerWindow.KeyDown(e.Key.ToString());
+        }
+
         private void GLControl_OnRender(TimeSpan delta)
         {
             if (RenderContext == null)
@@ -71,6 +139,10 @@ namespace Octopus.Player.UI.Windows
             }
 
             PlayerWindow.OnRenderFrame(delta.TotalSeconds);
+
+            // Fix for intel GPUs not rendering
+            if ( RenderContext.ApiVendor.Contains("intel", StringComparison.CurrentCultureIgnoreCase) )
+                OpenTK.Graphics.OpenGL.GL.Finish();
         }
 
         private void GLControl_MouseDown(object sender, MouseButtonEventArgs e)
@@ -78,7 +150,7 @@ namespace Octopus.Player.UI.Windows
             switch(e.ChangedButton)
             {
                 case MouseButton.Left:
-                    PlayerWindow.LeftMouseDown((uint)e.ClickCount);
+                    PlayerWindow.LeftMouseDown((uint)e.ClickCount, Keyboard.Modifiers.ToModifierList());
                     break;
                 case MouseButton.Right:
                     PlayerWindow.RightMouseDown((uint)e.ClickCount);
@@ -100,8 +172,15 @@ namespace Octopus.Player.UI.Windows
             PlayerWindow.MouseExited(new Vector2((float)mousePosition.X, (float)mousePosition.Y));
         }
 
-        Point? playbackControlsDragStart;
-        Point? playbackControlsPosition;
+        private void GLControl_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if ( files.Length > 0 )
+                PlayerWindow.DropFiles(files);
+            }
+        }
 
         private void PlaybackControls_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -143,6 +222,16 @@ namespace Octopus.Player.UI.Windows
             }
         }
 
+        private void PlaybackControls_MouseEnter(object sender, MouseEventArgs e)
+        {
+            MouseInsidePlaybackControls = true;
+        }
+
+        private void PlaybackControls_MouseLeave(object sender, MouseEventArgs e)
+        {
+            MouseInsidePlaybackControls = false;
+        }
+
         public void SetWindowTitle(string text)
         {
             Title = text;
@@ -176,6 +265,7 @@ namespace Octopus.Player.UI.Windows
             dialog.EnsurePathExists = true;
             dialog.Multiselect = false;
             dialog.DefaultDirectory = defaultDirectory;
+            dialog.Title = title;
 
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
@@ -213,17 +303,48 @@ namespace Octopus.Player.UI.Windows
             return null;
         }
 
+        private ContextMenu? FindContextMenu(string? id = null)
+        {
+            if ( id != null)
+                return (ContextMenu)FindResource(id);
+
+            foreach (System.Collections.DictionaryEntry resourceEntry in Resources)
+            {
+                if (resourceEntry.Value is ContextMenu)
+                    return (ContextMenu)resourceEntry.Value;
+            }
+
+            return null;
+        }
+
+        MenuItem? FindContextMenuItem(string id, string? contextMenuId = null)
+        {
+            var contextMenu = FindContextMenu(contextMenuId);
+            return contextMenu == null ? null : FindMenuItem(contextMenu.Items, id);
+        }
+
         public void EnableMenuItem(string id, bool enable)
         {
             var item = FindMenuItem(PlayerMenu.Items, id);
             if (item != null)
                 item.IsEnabled = enable;
+
+            var contextMenuItem = FindContextMenuItem(id);
+            if (contextMenuItem != null)
+                contextMenuItem.IsEnabled = enable;
         }
 
         public void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true)
         {
-            var item = FindMenuItem(PlayerMenu.Items, id);
-            if (item != null)
+            List<MenuItem> items = new List<MenuItem>();
+            var menuItem = FindMenuItem(PlayerMenu.Items, id);
+            if (menuItem != null)
+                items.Add(menuItem);
+            var contextMenuItem = FindContextMenuItem(id);
+            if (contextMenuItem != null)
+                items.Add(contextMenuItem);
+
+            foreach(var item in items)
             {
                 item.IsChecked = check;
                 if (uncheckSiblings)
@@ -259,9 +380,40 @@ namespace Octopus.Player.UI.Windows
             var item = FindMenuItem(PlayerMenu.Items, id);
             if (item != null)
                 item.Header = "_" + name;
+
+            item = FindContextMenuItem(id);
+            if (item != null)
+                item.Header = "_" + name;
         }
 
-        public void SetLabelContent(string id, string content, Vector3? colour = null)
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        {
+            var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
+            if (parentItem != null)
+            {
+                MenuItem item = new MenuItem();
+                item.Header = name;
+                item.Click += (object sender, RoutedEventArgs e) => { onClick(); };
+                if ( index.HasValue )
+                    parentItem.Items.Insert((int)index.Value, item);
+                else
+                    parentItem.Items.Add(item);
+            }
+        }
+
+        public void AddMenuSeperator(string parentId, uint? index)
+        {
+            var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
+            if (parentItem != null)
+            {
+                if (index.HasValue)
+                    parentItem.Items.Insert((int)index.Value, new Separator());
+                else
+                    parentItem.Items.Add(new Separator());
+            }
+        }
+
+        public void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -271,6 +423,7 @@ namespace Octopus.Player.UI.Windows
                     label.Content = content;
                     if ( colour.HasValue )
                         label.Foreground = new SolidColorBrush(Color.FromRgb((byte)(colour.Value.X * 255.0f), (byte)(colour.Value.Y * 255.0f), (byte)(colour.Value.Z * 255.0f)));
+                    label.IsEnabled = content.Length > 0;
                 }
             });
         }
@@ -304,7 +457,11 @@ namespace Octopus.Player.UI.Windows
             {
                 var slider = FindControl<Slider>(id);
                 if (slider != null)
+                {
+                    activeSliders.Add(slider);
                     slider.Value = value * slider.Maximum;
+                    activeSliders.Remove(slider);
+                }
             });
         }
 
@@ -329,25 +486,56 @@ namespace Octopus.Player.UI.Windows
                 PlayerWindow.MenuItemClick(menuItem.Name);
         }
 
-        public void Alert(AlertType alertType, string message, string title)
+        private AlertResponse MessageBoxReturn(MessageBoxResult result)
+        {
+            switch (result)
+            {
+                case MessageBoxResult.None:
+                case MessageBoxResult.OK:
+                    return AlertResponse.None;
+                case MessageBoxResult.Yes:
+                    return AlertResponse.Yes;
+                case MessageBoxResult.Cancel:
+                case MessageBoxResult.No:
+                    return AlertResponse.No;
+                default:
+                    throw new Exception();
+            }
+        }
+
+        public AlertResponse Alert(AlertType alertType, string message, string title)
         {
             switch (alertType)
             {
                 case AlertType.Blank:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.None);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.None));
                 case AlertType.Information:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Information));
                 case AlertType.Error:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Error));
                 case AlertType.Warning:
-                    MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    break;
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.OK, MessageBoxImage.Warning));
+                case AlertType.YesNo:
+                    return MessageBoxReturn(MessageBox.Show(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question));
                 default:
-                    break;
+                    throw new Exception();
             }
+        }
+
+        public void OpenContextMenu(string id)
+        {
+            var contextMenu = (ContextMenu)FindResource(id);
+            contextMenu.IsOpen = true;
+        }
+
+        public void OpenContextMenu(List<string> mainMenuItems)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void OpenAboutPanel()
+        {
+            throw new NotSupportedException();
         }
 
         public void OpenUrl(string url)
@@ -362,6 +550,23 @@ namespace Octopus.Player.UI.Windows
             }
         }
 
+        public void OpenTextEditor(string textFilePath)
+        {
+            try
+            {
+                Process.Start("notepad.exe", textFilePath);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.Message);
+            }
+        }
+
+        public void OpenAboutPanel(string license)
+        {
+            throw new NotSupportedException();
+        }
+
         private void GLControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             FramebufferSize = new Vector2i(GLControl.FrameBufferWidth, GLControl.FrameBufferHeight);
@@ -369,6 +574,10 @@ namespace Octopus.Player.UI.Windows
 
             // Force playback controls to bottom centre when resizing
             playbackControls.Margin = new Thickness(GLControl.ActualWidth / 2 - playbackControls.ActualWidth / 2, 0, 0, Theme.PlaybackControlsMargin);
+
+            // Hide drop area if it overlaps playback controls
+            var dropAreaPlaybackControlsDist = dropArea.DistanceTo(playbackControls, this);
+            dropArea.Opacity = Math.Clamp(dropAreaPlaybackControlsDist / Theme.DropAreaOpacityMargin, 0.0, 1.0);
         }
 
         public void LockAspect(Rational ratio)
@@ -405,13 +614,13 @@ namespace Octopus.Player.UI.Windows
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Debug.Assert(sender.GetType() == typeof(Button));
-            var button = (Button)sender;
-            if (button != null)
-                PlayerWindow.ButtonClick(button.Name);
+            PlayerWindow.ButtonClick(((Button)sender).Name);
         }
 
         public void AnimateOutControls()
         {
+            List<Control> controls = new List<Control>(){ playButton, pauseButton, fastForwardButton, fastRewindButton, nextButton, previousButton, seekBar };
+            controls.ForEach(b => b.Focusable = false);
             Cursor = Cursors.None;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.In);
             ControlsAnimationState = ControlsAnimationState.Out;
@@ -427,6 +636,8 @@ namespace Octopus.Player.UI.Windows
 
         public void AnimateInControls()
         {
+            List<Control> controls = new List<Control>() { playButton, pauseButton, fastForwardButton, fastRewindButton, nextButton, previousButton, seekBar };
+            controls.ForEach(b => b.Focusable = true);
             Cursor = Cursors.Arrow;
             Debug.Assert(ControlsAnimationState == ControlsAnimationState.Out);
             ControlsAnimationState = ControlsAnimationState.In;
@@ -485,6 +696,43 @@ namespace Octopus.Player.UI.Windows
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
             PlayerWindow.OnLoad();
+        }
+
+        private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            Trace.WriteLine("Slider_DragStarted");
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            PlayerWindow.SliderDragStart(((Slider)sender).Name);
+
+            Debug.Assert(!activeSliders.Contains((Slider)sender));
+            activeSliders.Add((Slider)sender);
+        }
+
+        private void Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            Trace.WriteLine("Slider_DragCompleted");
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            var slider = (Slider)sender;
+            PlayerWindow.SliderDragComplete(slider.Name, slider.Value);
+
+            activeSliders.Remove((Slider)sender);
+        }
+
+        private void Slider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            var slider = (Slider)sender;
+            PlayerWindow.SliderDragDelta(slider.Name, slider.Value);
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Debug.Assert(sender.GetType() == typeof(Slider));
+            var slider = (Slider)sender;
+
+            // Only fire callback if slider isnt actively from another source
+            if ( !activeSliders.Contains(slider))
+                PlayerWindow.SliderSetValue(slider.Name, e.NewValue);
         }
     }
 }
