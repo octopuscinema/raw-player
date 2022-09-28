@@ -40,15 +40,6 @@ OCTOPUS RAW Player releases are usually installed by launching the Windows ```.m
 Please see the user guide wiki page:
 http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
 
-# Included in this repository
-Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
-
-# License
-The contents of this repository are licensed under the MIT License (https://mit-license.org)
-
-## Contributions
-Unless explicitly stated otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the MIT license, shall be licensed as above, without any additional terms or conditions.
-
 # Getting started for Developers
 
 ## Building for Windows
@@ -67,3 +58,12 @@ Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Ma
 
 ### Building the solution
 The OCTOPUS RAW Player application for macOS is built from the ```raw-player/Player.macOS.sln``` C# solution file. Visual Studio for Mac does not support C++ projects - native library dependencies must be built manually from the ```raw-player/Decoders/Decoders.macOS.xcworkspace``` Xcode workspace prior to building the C# solution.
+
+# Included in this repository
+Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
+
+# License
+The contents of this repository are licensed under the MIT License (https://mit-license.org)
+
+## Contributions
+Unless explicitly stated otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the MIT license, shall be licensed as above, without any additional terms or conditions.
