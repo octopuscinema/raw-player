@@ -34,27 +34,11 @@ http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
 - GPU with support for OpenGL 3.2 or greater (Native Apple Metal API support in progress)
 
 ## Installation
-OCTOPUS RAW Player releases are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively (Windows only), the OCTOPUS RAW Player can be run as a portable single-file executable without installation.
-
-### Standalone executable (Windows only)
-The OCTOPUS RAW Player is built into a single-file ```.exe``` with no dependencies executable which can be run without installation.
+OCTOPUS RAW Player releases are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively, OCTOPUS RAW Player can be run as a portable single-file executable without installation.
 
 ### User Guide
 Please see the user guide wiki page:
 http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
-
-## Sample CinemaDNG Files
-~~Sample CinemaDNG sequences for testing with OCTOPUS RAW Player are downloadable from:
-www.octopuscinema.com/cinema-dng-samples~~
-
-# Included in this repository
-Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
-
-# License
-The contents of this repository are licensed under the MIT License (https://mit-license.org)
-
-## Contributions
-Unless explicitly stated otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the MIT license, shall be licensed as above, without any additional terms or conditions.
 
 # Getting started for Developers
 
@@ -69,4 +53,17 @@ The OCTOPUS RAW Player executable for Windows can be built from the ```raw-playe
 The ```raw-player/Player.Windows.sln``` solution includes a publish profile to build a standalone single-file executable with an embedded .net runtime. This executable can be run on systems without .net runtimes installed.
 
 ## Building for macOS
-TBD
+### Dependencies
+Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Mac version 8.12 or newer) and Xcode 13 or newer. The OCTOPUS RAW Player project references several NuGet packages which are normally automatically restored prior to building. (See https://learn.microsoft.com/en-us/visualstudio/mac/nuget-walkthrough?view=vsmac-2022 for more information)
+
+### Building the solution
+The OCTOPUS RAW Player application for macOS is built from the ```raw-player/Player.macOS.sln``` C# solution file. Visual Studio for Mac does not support C++ projects - native library dependencies must be built manually from the ```raw-player/Decoders/Decoders.macOS.xcworkspace``` Xcode workspace prior to building the C# solution.
+
+# Included in this repository
+Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
+
+# License
+The contents of this repository are licensed under the MIT License (https://mit-license.org)
+
+## Contributions
+Unless explicitly stated otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the MIT license, shall be licensed as above, without any additional terms or conditions.
