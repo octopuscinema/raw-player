@@ -40,10 +40,6 @@ OCTOPUS RAW Player releases are usually installed by launching the Windows ```.m
 Please see the user guide wiki page:
 http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
 
-## Sample CinemaDNG Files
-~~Sample CinemaDNG sequences for testing with OCTOPUS RAW Player are downloadable from:
-www.octopuscinema.com/cinema-dng-samples~~
-
 # Included in this repository
 Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
 
@@ -66,4 +62,5 @@ The OCTOPUS RAW Player executable for Windows can be built from the ```raw-playe
 The ```raw-player/Player.Windows.sln``` solution includes a publish profile to build a standalone single-file executable with an embedded .net runtime. This executable can be run on systems without .net runtimes installed.
 
 ## Building for macOS
-TBD
+### Dependencies
+Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Mac version 8.12 or newer) and XCode 13 or newer. The OCTOPUS RAW Player project references several NuGet packages which are normally automatically restored prior to building. (See https://learn.microsoft.com/en-us/visualstudio/mac/nuget-walkthrough?view=vsmac-2022 for more information)
