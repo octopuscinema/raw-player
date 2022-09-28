@@ -63,4 +63,7 @@ The ```raw-player/Player.Windows.sln``` solution includes a publish profile to b
 
 ## Building for macOS
 ### Dependencies
-Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Mac version 8.12 or newer) and XCode 13 or newer. The OCTOPUS RAW Player project references several NuGet packages which are normally automatically restored prior to building. (See https://learn.microsoft.com/en-us/visualstudio/mac/nuget-walkthrough?view=vsmac-2022 for more information)
+Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Mac version 8.12 or newer) and Xcode 13 or newer. The OCTOPUS RAW Player project references several NuGet packages which are normally automatically restored prior to building. (See https://learn.microsoft.com/en-us/visualstudio/mac/nuget-walkthrough?view=vsmac-2022 for more information)
+
+### Building the solution
+The OCTOPUS RAW Player application for macOS is built from the ```raw-player/Player.macOS.sln``` soltuion file. Visual Studio for Mac does not support C++ projects - native library dependencies must be built manually from the ```raw-player/Decoders/Decoders.macOS.xcworkspace``` Xcode workspace prior to building the C# solution.
