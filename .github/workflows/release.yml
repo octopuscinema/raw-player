@@ -104,6 +104,7 @@ jobs:
         if-no-files-found: error
 
   macos:
+    if: ${{ false }}
     name: macOS
     runs-on: macOS-12
     timeout-minutes: 20
