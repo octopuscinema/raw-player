@@ -57,7 +57,16 @@ jobs:
     - name: Publish
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
-  
+
+    - name: Sign .exe
+      uses: sslcom/actions-codesigner@develop
+      with:
+        command: sign
+        username: ${{secrets.PEARTREE_SSL_USERNAME}}
+        password: ${{secrets.PEARTREE_SSL_PASSWORD}}
+        totp_secret: ${{secrets.PEARTREE_CERT_TOTP_SECRET}}
+        file_path: "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe"
+    
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
@@ -72,6 +81,15 @@ jobs:
     - name: Create Installer
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
+      
+    #- name: Sign .msi
+    #  uses: sslcom/actions-codesigner@develop
+    #  with:
+    #    command: sign
+    #    username: ${{secrets.PEARTREE_SSL_USERNAME}}
+    #    password: ${{secrets.PEARTREE_SSL_PASSWORD}}
+    #    totp_secret: ${{secrets.PEARTREE_CERT_TOTP_SECRET}}
+    #    file_path: "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}.msi"
 
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
