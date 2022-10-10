@@ -69,16 +69,15 @@ jobs:
       shell: pwsh
       working-directory: 'codesigntool'
       run: |
-        New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}signed" -ItemType Directory
-        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.STANDALONE_ARTIFACT_PATH }}signed" -input_file_path="${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}"
-        
-    #Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}signed\OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Force
+        New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
+        Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
+        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.STANDALONE_ARTIFACT_PATH }}" -input_file_path="${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}"
     
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
         name: '${{env.BUILD_STANDALONE_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
-        path: "${{ env.STANDALONE_ARTIFACT_PATH }}signed\\OCTOPUS RAW Player.exe"
+        path: "${{ env.STANDALONE_ARTIFACT_PATH }}*.exe"
         if-no-files-found: error
 
     - name: Prepare Installer
@@ -89,14 +88,13 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
       
-    #- name: Sign .msi
-    #  uses: sslcom/actions-codesigner@develop
-    #  with:
-    #    command: sign
-    #    username: ${{secrets.PEARTREE_SSL_USERNAME}}
-    #    password: ${{secrets.PEARTREE_SSL_PASSWORD}}
-    #    totp_secret: ${{secrets.PEARTREE_CERT_TOTP_SECRET}}
-    #    file_path: "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}.msi"
+    - name: Sign .msi
+      shell: pwsh
+      working-directory: 'codesigntool'
+      run: |
+        New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
+        Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}OCTOPUS-RAW-Player-setup.msi" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player-setup.msi"
+        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.INSTALLER_ARTIFACT_PATH }}" -input_file_path="${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player-setup.msi" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}" -program_name="OCTOPUS RAW Player"
 
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
