@@ -8,8 +8,6 @@ on:
 
 env:
   BUILD_CONFIGURATION: Release
-  VERSION_WINDOWS: "0.0.0"
-  VERSION_MACOS: "0.0.0"
 
 permissions:
   contents: read
@@ -51,8 +49,13 @@ jobs:
         .\ApplyVersion.ps1
         $installer_name="OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi"
         "BUILD_INSTALLER_NAME=$installer_name" >> $env:GITHUB_ENV
-        $windows_version="${{ steps.version.outputs.content }}"
-        "VERSION_WINDOWS=$windows_version" >> $env:GITHUB_ENV
+        
+    - name: Upload version artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: version
+        path: "${{ github.workspace }}\\Version"
+        if-no-files-found: error
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -153,8 +156,6 @@ jobs:
         echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
         pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}.pkg"
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
-        version_macos="${{ steps.version.outputs.content }}"
-        echo "VERSION_MACOS=$version_macos" >> $env:GITHUB_ENV
 
     - name: "Import distribution certificate"
       uses: devbotsxyz/import-signing-certificate@main
@@ -253,3 +254,31 @@ jobs:
       
     - name: Display artifacts
       run: ls -R
+      
+    - name: Read Version
+      id: version
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: "Version/Version"
+        
+    - name: Create Release
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.content }}
+        release_name: v${{ steps.version.outputs.content }}
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      id: upload-release-asset-win-installer 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }} 
+        asset_path: ./Player-win64-installer-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi
+        asset_name: Player-win64-installer-${{ steps.version.outputs.content }}
+        asset_content_type: application/x-msi
