@@ -8,6 +8,8 @@ on:
 
 env:
   BUILD_CONFIGURATION: Release
+  VERSION_WINDOWS: "0.0.0"
+  VERSION_MACOS: "0.0.0"
 
 permissions:
   contents: read
@@ -49,6 +51,8 @@ jobs:
         .\ApplyVersion.ps1
         $installer_name="OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi"
         "BUILD_INSTALLER_NAME=$installer_name" >> $env:GITHUB_ENV
+        $windows_version="${{ steps.version.outputs.content }}"
+        "VERSION_WINDOWS=$windows_version" >> $env:GITHUB_ENV
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -149,6 +153,8 @@ jobs:
         echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
         pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}.pkg"
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
+        version_macos="${{ steps.version.outputs.content }}"
+        echo "VERSION_MACOS=$version_macos" >> $env:GITHUB_ENV
 
     - name: "Import distribution certificate"
       uses: devbotsxyz/import-signing-certificate@main
@@ -234,3 +240,16 @@ jobs:
         name: ${{ env.BUILD_INSTALLER_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
         path: ${{ env.INSTALLER_BUILD_PKG_PATH }}
         if-no-files-found: error
+  
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    needs: [windows]
+    timeout-minutes: 5
+    steps:
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v3.0.0
+      
+    - name: Display artifacts
+      run: ls -R
