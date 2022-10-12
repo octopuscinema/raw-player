@@ -248,7 +248,7 @@ jobs:
     needs: [windows]
     timeout-minutes: 5
     steps:
-    
+    - uses: actions/checkout@v3
     - name: Download artifacts
       uses: actions/download-artifact@v3.0.0
       
