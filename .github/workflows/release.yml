@@ -9,13 +9,12 @@ on:
 env:
   BUILD_CONFIGURATION: Release
 
-permissions:
-  contents: read
-
 jobs:
   windows:
     name: Windows
     runs-on: windows-latest
+    permissions:
+      contents: read
     timeout-minutes: 20
     
     env:
@@ -118,6 +117,8 @@ jobs:
     if: ${{ false }}
     name: macOS
     runs-on: macOS-12
+    permissions:
+      contents: read
     timeout-minutes: 20
     
     env:
@@ -245,10 +246,11 @@ jobs:
   release:
     name: Create release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [windows]
     timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v3
     - name: Download artifacts
       uses: actions/download-artifact@v3.0.0
       
