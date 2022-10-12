@@ -286,7 +286,7 @@ jobs:
         asset_content_type: application/x-msi
     
     - name: Zip Windows standalone .exe
-      run: zip Player-win64-standalone-${{ steps.version.outputs.content }}.zip "./Player-win64-standalone-${{ steps.version.outputs.content }}/OCTOPUS RAW Player.exe"
+      run: zip OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-exe.zip "./Player-win64-standalone-${{ steps.version.outputs.content }}/OCTOPUS RAW Player.exe"
     
     - name: Upload Windows standalone release asset
       id: upload-release-asset-win-standalone 
@@ -295,6 +295,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }} 
-        asset_path: ./Player-win64-standalone-${{ steps.version.outputs.content }}.zip
-        asset_name: Player-win64-standalone-${{ steps.version.outputs.content }}.zip
+        asset_path: ./OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-exe.zip
+        asset_name: OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-exe.zip
         asset_content_type: application/zip
