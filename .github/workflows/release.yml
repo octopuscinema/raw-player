@@ -48,7 +48,7 @@ jobs:
       run: |
         .\ApplyVersion.ps1
         $installer_name="OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi"
-        echo "BUILD_INSTALLER_NAME=$installer_name" >> $GITHUB_ENV
+        "BUILD_INSTALLER_NAME=$installer_name" >> $env:GITHUB_ENV
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
