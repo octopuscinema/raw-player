@@ -259,7 +259,7 @@ jobs:
       id: version
       uses: juliangruber/read-file-action@v1
       with:
-        path: "Version/Version"
+        path: "version/Version"
         
     - name: Create Release
       id: create-release
@@ -272,7 +272,7 @@ jobs:
         draft: false
         prerelease: false
         
-    - name: Upload Release Asset
+    - name: Upload Windows installer release asset
       id: upload-release-asset-win-installer 
       uses: actions/upload-release-asset@v1
       env:
@@ -282,3 +282,17 @@ jobs:
         asset_path: ./Player-win64-installer-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi
         asset_name: Player-win64-installer-${{ steps.version.outputs.content }}
         asset_content_type: application/x-msi
+    
+    - name: Zip Windows standalone .exe
+      run: zip Player-win64-standalone-${{ steps.version.outputs.content }}.zip ./Player-win64-standalone-${{ steps.version.outputs.content }}/OCTOPUS RAW Player.exe
+    
+    - name: Upload Windows standalone release asset
+      id: upload-release-asset-win-standalone 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }} 
+        asset_path: ./Player-win64-standalone-${{ steps.version.outputs.content }}.zip
+        asset_name: Player-win64-standalone-${{ steps.version.outputs.content }}
+        asset_content_type: application/zip
