@@ -28,6 +28,7 @@ jobs:
       BUILD_PLATFORM: x64
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-win64-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-win64-installer"
+      BUILD_INSTALLER_NAME: "OCTOPUS-RAW-Player-setup.msi"
 
     steps:
     - uses: actions/checkout@v3
@@ -44,7 +45,10 @@ jobs:
     - name: Apply Version
       shell: pwsh
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\ApplyVersion.ps1
+      run: |
+        .\ApplyVersion.ps1
+        installer_name="OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi"
+        echo "BUILD_INSTALLER_NAME=$installer_name" >> $GITHUB_ENV
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -93,8 +97,8 @@ jobs:
       working-directory: 'codesigntool'
       run: |
         New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}OCTOPUS-RAW-Player-setup.msi" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player-setup.msi"
-        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.INSTALLER_ARTIFACT_PATH }}" -input_file_path="${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player-setup.msi" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}" -program_name="OCTOPUS RAW Player"
+        Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}"
+        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.INSTALLER_ARTIFACT_PATH }}" -input_file_path="${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}" -program_name="OCTOPUS RAW Player"
 
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
