@@ -27,7 +27,7 @@ jobs:
       BUILD_PLATFORM: x64
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-win64-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-win64-installer"
-      BUILD_INSTALLER_NAME: "OCTOPUS-RAW-Player-setup.msi"
+      BUILD_INSTALLER_NAME: "OCTOPUS-RAW-Player-Windows.msi"
 
     steps:
     - uses: actions/checkout@v3
@@ -46,7 +46,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         .\ApplyVersion.ps1
-        $installer_name="OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi"
+        $installer_name="OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.msi"
         "BUILD_INSTALLER_NAME=$installer_name" >> $env:GITHUB_ENV
         
     - name: Upload version artifact
@@ -134,8 +134,8 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
-      STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
-      INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+      STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
+      INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
 
     steps:
     - uses: actions/checkout@v3
@@ -280,12 +280,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }} 
-        asset_path: ./Player-win64-installer-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-setup.msi
+        asset_path: ./Player-win64-installer-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.msi
         asset_name: OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.msi
         asset_content_type: application/x-msi
     
     - name: Zip Windows standalone .exe
-      run: zip OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-exe.zip "./Player-win64-standalone-${{ steps.version.outputs.content }}/OCTOPUS RAW Player.exe"
+      working-directory: "./Player-win64-standalone-${{ steps.version.outputs.content }}"
+      run: zip "../OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.zip" "./OCTOPUS RAW Player.exe"
     
     - name: Upload Windows standalone release asset
       id: upload-release-asset-win-standalone 
@@ -294,7 +295,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }} 
-        asset_path: ./OCTOPUS-RAW-Player-${{ steps.version.outputs.content }}-exe.zip
+        asset_path: ./OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.zip
         asset_name: OCTOPUS-RAW-Player-Windows-${{ steps.version.outputs.content }}.zip
         asset_content_type: application/zip
         
@@ -305,7 +306,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }} 
-        asset_path: "./Player-macOS-installer-${{ steps.version.outputs.content }}/OCTOPUS RAW Player-${{ steps.version.outputs.content }}.pkg"
+        asset_path: "./Player-macOS-installer-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-macOS-${{ steps.version.outputs.content }}.pkg"
         asset_name: "OCTOPUS-RAW-Player-macOS-${{ steps.version.outputs.content }}.pkg"
         asset_content_type: application/x-newton-compatible-pkg
         
@@ -316,6 +317,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }} 
-        asset_path: "./Player-macOS-standalone-${{ steps.version.outputs.content }}/OCTOPUS RAW Player-${{ steps.version.outputs.content }}.dmg"
+        asset_path: "./Player-macOS-standalone-${{ steps.version.outputs.content }}/OCTOPUS-RAW-Player-macOS-${{ steps.version.outputs.content }}.dmg"
         asset_name: "OCTOPUS-RAW-Player-macOS-${{ steps.version.outputs.content }}.dmg"
         asset_content_type: application/octet-stream
