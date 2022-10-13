@@ -34,7 +34,7 @@ http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
 - GPU with support for OpenGL 3.2 or greater (Native Apple Metal API support in progress)
 
 ## Installation
-OCTOPUS RAW Player releases are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively, OCTOPUS RAW Player can be run as a portable single-file executable without installation.
+OCTOPUS RAW Player [releases](https://github.com/octopuscinema/raw-player/releases) are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively, OCTOPUS RAW Player can be run as a portable single-file executable without installation.
 
 ### User Guide
 Please see the user guide wiki page:
