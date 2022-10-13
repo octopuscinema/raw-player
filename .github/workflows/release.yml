@@ -247,7 +247,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: [windows]
+    needs: [windows, macos]
     timeout-minutes: 5
     steps:
     - name: Download artifacts
