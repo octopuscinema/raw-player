@@ -40,6 +40,10 @@ OCTOPUS RAW Player [releases](https://github.com/octopuscinema/raw-player/releas
 Please see the user guide wiki page:
 http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
 
+# Donate
+If you enjoy using this free open source software and it assists you professionally, please consider [buying us a coffee](https://ko-fi.com/octopuscinema) to help support open source software.<br><br>
+[![Donate](https://img.shields.io/badge/Donate-Buy%20us%20a%20Coffee-orange.svg)](https://ko-fi.com/octopuscinema)
+
 # Getting started for Developers
 
 ## Building for Windows
