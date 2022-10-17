@@ -227,7 +227,7 @@
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:0.8.0"
+        "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:OCTOPUSCINEMA"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
