@@ -3,7 +3,7 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 
 &nbsp;
 <p align="center">
-<img src="http://www.octopuscinema.com/wiki/images/thumb/0/0b/Octopus-raw-player-hero.png/1600px-Octopus-raw-player-hero.png" width="80%">
+<img src="https://www.octopuscinema.com/wiki/images/thumb/0/0b/Octopus-raw-player-hero.png/1600px-Octopus-raw-player-hero.png" width="80%">
 </p>
 &nbsp;
 
@@ -24,8 +24,8 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 - Blackmagic Ursa Mini 4K
 - OCTOPUSCAMERA 8K/4K/MONO
 
-For more information, please visit the wiki:
-http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
+For more information, please visit:
+https://www.octopuscinema.com/raw-player
 
 # Getting started for Users
 
@@ -37,8 +37,8 @@ http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player
 OCTOPUS RAW Player [releases](https://github.com/octopuscinema/raw-player/releases) are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively, OCTOPUS RAW Player can be run as a portable single-file executable without installation.
 
 ### User Guide
-Please see the user guide wiki page:
-http://www.octopuscinema.com/wiki/index.php?title=OCTOPUS_RAW_Player#User_Guide
+Please see the online user guide:
+https://www.octopuscinema.com/raw-player#User_Guide
 
 # Donate
 If you enjoy using this free open source software and it assists you professionally, please consider [buying us a coffee](https://ko-fi.com/octopuscinema) to help support open source software.<br><br>
