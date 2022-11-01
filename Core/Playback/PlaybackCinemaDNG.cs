@@ -20,7 +20,7 @@ namespace Octopus.Player.Core.Playback
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
-        private ITexture LinearizeTableTest { get; set; }
+        private ITexture LinearizeTable { get; set; }
 
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
@@ -70,10 +70,10 @@ namespace Octopus.Player.Core.Playback
                 displayFrameGPU.Dispose();
                 displayFrameGPU = null;
             }
-            if(LinearizeTableTest != null)
+            if(LinearizeTable != null)
             {
-                LinearizeTableTest.Dispose();
-                LinearizeTableTest = null;
+                LinearizeTable.Dispose();
+                LinearizeTable = null;
             }
             displayFrameStaging = null;
             State = State.Empty;
@@ -145,13 +145,13 @@ namespace Octopus.Player.Core.Playback
             else
                 discardPreviewFrame();
 
-            // Test linearse table
+            // Create linearization table texture
             if ( cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
             {
-                if (LinearizeTableTest != null)
-                    LinearizeTableTest.Dispose();
+                if (LinearizeTable != null)
+                    LinearizeTable.Dispose();
                 Span<byte> tableData = System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, byte>(cinemaDNGMetadata.LinearizationTable);
-                LinearizeTableTest = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Render.TextureFormat.R16, tableData.ToArray());
+                LinearizeTable = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Render.TextureFormat.R16, tableData.ToArray());
             }
             
             return Error.None;
@@ -361,12 +361,15 @@ namespace Octopus.Player.Core.Playback
                 // Calculate and apply black/white levels
                 var blackWhiteLevel = new Vector2(cinemaDNGMetadata.BlackLevel, cinemaDNGMetadata.WhiteLevel);
                 var decodedMaxlevel = (1 << (int)Clip.Metadata.DecodedBitDepth) - 1;
-                GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel / (float)decodedMaxlevel);
+                var linearMaxLevel = decodedMaxlevel;
+                if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 && LinearizeTable != null)
+                    linearMaxLevel = (1 << ((int)LinearizeTable.Format.BytesPerPixel() * 8)) - 1;
+                GpuPipelineProgram.SetUniform(RenderContext, "blackWhiteLevel", blackWhiteLevel / (float)linearMaxLevel);
 
                 // Apply advanced raw parameters
                 GpuPipelineProgram.SetUniform(RenderContext, "toneMappingOperator", (int)Clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
 
-                // Linearization table test
+                // Set linearization table range
                 if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
                 {
                     var tableInputRange = (1 << (int)cinemaDNGMetadata.BitDepth) - 1;
@@ -409,8 +412,8 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };
-                if (LinearizeTableTest != null)
-                    textures["linearizeTable"] = LinearizeTableTest;
+                if (LinearizeTable != null)
+                    textures["linearizeTable"] = LinearizeTable;
                 RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
             }
         }
