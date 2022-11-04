@@ -948,6 +948,12 @@ namespace Octopus.Player.UI
             RenderContext = renderContext;
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+
+            if (NativeWindow.PlayerApplication.OpenOnStart != null && NativeWindow.PlayerApplication.OpenOnStart.Length > 0 )
+            {
+                DropFiles(NativeWindow.PlayerApplication.OpenOnStart);
+                NativeWindow.PlayerApplication.OpenOnStart = null;
+            }
         }
 
         public void OnRenderFrame(double timeInterval)

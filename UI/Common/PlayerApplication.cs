@@ -58,6 +58,8 @@ namespace Octopus.Player.UI
             }
         }
 
+        public string[] OpenOnStart { get; set; }
+
         public PlayerApplication()
         {
 #if TRACE_TO_FILE

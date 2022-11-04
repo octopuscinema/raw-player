@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -60,17 +61,51 @@ namespace Octopus.Player.UI.macOS
     {
         PlayerWindowController PlayerWindowController { get; set; }
         public Player.UI.PlayerApplication PlayerApplication { get; private set; }
+        public bool FinishedLaunching { get; private set; } = false;
 
         public AppDelegate()
         {
             PlayerApplication = new PlayerApplication();
         }
 
-        public override void DidFinishLaunching(NSNotification notification)
+        public override bool OpenFile(NSApplication sender, string filename)
+        {
+            if (PlayerWindowController.PlayerWindow.PlayerWindow.CanDropFile(filename))
+            {
+                if (FinishedLaunching)
+                    PlayerWindowController.PlayerWindow.PlayerWindow.DropFile(filename);
+                else
+                    PlayerApplication.OpenOnStart = new string[] { filename };
+                return true;
+            }
+
+            return false;
+        }
+
+        public override void OpenFiles(NSApplication sender, string[] filenames)
+        {
+            if (PlayerWindowController.PlayerWindow.PlayerWindow.CanDropFiles(filenames))
+            {
+                if (FinishedLaunching)
+                    PlayerWindowController.PlayerWindow.PlayerWindow.DropFiles(filenames);
+                else
+                    PlayerApplication.OpenOnStart = filenames;
+
+                sender.ReplyToOpenOrPrint(NSApplicationDelegateReply.Success);
+                return;
+            }
+
+            sender.ReplyToOpenOrPrint(NSApplicationDelegateReply.Failure);
+        }
+
+        public override void WillFinishLaunching(NSNotification notification)
         {
             PlayerWindowController = new PlayerWindowController();
             PlayerWindowController.Window.MakeKeyAndOrderFront(this);
+        }
 
+        public override void DidFinishLaunching(NSNotification notification)
+        {
             Dictionary<ushort, string> keyNames = new Dictionary<ushort, string>()
             {
                 { 49, "Space" },
@@ -85,6 +120,8 @@ namespace Octopus.Player.UI.macOS
                     return PlayerWindowController.PlayerWindow.PlayerWindow.PreviewKeyDown(keyNames[theEvent.KeyCode], modifiers) ? null : theEvent;
                 return theEvent;
             });
+
+            FinishedLaunching = true;
         }
 
         public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender)
