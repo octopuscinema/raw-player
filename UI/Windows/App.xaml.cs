@@ -19,5 +19,12 @@ namespace Octopus.Player.UI.Windows
             base.OnExit(e);
             PlayerApplication.Dispose();
         }
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            // Open with implementation
+            if (e.Args.Length == 1)
+                PlayerApplication.OpenOnStart = new string[] { e.Args[0] };
+        }
     }
 }
