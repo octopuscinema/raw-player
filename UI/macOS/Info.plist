@@ -11,9 +11,9 @@
 	<key>CFBundleName</key>
 	<string>OCTOPUS RAW Player</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.8.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>0.8.0</string>
+	<string>1.0.1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.13</string>
 	<key>NSHumanReadableCopyright</key>

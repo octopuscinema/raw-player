@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -158,6 +159,24 @@ namespace Octopus.Player.UI
             return firstPart + ellipsisChars + lastPart;
         }
 
+        private class WebClientWithTimeout : System.Net.WebClient
+        {
+            public int Timeout { get; set; }
+
+            public WebClientWithTimeout(int timeoutMS = 2000)
+            {
+                Timeout = timeoutMS;
+            }
+
+            protected override WebRequest GetWebRequest(Uri uri)
+            {
+                WebRequest lWebRequest = base.GetWebRequest(uri);
+                lWebRequest.Timeout = Timeout;
+                ((HttpWebRequest)lWebRequest).ReadWriteTimeout = Timeout;
+                return lWebRequest;
+            }
+        }
+
         public void CheckForUpdates(PlayerWindow window, bool interactive = false)
         {
             Version latestVersion;
@@ -166,7 +185,7 @@ namespace Octopus.Player.UI
             
             try
             {
-                using (var wc = new System.Net.WebClient())
+                using (var wc = new WebClientWithTimeout())
                     latestVersionXML.LoadXml(wc.DownloadString(LatestVersionURL));
                 latestVersion = new Version(latestVersionXML.SelectNodes("//Latest/Version")[0].InnerText);
                 downloadPageUrl = latestVersionXML.SelectNodes("//Latest/DownloadPageUrl")[0].InnerText;
