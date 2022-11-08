@@ -162,10 +162,10 @@ namespace Octopus.Player.UI
         {
             Version latestVersion;
             string downloadPageUrl;
+            var latestVersionXML = new XmlDocument();
             
             try
             {
-                var latestVersionXML = new XmlDocument();
                 using (var wc = new System.Net.WebClient())
                     latestVersionXML.LoadXml(wc.DownloadString(LatestVersionURL));
                 latestVersion = new Version(latestVersionXML.SelectNodes("//Latest/Version")[0].InnerText);
@@ -178,10 +178,23 @@ namespace Octopus.Player.UI
                 return;
             }
 
+            string releaseNotes = string.Empty;
+            try
+            {
+                releaseNotes = latestVersionXML.SelectNodes("//Latest/ReleaseNotes")[0].InnerText;
+            }
+            catch(Exception e)
+            {
+                Trace.WriteLine("Release notes not present in update data.");
+            }
+
             var currentVersion = new Version(ProductVersion);
             if ( latestVersion > currentVersion )
             {
-                if (window.NativeWindow.Alert(AlertType.YesNo, "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nCurrent version: " + currentVersion + "\nProceed to download page?", "Update Available") == AlertResponse.Yes)
+                var alertText = "A new version of OCTOPUS RAW Player is available: " + latestVersion + "\nProceed to download page?";
+                if (!string.IsNullOrEmpty(releaseNotes))
+                    alertText += "\n\n" + releaseNotes;
+                if (window.NativeWindow.Alert(AlertType.YesNo, alertText, "Update Available") == AlertResponse.Yes)
                     window.NativeWindow.OpenUrl("\"" + downloadPageUrl + "\"");
             }
             else if (interactive)
