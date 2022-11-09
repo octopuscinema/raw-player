@@ -89,7 +89,7 @@ namespace Octopus.Player.UI
 
             // Check for updates on startup
             if (NetworkInterface.GetIsNetworkAvailable())
-                NativeWindow.PlayerApplication.CheckForUpdates(this);
+                NativeWindow.PlayerApplication.CheckForUpdatesAsync(this);
         }
 
         private void OnThemeChanged()
