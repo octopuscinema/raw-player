@@ -696,6 +696,7 @@ namespace Octopus.Player.UI.Windows
             SetValue(MinWidthProperty, minSize.X);
             SetValue(MinHeightProperty, minSize.Y);
             PlayerWindow.OnLoad();
+            PlayerWindow.OnReady();
         }
 
         private void Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
