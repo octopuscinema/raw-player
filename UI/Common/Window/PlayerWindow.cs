@@ -80,16 +80,18 @@ namespace Octopus.Player.UI
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
 
-            // Handle "open with" after loading (Windows)
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeWindow.PlayerApplication.OpenOnStart != null && NativeWindow.PlayerApplication.OpenOnStart.Length > 0)
+            // Check for updates on startup
+            if (NetworkInterface.GetIsNetworkAvailable())
+                NativeWindow.PlayerApplication.CheckForUpdatesAsync(this);
+        }
+
+        public void OnReady()
+        {
+            if (NativeWindow.PlayerApplication.OpenOnStart != null && NativeWindow.PlayerApplication.OpenOnStart.Length > 0)
             {
                 DropFiles(NativeWindow.PlayerApplication.OpenOnStart);
                 NativeWindow.PlayerApplication.OpenOnStart = null;
             }
-
-            // Check for updates on startup
-            if (NetworkInterface.GetIsNetworkAvailable())
-                NativeWindow.PlayerApplication.CheckForUpdatesAsync(this);
         }
 
         private void OnThemeChanged()
@@ -955,13 +957,6 @@ namespace Octopus.Player.UI
             RenderContext = renderContext;
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
-
-            // Handle open with after initisliation the renderer (macOS)
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && NativeWindow.PlayerApplication.OpenOnStart != null && NativeWindow.PlayerApplication.OpenOnStart.Length > 0 )
-            {
-                DropFiles(NativeWindow.PlayerApplication.OpenOnStart);
-                NativeWindow.PlayerApplication.OpenOnStart = null;
-            }
         }
 
         public void OnRenderFrame(double timeInterval)

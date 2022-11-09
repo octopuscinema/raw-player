@@ -122,6 +122,7 @@ namespace Octopus.Player.UI.macOS
             });
 
             FinishedLaunching = true;
+            PlayerWindowController.PlayerWindow.PlayerWindow.OnReady();
         }
 
         public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender)
