@@ -51,7 +51,7 @@ namespace Octopus.Player.Core.Maths.Color
         public Matrix3 XYZToCamera(in Vector2 whiteXY)
         {
             if (!isDualIlluminant)
-                return (hasForwardMatrix) ? forwardMatrix1 : colorMatrix1;
+                return colorMatrix1;
 
             var WhiteTemperature = Temperature.ChromaticityToTemperatureTint(whiteXY).Item1;
             var ColourTemp1 = calibrationIlluminant1.ColorTemperature();
@@ -61,7 +61,6 @@ namespace Octopus.Player.Core.Maths.Color
 
             if (WhiteTemperature <= ColourTemp1)
                 g = 1.0;
-
             else if (WhiteTemperature >= ColourTemp2)
                 g = 0.0;
             else
@@ -69,16 +68,6 @@ namespace Octopus.Player.Core.Maths.Color
                 double invT = 1.0 / WhiteTemperature;
                 g = (invT - (1.0 / ColourTemp2)) /
                     ((1.0 / ColourTemp1) - (1.0 / ColourTemp2));
-            }
-
-            if (hasForwardMatrix)
-            {
-                if (g >= 1.0)
-                    return forwardMatrix1;
-                else if (g <= 0.0)
-                    return forwardMatrix2;
-                else
-                    return Matrix.InterpolateColourMatrix(forwardMatrix2, forwardMatrix1, (float)g);
             }
 
             // Interpolate the color matrix.
@@ -196,8 +185,7 @@ namespace Octopus.Player.Core.Maths.Color
                 var CameraToXYZMatrix = CameraToXYZ(ColourTemperature);
 
                 // Calculate camera neutral
-                var XYZToCameraMatrix = Matrix3.Invert(CameraToXYZMatrix);
-                var CameraNeutral = XYZToCameraMatrix * AsShotWhiteXYZ;
+                var CameraNeutral = XYZToCamera(whiteXY.Value) * AsShotWhiteXYZ;
                 CameraNeutral = CameraNeutral / Math.Max(Math.Max(CameraNeutral.X, CameraNeutral.Y), CameraNeutral.Z);
 
                 // Update Camera to XYZD50 Matrix
