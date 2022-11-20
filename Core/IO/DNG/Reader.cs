@@ -55,6 +55,8 @@ namespace Octopus.Player.Core.IO.DNG
         private string CachedUniqueCameraModel { get; set; }
         private SMPTETimeCode? CachedTimeCode { get; set; }
         private bool? CachedContainsTimeCode { get; set; }
+        private bool? CachedContainsDefaultScale { get; set; }
+        private Vector2? CachedDefaultScale { get; set; }
 
         public Reader(string filePath)
         {
@@ -660,6 +662,29 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedContainsTimeCode.HasValue)
                     CachedContainsTimeCode = Ifd.Contains((TiffTag)TiffTagCinemaDNG.TimeCodes);
                 return CachedContainsTimeCode.Value;
+            }
+        }
+
+        public Vector2 DefaultScale
+        {
+            get
+            {
+                if(!CachedDefaultScale.HasValue)
+                {
+                    var defaultScale = TagReader.ReadRationalField((TiffTag)TiffTagDNG.DefaultScale, 2);
+                    CachedDefaultScale = new Vector2(defaultScale[0].ToSingle(), defaultScale[1].ToSingle());
+                }
+                return CachedDefaultScale.Value;
+            }
+        }
+
+        public bool ContainsDefaultScale
+        {
+            get
+            {
+                if (!CachedContainsDefaultScale.HasValue)
+                    CachedContainsDefaultScale = Ifd.Contains((TiffTag)TiffTagDNG.DefaultScale);
+                return CachedContainsDefaultScale.Value;
             }
         }
 

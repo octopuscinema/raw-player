@@ -38,6 +38,16 @@ namespace Octopus.Player.Core.IO.DNG
         public ushort WhiteLevel { get; private set; }
         public bool Monochrome { get; private set; }
         public string UniqueCameraModel { get; private set; }
+        public Vector2 PixelAspectRatio { get; private set; }
+
+        public override Maths.Rational AspectRatio
+        {
+            get
+            {
+                return new Maths.Rational((int)((float)base.AspectRatio.Numerator * PixelAspectRatio.X),
+                    (int)((float)base.AspectRatio.Denominator * PixelAspectRatio.Y));
+            }
+        }
 
         public MetadataCinemaDNG(Reader reader, ClipCinemaDNG clip)
         {
@@ -61,6 +71,7 @@ namespace Octopus.Player.Core.IO.DNG
             UniqueCameraModel = reader.UniqueCameraModel;
             if (reader.ContainsTimeCode)
                 StartTimeCode = reader.TimeCode;
+            PixelAspectRatio = reader.ContainsDefaultScale ? reader.DefaultScale : new Vector2(1, 1);
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);

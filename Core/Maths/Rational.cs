@@ -20,7 +20,7 @@ namespace Octopus.Player.Core.Maths
 
         public bool IsZero { get { return Numerator == 0; } }
 
-    public double ToSingle()
+        public double ToSingle()
         {
             return Numerator / (double)Denominator;
         }
