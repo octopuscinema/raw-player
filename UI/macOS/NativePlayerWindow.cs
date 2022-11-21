@@ -8,6 +8,8 @@ using CoreAnimation;
 using System.Collections.Generic;
 using System.Linq;
 using CoreText;
+using System.Security.Policy;
+using System.IO;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -251,8 +253,26 @@ namespace Octopus.Player.UI.macOS
         public void OpenUrl(string url)
         {
 			NSError urlError;
-			NSWorkspace.SharedWorkspace.OpenURL(new NSUrl(url.Replace("\"", "")), NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
+			using (var nsUrl = new NSUrl(url.Replace("\"", "")))
+			{
+				NSWorkspace.SharedWorkspace.OpenURL(nsUrl, NSWorkspaceLaunchOptions.Default, new NSDictionary(), out urlError);
+			}
 		}
+
+		public void ShowInNavigator(List<string> paths)
+		{
+			var urls = new List<NSUrl>();
+			foreach (var path in paths)
+			{
+				if (Directory.Exists(path))
+					urls.Add(new NSUrl(path, true));
+				else if (File.Exists(path))
+                    urls.Add(new NSUrl(path, false));
+            }
+            NSWorkspace.SharedWorkspace.ActivateFileViewer(urls.ToArray());
+			foreach (var url in urls)
+				url.Dispose();
+        }
 
         public void OpenTextEditor(string textFilePath)
         {

@@ -64,6 +64,7 @@ namespace Octopus.Player.UI
 		void InvokeOnUIThread(Action action, bool async = true);
 		PlayerApplication PlayerApplication { get; }
 		bool DropAreaVisible { get; set; }
+		void ShowInNavigator(List<string> paths);
 	}
 }
 
