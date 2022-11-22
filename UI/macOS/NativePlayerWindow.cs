@@ -218,7 +218,7 @@ namespace Octopus.Player.UI.macOS
             throw new NotSupportedException();
         }
 
-        public void OpenContextMenu(List<string> mainMenuItems)
+        public void OpenContextMenu(List<string> mainMenuItems, List<(string,string)> additionalItems = null)
         {
             if (contextMenu != null)
                 contextMenu.Dispose();
@@ -226,7 +226,29 @@ namespace Octopus.Player.UI.macOS
             contextMenu = new NSMenu();
             foreach (var mainMenuItem in mainMenuItems)
                 contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
+
+			// Add additional items
+			List<NSMenuItem> addedItems = new List<NSMenuItem>();
+			if (additionalItems != null)
+			{
+				contextMenu.AddItem(NSMenuItem.SeparatorItem);
+
+				foreach (var additionalItem in additionalItems)
+				{
+					var item = new NSMenuItem(additionalItem.Item1);
+					item.Identifier = additionalItem.Item2;
+					item.Enabled = true;
+					item.Activated += (sender, e) => { PlayerWindow.MenuItemClick(item.Identifier); };
+                    contextMenu.AddItem(item);
+					addedItems.Add(item);
+                }
+			}
+
             contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
+
+
+			foreach(var addedItem in addedItems)
+				addedItem.Dispose();
         }
 
         public void OpenAboutPanel()

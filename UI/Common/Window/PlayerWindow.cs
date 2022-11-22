@@ -130,7 +130,7 @@ namespace Octopus.Player.UI
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && Playback != null && Playback.State != Core.Playback.State.Empty &&
                 modifiers.Contains("Control") && modifiers.Count == 1 )
             {
-                NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" });
+                NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, new List<(string, string)>() { ("Show .DNG in Finder", "navigateToFrame") });
             }
         }
 
@@ -146,7 +146,7 @@ namespace Octopus.Player.UI
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     NativeWindow.OpenContextMenu("PlayerContextMenu");
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" });
+                    NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, new List<(string, string)>() { ("Show .DNG in Finder", "navigateToFrame") });
             }
         }
 

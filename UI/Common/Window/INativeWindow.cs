@@ -51,7 +51,7 @@ namespace Octopus.Player.UI
 		void SetSliderEnabled(string id, bool enabled);
         AlertResponse Alert(AlertType alertType, string message, string title);
         void OpenContextMenu(string id);
-		void OpenContextMenu(List<string> mainMenuItems);
+		void OpenContextMenu(List<string> mainMenuItems, List<(string, string)> additionalItems = null);
 		void OpenAboutPanel();
         void OpenUrl(string url);
 		void OpenTextEditor(string textFilePath);
