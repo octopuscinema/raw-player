@@ -92,6 +92,8 @@
             <StaticResourceExtension ResourceKey="clip"/>
             <StaticResourceExtension ResourceKey="view"/>
             <StaticResourceExtension ResourceKey="help"/>
+            <Separator />
+            <MenuItem Header="_Show .DNG frame in Explorer" Name="navigateToFrame" Click="MenuItem_Click"/>
         </ContextMenu>
         <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />

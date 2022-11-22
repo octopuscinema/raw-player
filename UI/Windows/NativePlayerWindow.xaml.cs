@@ -550,6 +550,14 @@ namespace Octopus.Player.UI.Windows
             }
         }
 
+        public void ShowInNavigator(List<string> paths)
+        {
+            if ( paths.Count == 0 ) 
+                return;
+
+            ShowSelectedInExplorer.FilesOrFolders(paths);
+        }
+
         public void OpenTextEditor(string textFilePath)
         {
             try

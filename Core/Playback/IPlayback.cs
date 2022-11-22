@@ -40,8 +40,9 @@ namespace Octopus.Player.Core.Playback
 		uint FirstFrame { get; }
 		uint LastFrame { get; }
 		Maths.Rational Framerate { get; }
+		uint? LastDisplayedFrame { get; }
 
-		List<Essence> SupportedEssence { get; }
+        List<Essence> SupportedEssence { get; }
 		State State { get; }
 		IClip Clip { get; }
 		event EventHandler StateChanged;

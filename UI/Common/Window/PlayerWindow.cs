@@ -530,6 +530,23 @@ namespace Octopus.Player.UI
                 // Debayer
                 case "debayerQualityDraft":
                     break;
+
+                // Show frame in folder
+                case "navigateToFrame":
+                    Debug.Assert(Playback != null && Playback.Clip != null);
+                    if (Playback != null && Playback.Clip != null && Playback.LastDisplayedFrame.HasValue)
+                    {
+                        switch(Playback.Clip)
+                        {
+                            case ClipCinemaDNG dngClip:
+                                string framePath;
+                                if (dngClip.GetFramePath(Playback.LastDisplayedFrame.Value, out framePath) == Error.None)
+                                    NativeWindow.ShowInNavigator(new List<string>() { framePath });
+                                break;
+                        }
+                    }
+                    break;
+
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
                     break;

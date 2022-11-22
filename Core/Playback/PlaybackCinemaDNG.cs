@@ -78,6 +78,7 @@ namespace Octopus.Player.Core.Playback
             displayFrameStaging = null;
             State = State.Empty;
             Clip = null;
+            LastDisplayedFrame = null;
             ClipClosed?.Invoke(this, new EventArgs());
             GC.Collect();
         }
@@ -95,6 +96,7 @@ namespace Octopus.Player.Core.Playback
             if (clip.ReadMetadata() != Error.None)
                 return Error.BadMetadata;
             Clip = clip;
+            LastDisplayedFrame = FirstFrame;
             var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata;
 
             // Attempt to decode first frame as preview, if that fails bail out

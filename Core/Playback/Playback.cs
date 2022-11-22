@@ -12,6 +12,8 @@ namespace Octopus.Player.Core.Playback
         public virtual uint LastFrame { get { return Clip.Metadata.DurationFrames - 1; } }
         public Rational Framerate { get { return Clip.Metadata.Framerate.HasValue ? Clip.Metadata.Framerate.Value : defaultFramerate; } }
 
+        public uint? LastDisplayedFrame { get; protected set; }
+
         protected uint BufferDurationFrames { get; private set; }
         public State? PreSeekState { get; private set; }
         private PlaybackVelocity velocity;
@@ -230,6 +232,7 @@ namespace Octopus.Player.Core.Playback
             {
                 case Error.None:
                     SeekFrameDisplayed?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
+                    LastDisplayedFrame = (uint)displayFrame.Value;
                     break;
                 case Error.FrameNotPresent:
                     SeekFrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
@@ -256,6 +259,7 @@ namespace Octopus.Player.Core.Playback
                     case Error.None:
                         Debug.Assert(frameDisplayed == displayFrame.Value);
                         FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
+                        LastDisplayedFrame = frameDisplayed;
                         break;
                     case Error.FrameNotReady:
                         FrameSkipped?.Invoke((uint)displayFrame.Value, frameDisplayed, frameTimeCode.Value);
