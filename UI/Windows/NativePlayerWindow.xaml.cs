@@ -528,7 +528,7 @@ namespace Octopus.Player.UI.Windows
             contextMenu.IsOpen = true;
         }
 
-        public void OpenContextMenu(List<string> mainMenuItems)
+        public void OpenContextMenu(List<string> mainMenuItems, List<(string, string)> additionalItems = null)
         {
             throw new NotSupportedException();
         }
