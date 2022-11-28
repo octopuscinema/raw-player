@@ -228,7 +228,6 @@ namespace Octopus.Player.UI.macOS
                 contextMenu.AddItem((NSMenuItem)NSApplication.SharedApplication.MainMenu.ItemWithTitle(mainMenuItem).Copy());
 
 			// Add additional items
-			List<NSMenuItem> addedItems = new List<NSMenuItem>();
 			if (additionalItems != null)
 			{
 				contextMenu.AddItem(NSMenuItem.SeparatorItem);
@@ -240,15 +239,17 @@ namespace Octopus.Player.UI.macOS
 					item.Enabled = true;
 					item.Activated += (sender, e) => { PlayerWindow.MenuItemClick(item.Identifier); };
                     contextMenu.AddItem(item);
-					addedItems.Add(item);
                 }
 			}
 
+			// Open context menu
             contextMenu.PopUpMenu(null, NSEvent.CurrentMouseLocation, null);
 
-
-			foreach(var addedItem in addedItems)
-				addedItem.Dispose();
+            // Done with context menu
+			foreach (var item in contextMenu.Items)
+				item.Dispose();
+			contextMenu.Dispose();
+			contextMenu = null;
         }
 
         public void OpenAboutPanel()
