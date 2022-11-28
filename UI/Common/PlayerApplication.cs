@@ -235,13 +235,25 @@ namespace Octopus.Player.UI
                 asyncWebClient = null;
             }
 
+            // Setup new async web client
+            asyncWebClient = new WebClientWithTimeout();
+            asyncWebClient.DownloadStringCompleted += (sender, e) =>
+            {
+                try
+                {
+                    if (e.Error != null)
+                        throw e.Error;
+                    processVersionInfo(e.Result);
+                }
+                catch (Exception asyncException)
+                {
+                    Trace.WriteLine("Failed to download update data: " + asyncException.Message);
+                }
+            };
+
+            // Begin download of version info
             try
             {
-                // Setup new async web client
-                asyncWebClient = new WebClientWithTimeout();
-                asyncWebClient.DownloadStringCompleted += (sender, e) => { processVersionInfo(e.Result); };
-
-                // Begin download of version info
                 asyncWebClient.DownloadStringAsync(new Uri(LatestVersionURL));
             }
             catch (Exception e)
