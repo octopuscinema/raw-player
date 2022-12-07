@@ -254,7 +254,7 @@ namespace Octopus.Player.Core.IO.DNG
             get
             {
                 if (!CachedContainsFramerate.HasValue)
-                    CachedContainsFramerate = Ifd.Contains((TiffTag)TiffTagCinemaDNG.FrameRate);
+                    CachedContainsFramerate = Ifd.Contains((TiffTag)TiffTagCinemaDNG.FrameRate) || ImageDataIfd.Contains((TiffTag)TiffTagCinemaDNG.FrameRate);
                 return CachedContainsFramerate.Value;
             }
         }
@@ -265,17 +265,17 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedFramerate.HasValue)
                 {
-                    
+                    var tagReader = Ifd.Contains((TiffTag)TiffTagCinemaDNG.FrameRate) ? TagReader : ImageDataTagReader;
                     try
                     {
                         // CinemaDNG spec states framerate is signed rational
-                        var framerate = TagReader.ReadSRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        var framerate = tagReader.ReadSRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
                         CachedFramerate = new Rational(framerate.Numerator, framerate.Denominator);
                     }
                     catch
                     {
                         // Handle OCTOPUSCAMERA dng bug where framerate was written out as unsigned rational
-                        var framerate = TagReader.ReadRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
+                        var framerate = tagReader.ReadRationalField((TiffTag)TiffTagCinemaDNG.FrameRate, 1).GetFirstOrDefault();
                         CachedFramerate = new Rational((int)framerate.Numerator, (int)framerate.Denominator);
                     }
                 }
