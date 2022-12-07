@@ -120,15 +120,31 @@ namespace Octopus.Player.Core
             if (parentFolder == null)
                 return null;
 
-            var folders = System.IO.Directory.EnumerateDirectories(parentFolder.FullName, "*", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
+            IEnumerable<string> folders = null;
+            try
+            {
+                folders = System.IO.Directory.EnumerateDirectories(parentFolder.FullName, "*", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
+            }
+            catch(Exception e)
+            {
+                Trace.WriteLine("Could not enumerate directories in: '" + parentFolder.FullName + "'\n" + e.Message);
+                return null;
+            }
 
             var clips = new List<IClip>();
             foreach(var folder in folders)
             {
                 if (!System.IO.Directory.Exists(folder))
                     continue;
-                if ( System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any() )
-                    clips.Add(new ClipCinemaDNG(folder));
+                try
+                {
+                    if (System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any())
+                        clips.Add(new ClipCinemaDNG(folder));
+                }
+                catch(Exception e)
+                {
+                    Trace.WriteLine("Could not enumerate files in: '" + folder + "'\n" + e.Message);
+                }
             }
             return clips;
         }
