@@ -89,6 +89,22 @@ namespace Octopus.Player.UI
 #endif
             Trace.AutoFlush = true;
             Trace.WriteLine(ProductName + " start [" + DateTime.Now + "]");
+
+            // Log all unhandled exceptions in release without debugger
+#if !DEBUG
+            if ( !System.Diagnostics.Debugger.IsAttached )
+                AppDomain.CurrentDomain.UnhandledException += LogUnhandledException;
+#endif
+        }
+
+        private void LogUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = (Exception)e.ExceptionObject;
+            if (exception != null)
+            {
+                Trace.WriteLine("Unhandled exception: " + exception.Message);
+                Trace.Flush();
+            }
         }
 
         public void Dispose()
