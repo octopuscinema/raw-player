@@ -36,8 +36,9 @@ namespace Octopus.Player.UI
 		void ToggleFullscreen();
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
+		string? OpenFileDialogue(string title, IList<(string, string)> extensions, string? defaultDirectory = null);
 #nullable disable
-		void EnableMenuItem(string id, bool enable);
+        void EnableMenuItem(string id, bool enable);
 		void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true);
 		bool MenuItemIsChecked(string id);
 		void ToggleMenuItemChecked(string id);

@@ -12,6 +12,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Xml.Linq;
+using Microsoft.Win32;
 using Octopus.Player.Core.Maths;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
@@ -269,6 +270,28 @@ namespace Octopus.Player.UI.Windows
 
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
+
+        public string? OpenFileDialogue(string title, IList<(string,string)> extensions, string? defaultDirectory)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Multiselect = false;
+            if (extensions.Count > 0)
+                dialog.DefaultExt = extensions[0].Item1;
+            string filter = string.Empty;
+            foreach (var extension in extensions)
+            {
+                if (!string.IsNullOrEmpty(filter))
+                    filter += "|";
+                filter += extension.Item2 + " (" + extension.Item1 + ")|" + extension.Item1;
+            }
+            dialog.Filter = filter;
+            if (defaultDirectory != null)
+                dialog.InitialDirectory = defaultDirectory;
+            dialog.Title = title;
+
+            return dialog.ShowDialog() == true ? dialog.FileName : null;
+        }
+
         public void Exit()
         {
             Application.Current.Shutdown();

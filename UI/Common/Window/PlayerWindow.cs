@@ -503,6 +503,11 @@ namespace Octopus.Player.UI
                     break;
 
                 // Open
+                case "openBlackmagicRAW":
+                    var brawPath = NativeWindow.OpenFileDialogue("Open Blackmagic RAW clip", new List<(string, string)> { ("*.braw", "Blackmagic RAW files") });
+                    if (brawPath != null)
+                        OpenBlackmagicRAW(brawPath);
+                    break;
                 case "openCinemaDNG":
                     var dngPath = NativeWindow.OpenFolderDialogue("Select folder containing CinemaDNG sequence", Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
                     if (dngPath != null)
@@ -722,6 +727,13 @@ namespace Octopus.Player.UI
         {
             var dngSequenceClip = new ClipCinemaDNG(dngPath);
             return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
+        }
+
+        private Error OpenBlackmagicRAW(string brawPath)
+        {
+            //var dngSequenceClip = new ClipCinemaDNG(dngPath);
+            //return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
+            return Error.NotImplmeneted;
         }
 
         private Error OpenClip<T>(IClip clip) where T : Core.Playback.Playback
