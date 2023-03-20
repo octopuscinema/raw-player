@@ -731,7 +731,7 @@ namespace Octopus.Player.UI
 
         private Error OpenBlackmagicRAW(string brawPath)
         {
-            //var dngSequenceClip = new ClipCinemaDNG(dngPath);
+            var brawVideoClip = new ClipCinemaDNG(brawPath);
             //return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
             return Error.NotImplmeneted;
         }
