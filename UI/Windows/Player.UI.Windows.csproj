@@ -16,11 +16,11 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
-    <ContentWithTargetPath Include="bin\Release\net6.0-windows\runtimes\win-x64\native\Unpack.dll">
+    <ContentWithTargetPath Include="bin\$(Configuration)\net6.0-windows\runtimes\win-x64\native\Unpack.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>Unpack.dll</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="bin\Release\net6.0-windows\runtimes\win-x64\native\LJ92.dll">
+    <ContentWithTargetPath Include="bin\$(Configuration)\net6.0-windows\runtimes\win-x64\native\LJ92.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>LJ92.dll</TargetPath>
     </ContentWithTargetPath>
@@ -33,5 +33,18 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj" />
     <ProjectReference Include="..\Common\Player.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
