@@ -128,12 +128,12 @@ namespace Octopus.Player.Core.Playback
             SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames);
 
             // Allocate display frame
-            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
+            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
             // Create display texture with preview frame
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
-            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, 
+            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, 
                 TextureFilter.Nearest, "displayFrame");
 
             // Tiled preview frame requires copying to GPU seperately

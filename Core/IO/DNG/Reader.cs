@@ -22,8 +22,8 @@ namespace Octopus.Player.Core.IO.DNG
         private TiffImageFileDirectory ImageDataIfd { get; set; }
         private TiffTagReader TagReader { get; set; }
         private TiffTagReader ImageDataTagReader { get; set; }
-
         private Vector2i? CachedDimensions { get; set; }
+        private Vector2i? CachedPaddedDimensions { get; set; }
         private bool? CachedContainsFramerate { get; set; }
         private Rational? CachedFramerate { get; set; }
         private uint? CachedBitDepth { get; set; }
@@ -132,8 +132,8 @@ namespace Octopus.Player.Core.IO.DNG
         {
             using var contentReader = Tiff.CreateContentReader();
             var offsetsCount = offsets.Count;
-            var expectedDataSize = (Dimensions.Area() * BitDepth) / 8;
-            var expectedDataOutSize = (Dimensions.Area() * DecodedBitDepth) / 8;
+            var expectedDataSize = (PaddedDimensions.Area() * BitDepth) / 8;
+            var expectedDataOutSize = (PaddedDimensions.Area() * DecodedBitDepth) / 8;
             Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
             var dataOutOffset = 0;
 
@@ -203,7 +203,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             using var contentReader = Tiff.CreateContentReader();
             var offsetsCount = offsets.Count;
-            var expectedDataOutSize = (Dimensions.Area() * DecodedBitDepth) / 8;
+            var expectedDataOutSize = (PaddedDimensions.Area() * DecodedBitDepth) / 8;
             Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
             int dataOutOffset = 0;
 
@@ -216,7 +216,7 @@ namespace Octopus.Player.Core.IO.DNG
                 try
                 {
                     contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
-                    var segmentDimensions = IsTiled ? TileDimensions : (Dimensions / new Vector2i(1, (int)StripCount));
+                    var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
                     var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                     dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;
                     if (decodeError != Error.None)
@@ -246,6 +246,30 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedDimensions.HasValue)
                     CachedDimensions = new Vector2i((int)ImageDataTagReader.ReadImageWidth(), (int)ImageDataTagReader.ReadImageLength());
                 return CachedDimensions.Value;
+            }
+        }
+
+        public Vector2i PaddedDimensions
+        {
+            get
+            {
+                if (!CachedPaddedDimensions.HasValue)
+                {
+                    var realDimensions = new Vector2i((int)ImageDataTagReader.ReadImageWidth(), (int)ImageDataTagReader.ReadImageLength());
+
+                    // Make dimensions a multiple of the tile dimensions
+                    if (IsTiled)
+                    {
+                        if ((realDimensions.X / TileDimensions.X) * TileDimensions.X != realDimensions.X)
+                            realDimensions = new Vector2i((int)Math.Ceiling((double)realDimensions.X / (double)TileDimensions.X) * TileDimensions.X, realDimensions.Y);
+
+                        if ((realDimensions.Y / TileDimensions.Y) * TileDimensions.Y != realDimensions.Y)
+                            realDimensions = new Vector2i(realDimensions.X, (int)Math.Ceiling((double)realDimensions.Y / (double)TileDimensions.Y) * TileDimensions.Y);
+                    }
+
+                    CachedPaddedDimensions = realDimensions;
+                }
+                return CachedPaddedDimensions.Value;
             }
         }
 

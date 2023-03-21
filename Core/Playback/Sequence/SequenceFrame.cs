@@ -19,7 +19,7 @@ namespace Octopus.Player.Core.Playback
 
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
-			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
+			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
 #if SEQUENCE_FRAME_DEBUG
 			count++;

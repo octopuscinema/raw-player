@@ -53,6 +53,7 @@ namespace Octopus.Player.Core.IO.DNG
         {
             // Assign from the reader
             Dimensions = reader.Dimensions;
+            PaddedDimensions = reader.PaddedDimensions;
             Framerate = reader.ContainsFramerate ? reader.Framerate : (Maths.Rational?)null;
             BitDepth = reader.BitDepth;
             DecodedBitDepth = reader.DecodedBitDepth;
