@@ -21,7 +21,7 @@ LJ92.cpp (modifications/optimisations)
 
 // Required to support some bayer SlimRAW output modes
 // See https://github.com/yanburman/dng_sdk/blob/ae301a57b4e14a6826914e29daf6d40459ef6acf/source/dng_lossless_jpeg.cpp 
-//#define WIP_MULTI_COMPONENT_SUPPORT
+#define WIP_MULTI_COMPONENT_SUPPORT
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -72,6 +72,15 @@ namespace Octopus::Player::Decoders::LJ92
 
 		//#define SLOW_HUFF
 
+	struct sComponentInfo
+	{
+		int index;
+		int id;
+		int hSampFactor;
+		int vSampFactor;
+		int dcTblNo;
+	};
+
 	struct ljp {
 		u8* data;
 		u8* dataend;
@@ -88,6 +97,9 @@ namespace Octopus::Player::Decoders::LJ92
 		int linlen;
 		int sssshist[16];
 
+		sComponentInfo componentInfo[MaxComponents];
+		sComponentInfo* pCurrentComponentInfo[MaxComponents];
+
 		// Huffman table - only one supported, and probably needed
 #ifdef SLOW_HUFF
 		int* maxcode;
@@ -98,7 +110,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int* huffcode;
 #else
 		u16* hufflut[MaxComponents];
-		int huffbits;
+		int huffbits[MaxComponents];
 #endif
 		// Parse state
 		int cnt;
@@ -141,8 +153,8 @@ namespace Octopus::Player::Decoders::LJ92
 		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
 		u8* huffhead = &self->data[self->ix]; // xstruct.unpack('>HB16B',self.data[self.ix:self.ix+19])
 		u8* bits = &huffhead[2];
-		int componentIndex = huffhead[2];
-		bits[0] = 0; // Because table starts from 1
+		int tableIndex = huffhead[2];
+		//bits[0] = 0; // Because table starts from 1
 		int hufflen = BEH(huffhead[0]);
 		if ((self->ix + hufflen) >= self->datalen) return ret;
 #ifdef SLOW_HUFF
@@ -275,11 +287,11 @@ namespace Octopus::Player::Decoders::LJ92
 			if (bits[maxbits]) break;
 			maxbits--;
 		}
-		self->huffbits = maxbits;
+		self->huffbits[tableIndex] = maxbits;
 		/* Now fill the lut */
 		u16* hufflut = (u16*)malloc(((size_t)1 << maxbits) * sizeof(u16));
 		if (hufflut == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->hufflut[componentIndex] = hufflut;
+		self->hufflut[tableIndex] = hufflut;
 		int i = 0;
 		int hv = 0;
 		int rv = 0;
@@ -323,6 +335,19 @@ namespace Octopus::Player::Decoders::LJ92
 		self->y = BEH(self->data[self->ix + 3]);
 		self->x = BEH(self->data[self->ix + 5]);
 		self->numComponents = self->data[self->ix + 7];
+
+		auto pComponentInfo = &self->data[self->ix + 8];
+		for (uint32_t i = 0; i < self->numComponents; i++) {
+			self->componentInfo[i].index = i;
+			self->componentInfo[i].id = *pComponentInfo;
+			pComponentInfo++;
+			const auto sampleFactorHV = *pComponentInfo;
+			pComponentInfo++;
+			self->componentInfo[i].hSampFactor = ((sampleFactorHV >> 4) & 15);
+			self->componentInfo[i].vSampFactor = ((sampleFactorHV) & 15);
+			pComponentInfo++;
+		}
+
 		self->bits = self->data[self->ix + 2];
 		self->ix += BEH(self->data[self->ix]);
 		return LJ92_ERROR_NONE;
@@ -396,7 +421,7 @@ namespace Octopus::Player::Decoders::LJ92
 #else
 		u32 b = self->b;
 		int cnt = self->cnt;
-		int huffbits = self->huffbits;
+		int huffbits = self->huffbits[componentIndex];
 		int ix = self->ix;
 		int next;
 		while (cnt < huffbits) {
@@ -463,12 +488,12 @@ namespace Octopus::Player::Decoders::LJ92
 		self->b = 0;
 
 		// Now need to decode huffman coded values
-		int c = 0;
 		int pixels = self->y * self->x;
 		u16* out = self->image;
 		u16* thisrow = self->outrow[0];
 		u16* lastrow = self->outrow[1];
 
+		int c = 0;
 		int componentIndex = 0;
 
 		// First pixel predicted from base value
@@ -484,7 +509,9 @@ namespace Octopus::Player::Decoders::LJ92
 			//printf("%d %d %d\n",c,diff,left);
 
 			thisrow[col] = left;
-			out[c++] = left;
+			auto pixelIndex = c++;
+			auto outIndex = (pixelIndex * self->numComponents) + componentIndex;
+			out[outIndex] = left;
 			if (++col == self->x) {
 				col = 0;
 				u16* temprow = lastrow;
@@ -666,18 +693,27 @@ namespace Octopus::Player::Decoders::LJ92
 		self->ix = self->scanstart;
 		int compcount = self->data[self->ix + 2];
 
-		int huffmanTableIndicesLocation = self->ix + 3;
+		auto pHuffmanTableIndices = &self->data[self->ix + 3];
+		//int huffmanTableIndicesLocation = self->ix + 3;
 		for (int i = 0; i < compcount; i++)
 		{
-			auto cc = self->data[huffmanTableIndicesLocation++];
-			auto c = self->data[huffmanTableIndicesLocation++];
+			auto cc = *pHuffmanTableIndices;
+			pHuffmanTableIndices++;
+			auto c = *pHuffmanTableIndices;
+			pHuffmanTableIndices++;
 
 			int ci;
 			for (ci = 0; ci < self->numComponents; ci++)
 			{
-				//if ( cc == )
-				//break;
+				if ( cc == self->componentInfo[ci].id)
+					break;
 			}
+			if (ci >= self->numComponents)
+				return ret;
+
+			auto pCurrentComponentInfo = &self->componentInfo[ci];
+			self->pCurrentComponentInfo[i] = pCurrentComponentInfo;
+			pCurrentComponentInfo->dcTblNo = ((c >> 4) & 15);
 		}
 
 		int pred = self->data[self->ix + 3 + 2 * compcount];
@@ -752,7 +788,11 @@ namespace Octopus::Player::Decoders::LJ92
 			else
 				linear = left;
 			thisrow[col] = left;
-			out[c++] = linear;
+
+			auto pixelIndex = c++;
+			auto outIndex = (pixelIndex * self->numComponents) + componentIndex;
+
+			out[outIndex] = linear;
 			if (++col == self->x) {
 				col = 0;
 				row++;
