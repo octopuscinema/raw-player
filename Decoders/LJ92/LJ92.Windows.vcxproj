@@ -22,6 +22,7 @@
     <ClCompile Include="LJ92.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="JpegMarker.h" />
     <ClInclude Include="LJ92.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
