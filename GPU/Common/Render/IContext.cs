@@ -50,6 +50,7 @@ namespace Octopus.Player.GPU.Render
 
         void OnRenderFrame(double timeInterval);
         void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size);
+        void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size, in Vector4 uv);
         void RequestRender();
     }
 }

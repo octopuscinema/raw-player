@@ -412,11 +412,12 @@ namespace Octopus.Player.Core.Playback
                 }
                 Vector2i rectPos;
                 Vector2i rectSize;
+                Vector2 rectUv = Clip.Metadata.Dimensions.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2();
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };
                 if (LinearizeTable != null)
                     textures["linearizeTable"] = LinearizeTable;
-                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
+                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(0,0, rectUv.X, rectUv.Y));
             }
         }
 

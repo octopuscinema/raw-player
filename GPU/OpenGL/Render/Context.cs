@@ -212,6 +212,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size)
         {
+            Draw2D(shader, textures, pos, size, new Vector4i(0, 0, 1, 1));
+        }
+
+        public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size, in Vector4 uv)
+        {
             SetVertexBuffer(Draw2DVertexBuffer);
             SetShader((Shader)shader);
             if (textures != null)
@@ -224,6 +229,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     textureUnit++;
                 }
             }
+            shader.SetUniform(this, "RectUV", new Vector4(uv));
             shader.SetUniform(this, "RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
             shader.SetUniform(this, "OrthographicBoundsInverse", new Vector2(1, 1) / FramebufferSize.ToVector2());
 
