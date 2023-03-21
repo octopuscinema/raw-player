@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = 11943B4229CA2A0A00078EC3 /* JpegMarker.h */; };
 		11C9169E285637D20016B35B /* LJ92.h in Headers */ = {isa = PBXBuildFile; fileRef = 11C9169D285637D20016B35B /* LJ92.h */; };
 		11C916A2285637D20016B35B /* LJ92.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11C916A1285637D20016B35B /* LJ92.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		11943B4229CA2A0A00078EC3 /* JpegMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JpegMarker.h; sourceTree = "<group>"; };
 		11C9169A285637D20016B35B /* libLJ92.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLJ92.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11C9169D285637D20016B35B /* LJ92.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LJ92.h; sourceTree = "<group>"; };
 		11C916A1285637D20016B35B /* LJ92.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LJ92.cpp; sourceTree = "<group>"; };
@@ -31,6 +33,7 @@
 		11C91691285637D20016B35B = {
 			isa = PBXGroup;
 			children = (
+				11943B4229CA2A0A00078EC3 /* JpegMarker.h */,
 				11C9169D285637D20016B35B /* LJ92.h */,
 				11C916A1285637D20016B35B /* LJ92.cpp */,
 				11C9169B285637D20016B35B /* Products */,
@@ -52,6 +55,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */,
 				11C9169E285637D20016B35B /* LJ92.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
