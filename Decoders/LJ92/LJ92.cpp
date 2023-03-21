@@ -28,51 +28,43 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 namespace Octopus::Player::Decoders::LJ92
 {
-	typedef uint8_t uint8;
-	typedef uint16_t uint16;
-	typedef uint32_t uint32;
-	typedef int8_t int8;
-	typedef int16_t int16;
-	typedef int32_t int32;
-	typedef uint64_t uint64;
-
 	static inline void ThrowBadFormat()
 	{
 		// Handle error here
 	}
 
-	struct HuffmanTable
+	struct sHuffmanTable
 	{
 		/*
 		 * These two fields directly represent the contents of a JPEG DHT
 		 * marker
 		 */
-		uint8 bits[17];
-		uint8 huffval[256];
+		uint8_t bits[17];
+		uint8_t huffval[256];
 
 		/*
 		 * The remaining fields are computed from the above to allow more
 		 * efficient coding and decoding.  These fields should be considered
 		 * private to the Huffman compression & decompression modules.
 		 */
-		uint16 mincode[17];
-		int32 maxcode[18];
-		int16 valptr[17];
-		int32 numbits[256];
-		int32 value[256];
+		uint16_t mincode[17];
+		int32_t maxcode[18];
+		int16_t valptr[17];
+		int32_t numbits[256];
+		int32_t value[256];
 
-		uint16 ehufco[256];
-		int8 ehufsi[256];
+		uint16_t ehufco[256];
+		int8_t ehufsi[256];
 	};
 
 	// Computes the derived fields in the Huffman table structure.
-	static void FixHuffTbl(HuffmanTable* htbl)
+	static void FixHuffTbl(sHuffmanTable* htbl)
 	{
 
-		int32 l;
-		int32 i;
+		int32_t l;
+		int32_t i;
 
-		const uint32 bitMask[] =
+		const uint32_t bitMask[] =
 		{
 		0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff,
 		0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff,
@@ -87,31 +79,31 @@ namespace Octopus::Player::Decoders::LJ92
 		// Figure C.1: make table of Huffman code length for each symbol
 		// Note that this is in code-length order.
 
-		int8 huffsize[257];
+		int8_t huffsize[257];
 
-		int32 p = 0;
+		int32_t p = 0;
 
 		for (l = 1; l <= 16; l++)
 		{
-			for (i = 1; i <= (int32)htbl->bits[l]; i++)
-				huffsize[p++] = (int8)l;
+			for (i = 1; i <= (int32_t)htbl->bits[l]; i++)
+				huffsize[p++] = (int8_t)l;
 		}
 
 		huffsize[p] = 0;
-		int32 lastp = p;
+		int32_t lastp = p;
 
 		// Figure C.2: generate the codes themselves
 		// Note that this is in code-length order.
 
-		uint16 huffcode[257];
-		uint16 code = 0;
-		int32 si = huffsize[0];
+		uint16_t huffcode[257];
+		uint16_t code = 0;
+		int32_t si = huffsize[0];
 
 		p = 0;
 
 		while (huffsize[p])
 		{
-			while (((int32)huffsize[p]) == si)
+			while (((int32_t)huffsize[p]) == si)
 			{
 				huffcode[p++] = code;
 				code++;
@@ -142,7 +134,7 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 			if (htbl->bits[l])
 			{
-				htbl->valptr[l] = (int16)p;
+				htbl->valptr[l] = (int16_t)p;
 				htbl->mincode[l] = huffcode[p];
 
 				p += htbl->bits[l];
@@ -167,21 +159,21 @@ namespace Octopus::Player::Decoders::LJ92
 
 		for (p = 0; p < lastp; p++)
 		{
-			int32 size = huffsize[p];
+			int32_t size = huffsize[p];
 
 			if (size <= 8)
 			{
-				int32 value = htbl->huffval[p];
+				int32_t value = htbl->huffval[p];
 
 				code = huffcode[p];
 
-				int32 ll = code << (8 - size);
+				int32_t ll = code << (8 - size);
 
-				int32 ul = (size < 8 ? ll | bitMask[24 + size]
+				int32_t ul = (size < 8 ? ll | bitMask[24 + size]
 					: ll);
 
-				if (ul >= static_cast<int32> (sizeof(htbl->numbits) / sizeof(htbl->numbits[0])) ||
-					ul >= static_cast<int32> (sizeof(htbl->value) / sizeof(htbl->value[0])))
+				if (ul >= static_cast<int32_t> (sizeof(htbl->numbits) / sizeof(htbl->numbits[0])) ||
+					ul >= static_cast<int32_t> (sizeof(htbl->value) / sizeof(htbl->value[0])))
 				{
 					ThrowBadFormat();
 				}
@@ -201,91 +193,91 @@ namespace Octopus::Player::Decoders::LJ92
 	 * The following structure stores basic information about one component.
 	 */
 
-	struct JpegComponentInfo
+	struct sJpegComponentInfo
 	{
 		/*
 		 * These values are fixed over the whole image.
 		 * They are read from the SOF marker.
 		 */
-		int16 componentId;		/* identifier for this component (0..255) */
-		int16 componentIndex;	/* its index in SOF or cPtr->compInfo[]   */
+		int16_t componentId;		/* identifier for this component (0..255) */
+		int16_t componentIndex;	/* its index in SOF or cPtr->compInfo[]   */
 
 		/*
 		 * Downsampling is not normally used in lossless JPEG, although
 		 * it is permitted by the JPEG standard (DIS). We set all sampling
 		 * factors to 1 in this program.
 		 */
-		int16 hSampFactor;		/* horizontal sampling factor */
-		int16 vSampFactor;		/* vertical sampling factor   */
+		int16_t hSampFactor;		/* horizontal sampling factor */
+		int16_t vSampFactor;		/* vertical sampling factor   */
 
 		/*
 		 * Huffman table selector (0..3). The value may vary
 		 * between scans. It is read from the SOS marker.
 		 */
-		int16 dcTblNo;
+		int16_t dcTblNo;
 	};
 
 	/*
 	 * One of the following structures is used to pass around the
 	 * decompression information.
 	 */
-	struct DecompressInfo
+	struct sDecompressInfo
 	{
 		/*
 		 * Image width, height, and image data precision (bits/sample)
 		 * These fields are set by ReadFileHeader or ReadScanHeader
 		 */
-		int32 imageWidth;
-		int32 imageHeight;
-		int32 dataPrecision;
+		int32_t imageWidth;
+		int32_t imageHeight;
+		int32_t dataPrecision;
 
 		/*
 		 * compInfo[i] describes component that appears i'th in SOF
 		 * numComponents is the # of color components in JPEG image.
 		 */
-		JpegComponentInfo* compInfo;
-		int16 numComponents;
+		sJpegComponentInfo* compInfo;
+		int16_t numComponents;
 
 		/*
 		 * *curCompInfo[i] describes component that appears i'th in SOS.
 		 * compsInScan is the # of color components in current scan.
 		 */
-		JpegComponentInfo* curCompInfo[4];
-		int16 compsInScan;
+		sJpegComponentInfo* curCompInfo[4];
+		int16_t compsInScan;
 
 		/*
 		 * MCUmembership[i] indexes the i'th component of MCU into the
 		 * curCompInfo array.
 		 */
-		int16 MCUmembership[10];
+		int16_t MCUmembership[10];
 
 		/*
 		 * ptrs to Huffman coding tables, or NULL if not defined
 		 */
-		HuffmanTable* dcHuffTblPtrs[4];
+		sHuffmanTable* dcHuffTblPtrs[4];
 
 		/*
 		 * prediction selection value (PSV) and point transform parameter (Pt)
 		 */
-		int32 Ss;
-		int32 Pt;
+		int32_t Ss;
+		int32_t Pt;
 
 		/*
 		 * In lossless JPEG, restart interval shall be an integer
 		 * multiple of the number of MCU in a MCU row.
 		 */
-		int32 restartInterval;/* MCUs per restart interval, 0 = no restart */
-		int32 restartInRows; /*if > 0, MCU rows per restart interval; 0 = no restart*/
+		int32_t restartInterval;/* MCUs per restart interval, 0 = no restart */
+		int32_t restartInRows; /*if > 0, MCU rows per restart interval; 0 = no restart*/
 
 		/*
 		 * these fields are private data for the entropy decoder
 		 */
-		int32 restartRowsToGo;	/* MCUs rows left in this restart interval */
-		int16 nextRestartNum;	/* # of next RSTn marker (0..7) */
+		int32_t restartRowsToGo;	/* MCUs rows left in this restart interval */
+		int16_t nextRestartNum;	/* # of next RSTn marker (0..7) */
 	};
 
 
-	typedef uint16 ComponentType;
+	typedef uint16_t ComponentType;
 	typedef ComponentType* MCU;
 
 	class dng_stream
@@ -316,7 +308,7 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 		}
 
-		inline void Spool(const void* pData, uint32 count)
+		inline void Spool(const void* pData, uint32_t count)
 		{
 			assert((m_pOutput + count) <= m_pBufferEnd);
 
@@ -373,7 +365,7 @@ namespace Octopus::Player::Decoders::LJ92
 			memset(&info, 0, sizeof(info));
 		}
 
-		void StartRead(uint32& imageWidth, uint32& imageHeight, uint32& imageChannels)
+		void StartRead(uint32_t& imageWidth, uint32_t& imageHeight, uint32_t& imageChannels)
 		{
 			ReadFileHeader();
 			ReadScanHeader();
@@ -392,7 +384,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 	private:
 
-		inline uint8 GetJpegChar()
+		inline uint8_t GetJpegChar()
 		{
 			return fStream->Get_uint8();
 		}
@@ -402,45 +394,45 @@ namespace Octopus::Player::Decoders::LJ92
 			fStream->SetReadPosition(fStream->Position() - 1);
 		}
 
-		inline uint16 Get2bytes()
+		inline uint16_t Get2bytes()
 		{
-			uint16 a = GetJpegChar();
-			return (uint16)((a << 8) + GetJpegChar());
+			uint16_t a = GetJpegChar();
+			return (uint16_t)((a << 8) + GetJpegChar());
 		}
 
 		inline void SkipVariable()
 		{
-			uint32 length = Get2bytes() - 2;
+			uint32_t length = Get2bytes() - 2;
 			fStream->Skip(length);
 		}
 
 		void GetDht()
 		{
-			int32 length = Get2bytes() - 2;
+			int32_t length = Get2bytes() - 2;
 
 			while (length > 0)
 			{
 
-				int32 index = GetJpegChar();
+				int32_t index = GetJpegChar();
 
 				if (index < 0 || index >= 4)
 				{
 					ThrowBadFormat();
 				}
 
-				HuffmanTable*& htblptr = info.dcHuffTblPtrs[index];
+				sHuffmanTable*& htblptr = info.dcHuffTblPtrs[index];
 
 				if (htblptr == NULL)
 				{
-					huffmanBuffer[index].Allocate(sizeof(HuffmanTable));
-					htblptr = (HuffmanTable*)huffmanBuffer[index].Buffer();
+					huffmanBuffer[index].Allocate(sizeof(sHuffmanTable));
+					htblptr = (sHuffmanTable*)huffmanBuffer[index].Buffer();
 				}
 
 				htblptr->bits[0] = 0;
 
-				int32 count = 0;
+				int32_t count = 0;
 
-				for (int32 i = 1; i <= 16; i++)
+				for (int32_t i = 1; i <= 16; i++)
 				{
 					htblptr->bits[i] = GetJpegChar();
 					count += htblptr->bits[i];
@@ -451,7 +443,7 @@ namespace Octopus::Player::Decoders::LJ92
 					ThrowBadFormat();
 				}
 
-				for (int32 j = 0; j < count; j++)
+				for (int32_t j = 0; j < count; j++)
 				{
 					htblptr->huffval[j] = GetJpegChar();
 				}
@@ -474,9 +466,9 @@ namespace Octopus::Player::Decoders::LJ92
 			SkipVariable();
 		}
 
-		void GetSof(int32 code)
+		void GetSof(int32_t code)
 		{
-			int32 length = Get2bytes();
+			int32_t length = Get2bytes();
 
 			info.dataPrecision = GetJpegChar();
 			info.imageHeight = Get2bytes();
@@ -493,8 +485,8 @@ namespace Octopus::Player::Decoders::LJ92
 
 			// Lossless JPEG specifies data precision to be from 2 to 16 bits/sample.
 
-			const int32 MinPrecisionBits = 2;
-			const int32 MaxPrecisionBits = 16;
+			const int32_t MinPrecisionBits = 2;
+			const int32_t MaxPrecisionBits = 16;
 
 			if ((info.dataPrecision < MinPrecisionBits) || (info.dataPrecision > MaxPrecisionBits))
 			{
@@ -509,26 +501,26 @@ namespace Octopus::Player::Decoders::LJ92
 
 			// Allocate per component info.
 
-			// We can cast info.numComponents to a uint32 because the check above
+			// We can cast info.numComponents to a uint32_t because the check above
 			// guarantees that it cannot be negative.
-			compInfoBuffer.Allocate(static_cast<uint32> (info.numComponents),
-				sizeof(JpegComponentInfo));
+			compInfoBuffer.Allocate(static_cast<uint32_t> (info.numComponents),
+				sizeof(sJpegComponentInfo));
 
-			info.compInfo = (JpegComponentInfo*)compInfoBuffer.Buffer();
+			info.compInfo = (sJpegComponentInfo*)compInfoBuffer.Buffer();
 
 			// Read in the per compent info.
-			for (int32 ci = 0; ci < info.numComponents; ci++)
+			for (int32_t ci = 0; ci < info.numComponents; ci++)
 			{
-				JpegComponentInfo* compptr = &info.compInfo[ci];
+				sJpegComponentInfo* compptr = &info.compInfo[ci];
 
-				compptr->componentIndex = (int16)ci;
+				compptr->componentIndex = (int16_t)ci;
 
 				compptr->componentId = GetJpegChar();
 
-				int32 c = GetJpegChar();
+				int32_t c = GetJpegChar();
 
-				compptr->hSampFactor = (int16)((c >> 4) & 15);
-				compptr->vSampFactor = (int16)((c) & 15);
+				compptr->hSampFactor = (int16_t)((c >> 4) & 15);
+				compptr->vSampFactor = (int16_t)((c) & 15);
 
 				(void)GetJpegChar();   /* skip Tq */
 			}
@@ -536,12 +528,12 @@ namespace Octopus::Player::Decoders::LJ92
 
 		void GetSos()
 		{
-			int32 length = Get2bytes();
+			int32_t length = Get2bytes();
 
 			// Get the number of image components.
 
-			int32 n = GetJpegChar();
-			info.compsInScan = (int16)n;
+			int32_t n = GetJpegChar();
+			info.compsInScan = (int16_t)n;
 
 			// Check length.
 
@@ -553,13 +545,13 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 
 			// Find index and huffman table for each component.
-			for (int32 i = 0; i < n; i++)
+			for (int32_t i = 0; i < n; i++)
 			{
 
-				int32 cc = GetJpegChar();
-				int32 c = GetJpegChar();
+				int32_t cc = GetJpegChar();
+				int32_t c = GetJpegChar();
 
-				int32 ci;
+				int32_t ci;
 
 				for (ci = 0; ci < info.numComponents; ci++)
 				{
@@ -574,11 +566,11 @@ namespace Octopus::Player::Decoders::LJ92
 					ThrowBadFormat();
 				}
 
-				JpegComponentInfo* compptr = &info.compInfo[ci];
+				sJpegComponentInfo* compptr = &info.compInfo[ci];
 
 				info.curCompInfo[i] = compptr;
 
-				compptr->dcTblNo = (int16)((c >> 4) & 15);
+				compptr->dcTblNo = (int16_t)((c >> 4) & 15);
 			}
 
 			// Get the PSV, skip Se, and get the point transform parameter.
@@ -596,9 +588,9 @@ namespace Octopus::Player::Decoders::LJ92
 			info.restartInterval = 0;
 		}
 
-		int32 NextMarker()
+		int32_t NextMarker()
 		{
-			int32 c;
+			int32_t c;
 
 			do
 			{
@@ -623,7 +615,7 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 			while (true)
 			{
-				int32 c = NextMarker();
+				int32_t c = NextMarker();
 
 				switch (c)
 				{
@@ -679,8 +671,8 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 			// Demand an SOI marker at the start of the stream --- otherwise it's
 			// probably not a JPEG stream at all.
-			int32 c = GetJpegChar();
-			int32 c2 = GetJpegChar();
+			int32_t c = GetJpegChar();
+			int32_t c2 = GetJpegChar();
 
 			if ((c != 0xFF) || (c2 != M_SOI))
 			{
@@ -706,10 +698,10 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		int32 ReadScanHeader()
+		int32_t ReadScanHeader()
 		{
 			// Process markers until SOS or EOI
-			int32 c = ProcessTables();
+			int32_t c = ProcessTables();
 
 			switch (c)
 			{
@@ -729,12 +721,12 @@ namespace Octopus::Player::Decoders::LJ92
 
 		void DecoderStructInit()
 		{
-			int32 ci;
+			int32_t ci;
 			{
 				// Check sampling factor validity.
 				for (ci = 0; ci < info.numComponents; ci++)
 				{
-					JpegComponentInfo* compPtr = &info.compInfo[ci];
+					sJpegComponentInfo* compPtr = &info.compInfo[ci];
 
 					if (compPtr->hSampFactor != 1 ||
 						compPtr->vSampFactor != 1)
@@ -752,7 +744,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 			for (ci = 0; ci < info.compsInScan; ci++)
 			{
-				info.MCUmembership[ci] = (int16)ci;
+				info.MCUmembership[ci] = (int16_t)ci;
 			}
 
 			// Initialize mucROW1 and mcuROW2 which buffer two rows of
@@ -761,7 +753,7 @@ namespace Octopus::Player::Decoders::LJ92
 			// This multiplication cannot overflow because info.compsInScan is
 			// guaranteed to be between 0 and 4 inclusive (see checks above).
 
-			int32 mcuSize = info.compsInScan * (uint32)sizeof(ComponentType);
+			int32_t mcuSize = info.compsInScan * (uint32_t)sizeof(ComponentType);
 
 			mcuBuffer1.Allocate(info.imageWidth, sizeof(MCU));
 			mcuBuffer2.Allocate(info.imageWidth, sizeof(MCU));
@@ -775,7 +767,7 @@ namespace Octopus::Player::Decoders::LJ92
 			mcuROW1[0] = (ComponentType*)mcuBuffer3.Buffer();
 			mcuROW2[0] = (ComponentType*)mcuBuffer4.Buffer();
 
-			for (int32 j = 1; j < info.imageWidth; j++)
+			for (int32_t j = 1; j < info.imageWidth; j++)
 			{
 				mcuROW1[j] = mcuROW1[j - 1] + info.compsInScan;
 				mcuROW2[j] = mcuROW2[j - 1] + info.compsInScan;
@@ -789,9 +781,9 @@ namespace Octopus::Player::Decoders::LJ92
 			bitsLeft = 0;
 
 			// Prepare Huffman tables.
-			for (int16 ci = 0; ci < info.compsInScan; ci++)
+			for (int16_t ci = 0; ci < info.compsInScan; ci++)
 			{
-				JpegComponentInfo* compptr = info.curCompInfo[ci];
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
 
 				// Make sure requested tables are present
 				if (compptr->dcTblNo < 0 || compptr->dcTblNo > 3)
@@ -825,7 +817,7 @@ namespace Octopus::Player::Decoders::LJ92
 			getBuffer = 0;
 
 			// Scan for next JPEG marker
-			int32 c;
+			int32_t c;
 
 			do
 			{
@@ -854,11 +846,11 @@ namespace Octopus::Player::Decoders::LJ92
 			info.nextRestartNum = (info.nextRestartNum + 1) & 7;
 		}
 
-		inline int32 QuickPredict(int32 col, int32 curComp, MCU* curRowBuf, MCU* prevRowBuf)
+		inline int32_t QuickPredict(int32_t col, int32_t curComp, MCU* curRowBuf, MCU* prevRowBuf)
 		{
-			int32 diag = prevRowBuf[col - 1][curComp];
-			int32 upper = prevRowBuf[col][curComp];
-			int32 left = curRowBuf[col - 1][curComp];
+			int32_t diag = prevRowBuf[col - 1][curComp];
+			int32_t upper = prevRowBuf[col][curComp];
+			int32_t left = curRowBuf[col - 1][curComp];
 
 			switch (info.Ss)
 			{
@@ -884,18 +876,18 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		inline void FillBitBuffer(int32 nbits)
+		inline void FillBitBuffer(int32_t nbits)
 		{
-			const int32 kMinGetBits = sizeof(uint32) * 8 - 7;
+			const int32_t kMinGetBits = sizeof(uint32_t) * 8 - 7;
 
 			while (bitsLeft < kMinGetBits)
 			{
-				int32 c = GetJpegChar();
+				int32_t c = GetJpegChar();
 
 				// If it's 0xFF, check and discard stuffed zero byte
 				if (c == 0xFF)
 				{
-					int32 c2 = GetJpegChar();
+					int32_t c2 = GetJpegChar();
 
 					if (c2 != 0)
 					{
@@ -922,20 +914,20 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		inline int32 show_bits8()
+		inline int32_t show_bits8()
 		{
 			if (bitsLeft < 8)
 				FillBitBuffer(8);
 
-			return (int32)((getBuffer >> (bitsLeft - 8)) & 0xff);
+			return (int32_t)((getBuffer >> (bitsLeft - 8)) & 0xff);
 		}
 
-		void flush_bits(int32 nbits)
+		void flush_bits(int32_t nbits)
 		{
 			bitsLeft -= nbits;
 		}
 
-		inline int32 get_bits(int32 nbits)
+		inline int32_t get_bits(int32_t nbits)
 		{
 			if (nbits > 16)
 			{
@@ -945,23 +937,23 @@ namespace Octopus::Player::Decoders::LJ92
 			if (bitsLeft < nbits)
 				FillBitBuffer(nbits);
 
-			return (int32)((getBuffer >> (bitsLeft -= nbits)) & (0x0FFFF >> (16 - nbits)));
+			return (int32_t)((getBuffer >> (bitsLeft -= nbits)) & (0x0FFFF >> (16 - nbits)));
 		}
 
-		inline int32 get_bit()
+		inline int32_t get_bit()
 		{
 			if (!bitsLeft)
 				FillBitBuffer(1);
 
-			return (int32)((getBuffer >> (--bitsLeft)) & 1);
+			return (int32_t)((getBuffer >> (--bitsLeft)) & 1);
 		}
 
-		inline int32 HuffDecode(HuffmanTable* htbl)
+		inline int32_t HuffDecode(sHuffmanTable* htbl)
 		{
 			// If the huffman code is less than 8 bits, we can use the fast
 			// table lookup to get its value.  It's more than 8 bits about
 			// 3-4% of the time.
-			int32 code = show_bits8();
+			int32_t code = show_bits8();
 
 			if (htbl->numbits[code])
 			{
@@ -973,7 +965,7 @@ namespace Octopus::Player::Decoders::LJ92
 			{
 				flush_bits(8);
 
-				int32 l = 8;
+				int32_t l = 8;
 
 				while (code > htbl->maxcode[l])
 				{
@@ -989,7 +981,7 @@ namespace Octopus::Player::Decoders::LJ92
 				else
 				{
 					return htbl->huffval[htbl->valptr[l] +
-						((int32)(code - htbl->mincode[l]))];
+						((int32_t)(code - htbl->mincode[l]))];
 				}
 			}
 		}
@@ -997,7 +989,7 @@ namespace Octopus::Player::Decoders::LJ92
 #ifdef __clang__
 		__attribute__((no_sanitize("undefined")))
 #endif
-			inline void HuffExtend(int32& x, int32 s)
+		inline void HuffExtend(int32_t& x, int32_t s)
 		{
 			if (x < (0x08000 >> (16 - s)))
 			{
@@ -1005,31 +997,31 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		inline void PmPutRow(MCU* buf, int32 numComp, int32 numCol, int32 row)
+		inline void PmPutRow(MCU* buf, int32_t numComp, int32_t numCol, int32_t row)
 		{
-			uint16* sPtr = &buf[0][0];
+			uint16_t* sPtr = &buf[0][0];
 
-			uint32 pixels = numCol * numComp;
+			uint32_t pixels = numCol * numComp;
 
-			fSpooler->Spool(sPtr, pixels * (uint32)sizeof(uint16));
+			fSpooler->Spool(sPtr, pixels * (uint32_t)sizeof(uint16_t));
 		}
 
 		inline void DecodeFirstRow(MCU* curRowBuf)
 		{
-			int32 compsInScan = info.compsInScan;
+			int32_t compsInScan = info.compsInScan;
 
 			// Process the first column in the row.
-			for (int32 curComp = 0; curComp < compsInScan; curComp++)
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
 			{
-				int32 ci = info.MCUmembership[curComp];
+				int32_t ci = info.MCUmembership[curComp];
 
-				JpegComponentInfo* compptr = info.curCompInfo[ci];
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
 
-				HuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
+				sHuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
 
 				// Section F.2.2.1: decode the difference
-				int32 d = 0;
-				int32 s = HuffDecode(dctbl);
+				int32_t d = 0;
+				int32_t s = HuffDecode(dctbl);
 
 				if (s)
 				{
@@ -1045,30 +1037,29 @@ namespace Octopus::Player::Decoders::LJ92
 				}
 
 				// Add the predictor to the difference.
-				int32 Pr = info.dataPrecision;
-				int32 Pt = info.Pt;
+				int32_t Pr = info.dataPrecision;
+				int32_t Pt = info.Pt;
 
 				curRowBuf[0][curComp] = (ComponentType)(d + (1 << (Pr - Pt - 1)));
 			}
 
 			// Process the rest of the row.
-			int32 numCOL = info.imageWidth;
+			int32_t numCOL = info.imageWidth;
 
-			for (int32 col = 1; col < numCOL; col++)
+			for (int32_t col = 1; col < numCOL; col++)
 			{
-				for (int32 curComp = 0; curComp < compsInScan; curComp++)
+				for (int32_t curComp = 0; curComp < compsInScan; curComp++)
 				{
-					int32 ci = info.MCUmembership[curComp];
+					int32_t ci = info.MCUmembership[curComp];
 
-					JpegComponentInfo* compptr = info.curCompInfo[ci];
+					sJpegComponentInfo* compptr = info.curCompInfo[ci];
 
-					HuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
+					sHuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
 
 					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
 
-					int32 d = 0;
-
-					int32 s = HuffDecode(dctbl);
+					int32_t s = HuffDecode(dctbl);
 
 					if (s)
 					{
@@ -1099,21 +1090,21 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 #define swap(type,a,b) {type c; c=(a); (a)=(b); (b)=c;}
 
-			int32 numCOL = info.imageWidth;
-			int32 numROW = info.imageHeight;
-			int32 compsInScan = info.compsInScan;
+			int32_t numCOL = info.imageWidth;
+			int32_t numROW = info.imageHeight;
+			int32_t compsInScan = info.compsInScan;
 
 			// Precompute the decoding table for each table.
 
-			HuffmanTable* ht[4];
+			sHuffmanTable* ht[4];
 
 			memset(ht, 0, sizeof(ht));
 
-			for (int32 curComp = 0; curComp < compsInScan; curComp++)
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
 			{
-				int32 ci = info.MCUmembership[curComp];
+				int32_t ci = info.MCUmembership[curComp];
 
-				JpegComponentInfo* compptr = info.curCompInfo[ci];
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
 
 				ht[curComp] = info.dcHuffTblPtrs[compptr->dcTblNo];
 			}
@@ -1128,7 +1119,7 @@ namespace Octopus::Player::Decoders::LJ92
 			PmPutRow(mcuROW1, compsInScan, numCOL, 0);
 
 			// Process each row.
-			for (int32 row = 1; row < numROW; row++)
+			for (int32_t row = 1; row < numROW; row++)
 			{
 				// Account for restart interval, process restart marker if needed.
 				if (info.restartInRows)
@@ -1151,11 +1142,11 @@ namespace Octopus::Player::Decoders::LJ92
 				}
 
 				// The upper neighbors are predictors for the first column.
-				for (int32 curComp = 0; curComp < compsInScan; curComp++)
+				for (int32_t curComp = 0; curComp < compsInScan; curComp++)
 				{
 					// Section F.2.2.1: decode the difference
-					int32 d = 0;
-					int32 s = HuffDecode(ht[curComp]);
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
 
 					if (s)
 					{
@@ -1180,19 +1171,19 @@ namespace Octopus::Player::Decoders::LJ92
 				{
 					// This is the combination used by both the Canon and Kodak raw formats. 
 					// Unrolling the general case logic results in a significant speed increase.
-					uint16* dPtr = &curRowBuf[1][0];
+					uint16_t* dPtr = &curRowBuf[1][0];
 
-					int32 prev0 = dPtr[-2];
-					int32 prev1 = dPtr[-1];
+					int32_t prev0 = dPtr[-2];
+					int32_t prev1 = dPtr[-1];
 
-					for (int32 col = 1; col < numCOL; col++)
+					for (int32_t col = 1; col < numCOL; col++)
 					{
-						int32 s = HuffDecode(ht[0]);
+						int32_t s = HuffDecode(ht[0]);
 
 						if (s)
 						{
 
-							int32 d;
+							int32_t d;
 
 							if (s == 16 && !fBug16)
 							{
@@ -1211,7 +1202,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 						if (s)
 						{
-							int32 d;
+							int32_t d;
 
 							if (s == 16 && !fBug16)
 							{
@@ -1226,21 +1217,21 @@ namespace Octopus::Player::Decoders::LJ92
 							prev1 += d;
 						}
 
-						dPtr[0] = (uint16)prev0;
-						dPtr[1] = (uint16)prev1;
+						dPtr[0] = (uint16_t)prev0;
+						dPtr[1] = (uint16_t)prev1;
 
 						dPtr += 2;
 					}
 				}
 				else
 				{
-					for (int32 col = 1; col < numCOL; col++)
+					for (int32_t col = 1; col < numCOL; col++)
 					{
-						for (int32 curComp = 0; curComp < compsInScan; curComp++)
+						for (int32_t curComp = 0; curComp < compsInScan; curComp++)
 						{
 							// Section F.2.2.1: decode the difference
-							int32 d = 0;
-							int32 s = HuffDecode(ht[curComp]);
+							int32_t d = 0;
+							int32_t s = HuffDecode(ht[curComp]);
 
 							if (s)
 							{
@@ -1256,7 +1247,7 @@ namespace Octopus::Player::Decoders::LJ92
 							}
 
 							// Predict the pixel value.
-							int32 predictor = QuickPredict(col, curComp, curRowBuf, prevRowBuf);
+							int32_t predictor = QuickPredict(col, curComp, curRowBuf, prevRowBuf);
 
 							// Save the difference.
 							curRowBuf[col][curComp] = (ComponentType)(d + predictor);
@@ -1280,7 +1271,7 @@ namespace Octopus::Player::Decoders::LJ92
 
 		dng_memory_data compInfoBuffer;
 
-		DecompressInfo info;
+		sDecompressInfo info;
 
 		dng_memory_data mcuBuffer1;
 		dng_memory_data mcuBuffer2;
@@ -1290,8 +1281,8 @@ namespace Octopus::Player::Decoders::LJ92
 		MCU* mcuROW1;
 		MCU* mcuROW2;
 
-		uint64 getBuffer;			// current bit-extraction buffer
-		int32 bitsLeft;
+		uint64_t getBuffer;			// current bit-extraction buffer
+		int32_t bitsLeft;
 	};
 
 	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
@@ -1301,9 +1292,9 @@ namespace Octopus::Player::Decoders::LJ92
 
 		LosslessJpegDecoder decoder(&stream, &output, false);
 
-		uint32 imageWidth;
-		uint32 imageHeight;
-		uint32 imageChannels;
+		uint32_t imageWidth;
+		uint32_t imageHeight;
+		uint32_t imageChannels;
 		decoder.StartRead(imageWidth, imageHeight, imageChannels);
 		if (imageWidth * imageHeight * imageChannels != width * height)
 			return Core::eError::BadMetadata;
