@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using TiffLibrary;
 
 namespace Octopus.Player.Core.IO.DNG
@@ -120,7 +122,7 @@ namespace Octopus.Player.Core.IO.DNG
             switch (Compression)
             {
                 case Compression.LosslessJPEG:
-                    return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
+                    return DecodeCompressedImageDataMulticore(ref offsets, ref byteCounts, dataOut);
                 case Compression.None:
                     return DecodeUncompressedImageData(ref offsets, ref byteCounts, dataOut);
                 default:
@@ -197,6 +199,52 @@ namespace Octopus.Player.Core.IO.DNG
             if (dataOutOffset != expectedDataOutSize)
                 return Error.BadImageData;
             return Error.None;
+        }
+
+        private Error DecodeCompressedImageDataMulticore(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
+        {
+            if (offsets.Count <= 1)
+                return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
+
+            using var contentReader = Tiff.CreateContentReader();
+            var expectedDataOutSize = (PaddedDimensions.Area() * DecodedBitDepth) / 8;
+            Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
+
+            Error lastError = Error.None;
+            Task[] tasks = new Task[offsets.Count];
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                var segmentIndex = i;
+                var offset = (long)offsets[segmentIndex];
+                int byteCount = (int)byteCounts[segmentIndex];
+                tasks[i] = Task.Factory.StartNew((Object obj) =>
+                {
+                    byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+
+                    try
+                    {
+                        contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
+                        var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
+                        var dataOutOffset = ((segmentDimensions.Area() * (int)DecodedBitDepth) / 8) * segmentIndex;
+                        var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                        if (decodeError != Error.None)
+                            lastError = decodeError;
+                    }
+                    catch
+                    {
+                        lastError = Error.BadImageData;
+                    }
+                    finally
+                    {
+                        System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
+                    }
+                }, segmentIndex);
+            }
+
+            Task.WaitAll(tasks);
+            foreach (var task in tasks)
+                task.Dispose();
+            return lastError;
         }
 
         private Error DecodeCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
