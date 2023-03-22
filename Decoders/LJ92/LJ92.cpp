@@ -288,10 +288,10 @@ namespace Octopus::Player::Decoders::LJ92
 			, m_position(0ull)
 		{}
 
-		uint8_t Get_uint8() { return m_pStream[m_position++]; }
-		uint64_t Position() const { return m_position; }
-		void SetReadPosition(uint64_t position) { m_position = position; }
-		void Skip(uint64_t length) { m_position += length; }
+		inline uint8_t Get_uint8() { return m_pStream[m_position++]; }
+		inline uint64_t Position() const { return m_position; }
+		inline void SetReadPosition(uint64_t position) { m_position = position; }
+		inline void Skip(uint64_t length) { m_position += length; }
 
 	private:
 
@@ -922,7 +922,7 @@ namespace Octopus::Player::Decoders::LJ92
 			return (int32_t)((getBuffer >> (bitsLeft - 8)) & 0xff);
 		}
 
-		void flush_bits(int32_t nbits)
+		inline void flush_bits(int32_t nbits)
 		{
 			bitsLeft -= nbits;
 		}
@@ -1285,9 +1285,9 @@ namespace Octopus::Player::Decoders::LJ92
 		int32_t bitsLeft;
 	};
 
-	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
+	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t inOffsetBytes, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
 	{
-		dng_stream stream(pInCompressed);
+		dng_stream stream(pInCompressed + inOffsetBytes);
 		dng_spooler output(pOut16Bit + outOffsetBytes, width * height * sizeof(uint16_t));
 
 		LosslessJpegDecoder decoder(&stream, &output, false);

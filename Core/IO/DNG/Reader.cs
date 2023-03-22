@@ -203,6 +203,7 @@ namespace Octopus.Player.Core.IO.DNG
 
         private Error DecodeCompressedImageDataMulticore(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
         {
+            // Use single threaded version if there is only one segment
             if (offsets.Count <= 1)
                 return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
 
@@ -210,23 +211,31 @@ namespace Octopus.Player.Core.IO.DNG
             var expectedDataOutSize = (PaddedDimensions.Area() * DecodedBitDepth) / 8;
             Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
 
+            // Reserve temporary memory for all segments to run concurrently
+            int totalCompressedDataSize = 0;
+            foreach (var count in byteCounts)
+                totalCompressedDataSize += (int)count;
+            byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(totalCompressedDataSize);
+
+            // Read and decode each segment as a new task
             Error lastError = Error.None;
             Task[] tasks = new Task[offsets.Count];
+            int taskMemoryOffset = 0;
             for (int i = 0; i < tasks.Length; i++)
             {
                 var segmentIndex = i;
                 var offset = (long)offsets[segmentIndex];
                 int byteCount = (int)byteCounts[segmentIndex];
+                var taskMemoryStart = taskMemoryOffset;
+                taskMemoryOffset += byteCount;
                 tasks[i] = Task.Factory.StartNew((Object obj) =>
                 {
-                    byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
-
                     try
                     {
-                        contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
+                        contentReader.Read(offset, compressedData.AsMemory(taskMemoryStart, byteCount));
                         var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
                         var dataOutOffset = ((segmentDimensions.Area() * (int)DecodedBitDepth) / 8) * segmentIndex;
-                        var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                        var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)taskMemoryStart, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                         if (decodeError != Error.None)
                             lastError = decodeError;
                     }
@@ -234,16 +243,16 @@ namespace Octopus.Player.Core.IO.DNG
                     {
                         lastError = Error.BadImageData;
                     }
-                    finally
-                    {
-                        System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
-                    }
                 }, segmentIndex);
             }
 
+            // Wait for all tasks
             Task.WaitAll(tasks);
             foreach (var task in tasks)
                 task.Dispose();
+
+            // Done with temporary data
+            System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
             return lastError;
         }
 
@@ -255,29 +264,34 @@ namespace Octopus.Player.Core.IO.DNG
             Debug.Assert(dataOut.Length >= expectedDataOutSize, "Data output buffer too small");
             int dataOutOffset = 0;
 
-            for (int i = 0; i < offsetsCount; i++)
-            {
-                var offset = (long)offsets[i];
-                int byteCount = (int)byteCounts[i];
-                byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount);
+            // Reserve temporary memory large enough for largest segment
+            int largestByteCount = 0;
+            foreach (var count in byteCounts)
+                largestByteCount = Math.Max(largestByteCount, (int)count);
+            byte[] compressedData = System.Buffers.ArrayPool<byte>.Shared.Rent(largestByteCount);
 
-                try
+            // Read and decode each segment
+            try
+            {
+                for (int i = 0; i < offsetsCount; i++)
                 {
+                    var offset = (long)offsets[i];
+                    int byteCount = (int)byteCounts[i];
                     contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
                     var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
-                    var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                    var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, 0, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                     dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;
                     if (decodeError != Error.None)
                         return decodeError;
                 }
-                catch
-                {
-                    return Error.BadImageData;
-                }
-                finally
-                {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
-                }
+            }
+            catch
+            {
+                return Error.BadImageData;
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(compressedData);
             }
 
             // Sanity check the output size
