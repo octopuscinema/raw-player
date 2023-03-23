@@ -6,6 +6,7 @@ namespace Octopus.Player.Core.Decoders
 	public static class LJ92
 	{
 		[DllImport("LJ92")]
-		public static extern Error Decode([Out] byte[] out16Bit, uint outOffsetBytes, byte[] inCompressed, uint inOffsetBytes, uint compressedSizeBytes, uint width, uint height, uint bitDepth);
-	}
+		public static extern Error Decode(IntPtr out16Bit, uint outOffsetBytes, IntPtr inCompressed, uint inOffsetBytes, uint compressedSizeBytes,
+			uint width, uint height, uint bitDepth);
+    }
 }

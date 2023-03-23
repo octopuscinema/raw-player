@@ -93,7 +93,7 @@ namespace Octopus.Player.Core.IO.DNG
             }
         }
 
-        public Error DecodeImageData(byte[] dataOut)
+        public Error DecodeImageData(byte[] dataOut, byte[] workingBuffer = null)
         {
             CachedIsTiled = false;
             Valid = false;
@@ -118,7 +118,7 @@ namespace Octopus.Player.Core.IO.DNG
             if (offsets.Count != byteCounts.Count)
                 return Error.BadImageData;
             Valid = true;
-
+            
             switch (Compression)
             {
                 case Compression.LosslessJPEG:
@@ -235,7 +235,18 @@ namespace Octopus.Player.Core.IO.DNG
                         contentReader.Read(offset, compressedData.AsMemory(taskMemoryStart, byteCount));
                         var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
                         var dataOutOffset = ((segmentDimensions.Area() * (int)DecodedBitDepth) / 8) * segmentIndex;
-                        var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, (uint)taskMemoryStart, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+
+                        Error decodeError;
+                        unsafe
+                        {
+                            fixed (byte* pCompressedData = &compressedData[0])
+                            {
+                                fixed (byte* pDataOut = &dataOut[0])
+                                {
+                                    decodeError = LJ92.Decode(new IntPtr(pDataOut), (uint)dataOutOffset, new IntPtr(pCompressedData), (uint)taskMemoryStart, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                }
+                            }
+                        }
                         if (decodeError != Error.None)
                             lastError = decodeError;
                     }
@@ -279,7 +290,19 @@ namespace Octopus.Player.Core.IO.DNG
                     int byteCount = (int)byteCounts[i];
                     contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
                     var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
-                    var decodeError = LJ92.Decode(dataOut, (uint)dataOutOffset, compressedData, 0, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+
+                    Error decodeError;
+                    unsafe
+                    {
+                        fixed (byte* pCompressedData = &compressedData[0])
+                        {
+                            fixed (byte* pDataOut = &dataOut[0])
+                            {
+                                decodeError = LJ92.Decode(new IntPtr(pDataOut), (uint)dataOutOffset, new IntPtr(pCompressedData), 0, (uint)byteCount,
+                                    (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                            }
+                        }
+                    }
                     dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;
                     if (decodeError != Error.None)
                         return decodeError;

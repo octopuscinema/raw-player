@@ -66,14 +66,14 @@ namespace Octopus::Player::Decoders::LJ92
 
 		const uint32_t bitMask[] =
 		{
-		0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff,
-		0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff,
-		0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff,
-		0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff,
-		0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff,
-		0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff,
-		0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
-		0x0000000f, 0x00000007, 0x00000003, 0x00000001
+            0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff,
+            0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff,
+            0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff,
+            0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff,
+            0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff,
+            0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff,
+            0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
+            0x0000000f, 0x00000007, 0x00000003, 0x00000001
 		};
 
 		// Figure C.1: make table of Huffman code length for each symbol
@@ -280,10 +280,10 @@ namespace Octopus::Player::Decoders::LJ92
 	typedef uint16_t ComponentType;
 	typedef ComponentType* MCU;
 
-	class dng_stream
+	class DecoderInput
 	{
 	public:
-		dng_stream(uint8_t* pStream)
+		DecoderInput(uint8_t* pStream)
 			: m_pStream(pStream)
 			, m_position(0ull)
 		{}
@@ -299,10 +299,10 @@ namespace Octopus::Player::Decoders::LJ92
 		uint64_t m_position;
 	};
 
-	class dng_spooler
+	class DecoderOutput
 	{
 	public:
-		dng_spooler(uint8_t* pOutput, uint64_t outputSize)
+		DecoderOutput(uint8_t* pOutput, uint64_t outputSize)
 			: m_pOutput(pOutput)
 			, m_pBufferEnd(pOutput + outputSize)
 		{
@@ -321,25 +321,70 @@ namespace Octopus::Player::Decoders::LJ92
 		uint8_t* m_pOutput;
 		uint8_t* m_pBufferEnd;
 	};
-
-	class dng_memory_data
+ 
+    class LosslessJpegAllocator
+    {
+    public:
+        LosslessJpegAllocator(uint8_t* pBuffer, uint64_t bufferSize)
+        : m_pBuffer(pBuffer)
+        , m_bufferSize(bufferSize)
+        {}
+        
+        inline bool CanAllocate(uint64_t size)
+        {
+            return ( size <= m_bufferSize );
+        }
+        
+        inline uint8_t* Allocate(uint64_t size)
+        {
+            if ( CanAllocate(size) )
+            {
+                const auto pBuffer = m_pBuffer;
+                m_pBuffer += size;
+                m_bufferSize -= size;
+                return pBuffer;
+            }
+            return nullptr;
+        }
+    
+    private:
+    
+        uint8_t* m_pBuffer;
+        uint64_t m_bufferSize;
+    };
+    
+    class LosslessJpegMemory
 	{
 	public:
+ 
+        LosslessJpegMemory(LosslessJpegAllocator* pAllocator)
+        : m_pStaticBuffer(nullptr)
+        , m_pAllocator(pAllocator)
+        {}
 
-		void Allocate(uint64_t size)
+		inline void Allocate(uint64_t size)
 		{
-			m_data.resize(size);
+            if ( m_pAllocator && m_pAllocator->CanAllocate(size))
+                m_pStaticBuffer = m_pAllocator->Allocate(size);
+            else
+                m_data.resize(size);
 		}
 
-		void Allocate(uint64_t count, uint64_t elementSize)
+		inline void Allocate(uint64_t count, uint64_t elementSize)
 		{
-			m_data.resize(count * elementSize);
+            const auto size = count * elementSize;
+            if ( m_pAllocator && m_pAllocator->CanAllocate(size))
+                m_pStaticBuffer = m_pAllocator->Allocate(size);
+            else
+                m_data.resize(count * size);
 		}
 
-		uint8_t* Buffer() { return m_data.data(); }
+		inline uint8_t* Buffer() { return m_pStaticBuffer ? m_pStaticBuffer : m_data.data(); }
 
 	private:
 
+        LosslessJpegAllocator* m_pAllocator;
+        uint8_t* m_pStaticBuffer;
 		std::vector<uint8_t> m_data;
 	};
 
@@ -347,16 +392,17 @@ namespace Octopus::Player::Decoders::LJ92
 	{
 	public:
 
-		LosslessJpegDecoder(dng_stream* stream, dng_spooler* spooler, bool bug16)
+		LosslessJpegDecoder(DecoderInput* stream, DecoderOutput* spooler, bool bug16, LosslessJpegAllocator* pAllocator = nullptr)
 			: fStream(stream)
 			, fSpooler(spooler)
 			, fBug16(bug16)
-			, compInfoBuffer()
+            , huffmanBuffer{pAllocator, pAllocator, pAllocator, pAllocator}
+			, compInfoBuffer(pAllocator)
 			, info()
-			, mcuBuffer1()
-			, mcuBuffer2()
-			, mcuBuffer3()
-			, mcuBuffer4()
+			, mcuBuffer1(pAllocator)
+			, mcuBuffer2(pAllocator)
+			, mcuBuffer3(pAllocator)
+			, mcuBuffer4(pAllocator)
 			, mcuROW1(nullptr)
 			, mcuROW2(nullptr)
 			, getBuffer(0)
@@ -846,36 +892,6 @@ namespace Octopus::Player::Decoders::LJ92
 			info.nextRestartNum = (info.nextRestartNum + 1) & 7;
 		}
 
-		inline int32_t QuickPredict(int32_t col, int32_t curComp, MCU* curRowBuf, MCU* prevRowBuf)
-		{
-			int32_t diag = prevRowBuf[col - 1][curComp];
-			int32_t upper = prevRowBuf[col][curComp];
-			int32_t left = curRowBuf[col - 1][curComp];
-
-			switch (info.Ss)
-			{
-			case 0:
-				return 0;
-			case 1:
-				return left;
-			case 2:
-				return upper;
-			case 3:
-				return diag;
-			case 4:
-				return left + upper - diag;
-			case 5:
-				return left + ((upper - diag) >> 1);
-			case 6:
-				return upper + ((left - diag) >> 1);
-			case 7:
-				return (left + upper) >> 1;
-			default:
-				ThrowBadFormat();
-				return 0;
-			}
-		}
-
 		inline void FillBitBuffer(int32_t nbits)
 		{
 			const int32_t kMinGetBits = sizeof(uint32_t) * 8 - 7;
@@ -1086,13 +1102,182 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		void DecodeImage()
-		{
 #define swap(type,a,b) {type c; c=(a); (a)=(b); (b)=c;}
 
+        void DecodeImage2ComponentsPredictor7()
+        {
+            int32_t numCOL = info.imageWidth;
+			int32_t numROW = info.imageHeight;
+			const int32_t compsInScan = 2;
+            assert(info.compsInScan == compsInScan);
+
+			// Precompute the decoding table for each table.
+			sHuffmanTable* ht[4];
+
+			memset(ht, 0, sizeof(ht));
+
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+			{
+				int32_t ci = info.MCUmembership[curComp];
+
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+				ht[curComp] = info.dcHuffTblPtrs[compptr->dcTblNo];
+			}
+
+			MCU* prevRowBuf = mcuROW1;
+			MCU* curRowBuf = mcuROW2;
+
+			// Decode the first row of image. Output the row and
+			// turn this row into a previous row for later predictor
+			// calculation.
+			DecodeFirstRow(mcuROW1);
+			PmPutRow(mcuROW1, compsInScan, numCOL, 0);
+
+			// Process each row.
+			for (int32_t row = 1; row < numROW; row++)
+			{
+				// Account for restart interval, process restart marker if needed.
+				if (info.restartInRows)
+				{
+					if (info.restartRowsToGo == 0)
+					{
+						ProcessRestart();
+
+						// Reset predictors at restart.
+						DecodeFirstRow(curRowBuf);
+
+						PmPutRow(curRowBuf, compsInScan, numCOL, row);
+
+						swap(MCU*, prevRowBuf, curRowBuf);
+
+						continue;
+					}
+
+					info.restartRowsToGo--;
+				}
+
+				// The upper neighbors are predictors for the first column.
+				{
+                    const int32_t curComp = 0;
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// First column of row above is predictor for first column.
+					curRowBuf[0][curComp] = (ComponentType)(d + prevRowBuf[0][curComp]);
+				}
+                {
+                    const int32_t curComp = 1;
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// First column of row above is predictor for first column.
+					curRowBuf[0][curComp] = (ComponentType)(d + prevRowBuf[0][curComp]);
+				}
+                
+                for (int32_t col = 1; col < numCOL; col++)
+                {
+                    {
+                        const int32_t curComp = 0;
+                        // Section F.2.2.1: decode the difference
+                        int32_t d = 0;
+                        int32_t s = HuffDecode(ht[curComp]);
+
+                        if (s)
+                        {
+                            if (s == 16 && !fBug16)
+                            {
+                                d = -32768;
+                            }
+                            else
+                            {
+                                d = get_bits(s);
+                                HuffExtend(d, s);
+                            }
+                        }
+
+                        // Predict the pixel value.
+                        const int32_t upper = prevRowBuf[col][curComp];
+                        const int32_t left = curRowBuf[col - 1][curComp];
+                        int32_t predictor = (left + upper) >> 1;
+                        
+                        // Save the difference.
+                        curRowBuf[col][curComp] = (ComponentType)(d + predictor);
+                    }
+                    {
+                        const int32_t curComp = 1;
+                        // Section F.2.2.1: decode the difference
+                        int32_t d = 0;
+                        int32_t s = HuffDecode(ht[curComp]);
+
+                        if (s)
+                        {
+                            if (s == 16 && !fBug16)
+                            {
+                                d = -32768;
+                            }
+                            else
+                            {
+                                d = get_bits(s);
+                                HuffExtend(d, s);
+                            }
+                        }
+
+                        // Predict the pixel value.
+                        const int32_t upper = prevRowBuf[col][curComp];
+                        const int32_t left = curRowBuf[col - 1][curComp];
+                        int32_t predictor = (left + upper) >> 1;
+                        
+                        // Save the difference.
+                        curRowBuf[col][curComp] = (ComponentType)(d + predictor);
+                    }
+                }
+				
+
+				PmPutRow(curRowBuf, compsInScan, numCOL, row);
+				swap(MCU*, prevRowBuf, curRowBuf);
+			}
+        }
+
+		void DecodeImage()
+		{
 			int32_t numCOL = info.imageWidth;
 			int32_t numROW = info.imageHeight;
 			int32_t compsInScan = info.compsInScan;
+   
+            if ( compsInScan == 2 && info.Ss == 7 )
+            {
+                DecodeImage2ComponentsPredictor7();
+                return;
+            }
 
 			// Precompute the decoding table for each table.
 
@@ -1247,8 +1432,38 @@ namespace Octopus::Player::Decoders::LJ92
 							}
 
 							// Predict the pixel value.
-							int32_t predictor = QuickPredict(col, curComp, curRowBuf, prevRowBuf);
+                            int32_t predictor = 0;
+                            {
+                                const int32_t diag = prevRowBuf[col - 1][curComp];
+                                const int32_t upper = prevRowBuf[col][curComp];
+                                const int32_t left = curRowBuf[col - 1][curComp];
 
+                                switch (info.Ss)
+                                {
+                                case 1:
+                                    predictor = left;
+                                    break;
+                                case 2:
+                                    predictor = upper;
+                                    break;
+                                case 3:
+                                    predictor = diag;
+                                    break;
+                                case 4:
+                                    predictor = left + upper - diag;
+                                    break;
+                                case 5:
+                                    predictor = left + ((upper - diag) >> 1);
+                                    break;
+                                case 6:
+                                    predictor = upper + ((left - diag) >> 1);
+                                    break;
+                                case 7:
+                                    predictor = (left + upper) >> 1;
+                                    break;
+                                }
+                            }
+                            
 							// Save the difference.
 							curRowBuf[col][curComp] = (ComponentType)(d + predictor);
 						}
@@ -1258,25 +1473,26 @@ namespace Octopus::Player::Decoders::LJ92
 				PmPutRow(curRowBuf, compsInScan, numCOL, row);
 				swap(MCU*, prevRowBuf, curRowBuf);
 			}
-#undef swap
 		}
+  
+  #undef swap
 
-		dng_stream* fStream;		// Input data.
+		DecoderInput* fStream;		// Input data.
 
-		dng_spooler* fSpooler;		// Output data.
+		DecoderOutput* fSpooler;		// Output data.
 
 		bool fBug16;				// Decode data with the "16-bit" bug.
 
-		dng_memory_data huffmanBuffer[4];
+		LosslessJpegMemory huffmanBuffer[4];
 
-		dng_memory_data compInfoBuffer;
+		LosslessJpegMemory compInfoBuffer;
 
 		sDecompressInfo info;
 
-		dng_memory_data mcuBuffer1;
-		dng_memory_data mcuBuffer2;
-		dng_memory_data mcuBuffer3;
-		dng_memory_data mcuBuffer4;
+		LosslessJpegMemory mcuBuffer1;
+		LosslessJpegMemory mcuBuffer2;
+		LosslessJpegMemory mcuBuffer3;
+		LosslessJpegMemory mcuBuffer4;
 
 		MCU* mcuROW1;
 		MCU* mcuROW2;
@@ -1284,11 +1500,11 @@ namespace Octopus::Player::Decoders::LJ92
 		uint64_t getBuffer;			// current bit-extraction buffer
 		int32_t bitsLeft;
 	};
-
+    
 	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t inOffsetBytes, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
 	{
-		dng_stream stream(pInCompressed + inOffsetBytes);
-		dng_spooler output(pOut16Bit + outOffsetBytes, width * height * sizeof(uint16_t));
+        DecoderInput stream(pInCompressed + inOffsetBytes);
+		DecoderOutput output(pOut16Bit + outOffsetBytes, width * height * sizeof(uint16_t));
 
 		LosslessJpegDecoder decoder(&stream, &output, false);
 

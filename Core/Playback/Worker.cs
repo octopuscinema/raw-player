@@ -11,14 +11,16 @@ namespace Octopus.Player.Core.Playback
         public bool IsSleeping { get { return !Sleep.WaitOne(0); } }
         public bool IsBusy { get { return !IsSleeping || !Busy.WaitOne(0); } }
         private Thread Thread { get; set; }
-        private Func<T> Work { get; set; }
+        private Func<byte[],T> Work { get; set; }
         private AutoResetEvent Sleep { get; set; }
         private ManualResetEvent Busy { get; set; }
         private volatile bool terminate = false;
         private volatile bool terminateImmediate = false;
+        private byte[] WorkingBuffer { get; set; }
 
-        public Worker(Func<T> work, bool paused = true)
+        public Worker(Func<byte[],T> work, bool paused = true, uint workingBufferSize = 0)
         {
+            WorkingBuffer = workingBufferSize > 0 ? new byte[workingBufferSize] : null;
             Work = work;
             Sleep = new AutoResetEvent(!paused);
             Busy = new ManualResetEvent(!paused);
@@ -76,14 +78,14 @@ namespace Octopus.Player.Core.Playback
             while (!terminate)
             {
                 Busy.Reset();
-                Work();
+                Work(WorkingBuffer);
                 Busy.Set();
                 Sleep.WaitOne();
 
                 if (!terminateImmediate)
                 {
                     Busy.Reset();
-                    Work();
+                    Work(WorkingBuffer);
                     Busy.Set();
                 }
             }

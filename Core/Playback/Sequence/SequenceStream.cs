@@ -21,7 +21,7 @@ namespace Octopus.Player.Core.Playback
 
         List<Worker<FrameRequestResult>> Workers { get; set; }
 
-        public SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint? workerThreadCount = null)
+        public SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
@@ -33,7 +33,7 @@ namespace Octopus.Player.Core.Playback
             FrameRequestsMutex = new Mutex();
 
             // Create work for workers
-            Func<FrameRequestResult> processFrameRequests = () =>
+            Func<byte[],FrameRequestResult> processFrameRequests = (byte[] workingBuffer) =>
             {
                 // Get the next frame requested
                 uint? frameNumber = null;
@@ -58,7 +58,7 @@ namespace Octopus.Player.Core.Playback
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
                 frame.timeCode = null;
-                var decodeResult = frame.Decode(Clip);
+                var decodeResult = frame.Decode(Clip, workingBuffer);
 
                 // Frame ready to be displayed
                 if (!DisplayFrames.TryAdd(frame.frameNumber, frame))

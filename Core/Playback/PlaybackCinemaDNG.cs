@@ -11,6 +11,7 @@ namespace Octopus.Player.Core.Playback
 {
 	public class PlaybackCinemaDNG : Playback
 	{
+        private static readonly uint nativeMemoryBufferSize = 0;
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
 
@@ -34,7 +35,6 @@ namespace Octopus.Player.Core.Playback
 
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
-        
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
             : base(playerWindow, renderContext, bufferDurationFrames)
@@ -125,7 +125,7 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames);
+            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
 
             // Allocate display frame
             displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
@@ -172,7 +172,7 @@ namespace Octopus.Player.Core.Playback
                 SeekFrame = new SequenceFrameDNG(RenderContext, Clip, displayFrameGPU.Format);
 
             // Decode seek frame processing
-            Func<Error> decodeSeekFrame = () =>
+            Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>
             {
                 if (!ActiveSeekRequest.HasValue)
                     return Error.None;
