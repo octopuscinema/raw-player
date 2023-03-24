@@ -8,6 +8,7 @@
 #include <vector>
 
 #ifdef _MSC_VER
+#define FORCE_INLINE __forceinline
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -24,11 +25,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	}
 	return TRUE;
 }
+#else
+#ifdef __clang__
+#define FORCE_INLINE __attribute__((always_inline))
+#else
+#define FORCE_INLINE inline
+#endif
 #endif
 
 namespace Octopus::Player::Decoders::LJ92
 {
-	static inline void ThrowBadFormat()
+	static FORCE_INLINE void ThrowBadFormat()
 	{
 		// Handle error here
 	}
@@ -288,10 +295,10 @@ namespace Octopus::Player::Decoders::LJ92
 			, m_position(0ull)
 		{}
 
-		inline uint8_t Get_uint8() { return m_pStream[m_position++]; }
-		inline uint64_t Position() const { return m_position; }
-		inline void SetReadPosition(uint64_t position) { m_position = position; }
-		inline void Skip(uint64_t length) { m_position += length; }
+		FORCE_INLINE uint8_t Get_uint8() { return m_pStream[m_position++]; }
+		FORCE_INLINE uint64_t Position() const { return m_position; }
+		FORCE_INLINE void SetReadPosition(uint64_t position) { m_position = position; }
+		FORCE_INLINE void Skip(uint64_t length) { m_position += length; }
 
 	private:
 
@@ -308,7 +315,7 @@ namespace Octopus::Player::Decoders::LJ92
 		{
 		}
 
-		inline void Spool(const void* pData, uint32_t count)
+		FORCE_INLINE void Spool(const void* pData, uint32_t count)
 		{
 			assert((m_pOutput + count) <= m_pBufferEnd);
 
@@ -330,12 +337,12 @@ namespace Octopus::Player::Decoders::LJ92
         , m_bufferSize(bufferSize)
         {}
         
-        inline bool CanAllocate(uint64_t size)
+		FORCE_INLINE bool CanAllocate(uint64_t size)
         {
             return ( size <= m_bufferSize );
         }
         
-        inline uint8_t* Allocate(uint64_t size)
+		FORCE_INLINE uint8_t* Allocate(uint64_t size)
         {
             if ( CanAllocate(size) )
             {
@@ -362,7 +369,7 @@ namespace Octopus::Player::Decoders::LJ92
         , m_pAllocator(pAllocator)
         {}
 
-		inline void Allocate(uint64_t size)
+		FORCE_INLINE void Allocate(uint64_t size)
 		{
             if ( m_pAllocator && m_pAllocator->CanAllocate(size))
                 m_pStaticBuffer = m_pAllocator->Allocate(size);
@@ -370,16 +377,16 @@ namespace Octopus::Player::Decoders::LJ92
                 m_data.resize(size);
 		}
 
-		inline void Allocate(uint64_t count, uint64_t elementSize)
+		FORCE_INLINE void Allocate(uint64_t count, uint64_t elementSize)
 		{
             const auto size = count * elementSize;
             if ( m_pAllocator && m_pAllocator->CanAllocate(size))
                 m_pStaticBuffer = m_pAllocator->Allocate(size);
             else
-                m_data.resize(count * size);
+                m_data.resize(size);
 		}
 
-		inline uint8_t* Buffer() { return m_pStaticBuffer ? m_pStaticBuffer : m_data.data(); }
+		FORCE_INLINE uint8_t* Buffer() { return m_pStaticBuffer ? m_pStaticBuffer : m_data.data(); }
 
 	private:
 
@@ -430,23 +437,23 @@ namespace Octopus::Player::Decoders::LJ92
 
 	private:
 
-		inline uint8_t GetJpegChar()
+		FORCE_INLINE uint8_t GetJpegChar()
 		{
 			return fStream->Get_uint8();
 		}
 
-		inline void UnGetJpegChar()
+		FORCE_INLINE void UnGetJpegChar()
 		{
 			fStream->SetReadPosition(fStream->Position() - 1);
 		}
 
-		inline uint16_t Get2bytes()
+		FORCE_INLINE uint16_t Get2bytes()
 		{
 			uint16_t a = GetJpegChar();
 			return (uint16_t)((a << 8) + GetJpegChar());
 		}
 
-		inline void SkipVariable()
+		FORCE_INLINE void SkipVariable()
 		{
 			uint32_t length = Get2bytes() - 2;
 			fStream->Skip(length);
@@ -507,7 +514,7 @@ namespace Octopus::Player::Decoders::LJ92
 			info.restartInterval = Get2bytes();
 		}
 
-		inline void GetApp0()
+		FORCE_INLINE void GetApp0()
 		{
 			SkipVariable();
 		}
@@ -854,7 +861,7 @@ namespace Octopus::Player::Decoders::LJ92
 			info.nextRestartNum = 0;
 		}
 
-		inline void ProcessRestart()
+		FORCE_INLINE void ProcessRestart()
 		{
 			// Throw away and unused odd bits in the bit buffer.
 			fStream->SetReadPosition(fStream->Position() - bitsLeft / 8);
@@ -892,7 +899,7 @@ namespace Octopus::Player::Decoders::LJ92
 			info.nextRestartNum = (info.nextRestartNum + 1) & 7;
 		}
 
-		inline void FillBitBuffer(int32_t nbits)
+		FORCE_INLINE void FillBitBuffer(int32_t nbits)
 		{
 			const int32_t kMinGetBits = sizeof(uint32_t) * 8 - 7;
 
@@ -930,7 +937,7 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		inline int32_t show_bits8()
+		FORCE_INLINE int32_t show_bits8()
 		{
 			if (bitsLeft < 8)
 				FillBitBuffer(8);
@@ -938,12 +945,12 @@ namespace Octopus::Player::Decoders::LJ92
 			return (int32_t)((getBuffer >> (bitsLeft - 8)) & 0xff);
 		}
 
-		inline void flush_bits(int32_t nbits)
+		FORCE_INLINE void flush_bits(int32_t nbits)
 		{
 			bitsLeft -= nbits;
 		}
 
-		inline int32_t get_bits(int32_t nbits)
+		FORCE_INLINE int32_t get_bits(int32_t nbits)
 		{
 			if (nbits > 16)
 			{
@@ -956,7 +963,7 @@ namespace Octopus::Player::Decoders::LJ92
 			return (int32_t)((getBuffer >> (bitsLeft -= nbits)) & (0x0FFFF >> (16 - nbits)));
 		}
 
-		inline int32_t get_bit()
+		FORCE_INLINE int32_t get_bit()
 		{
 			if (!bitsLeft)
 				FillBitBuffer(1);
@@ -964,7 +971,7 @@ namespace Octopus::Player::Decoders::LJ92
 			return (int32_t)((getBuffer >> (--bitsLeft)) & 1);
 		}
 
-		inline int32_t HuffDecode(sHuffmanTable* htbl)
+		FORCE_INLINE int32_t HuffDecode(sHuffmanTable* htbl)
 		{
 			// If the huffman code is less than 8 bits, we can use the fast
 			// table lookup to get its value.  It's more than 8 bits about
@@ -1005,7 +1012,7 @@ namespace Octopus::Player::Decoders::LJ92
 #ifdef __clang__
 		__attribute__((no_sanitize("undefined")))
 #endif
-		inline void HuffExtend(int32_t& x, int32_t s)
+		FORCE_INLINE void HuffExtend(int32_t& x, int32_t s)
 		{
 			if (x < (0x08000 >> (16 - s)))
 			{
@@ -1013,7 +1020,7 @@ namespace Octopus::Player::Decoders::LJ92
 			}
 		}
 
-		inline void PmPutRow(MCU* buf, int32_t numComp, int32_t numCol, int32_t row)
+		FORCE_INLINE void PmPutRow(MCU* buf, int32_t numComp, int32_t numCol, int32_t row)
 		{
 			uint16_t* sPtr = &buf[0][0];
 
@@ -1022,7 +1029,7 @@ namespace Octopus::Player::Decoders::LJ92
 			fSpooler->Spool(sPtr, pixels * (uint32_t)sizeof(uint16_t));
 		}
 
-		inline void DecodeFirstRow(MCU* curRowBuf)
+		FORCE_INLINE void DecodeFirstRow(MCU* curRowBuf)
 		{
 			int32_t compsInScan = info.compsInScan;
 
@@ -1501,13 +1508,14 @@ namespace Octopus::Player::Decoders::LJ92
 		int32_t bitsLeft;
 	};
     
-	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint32_t outOffsetBytes, uint8_t* pInCompressed, uint32_t inOffsetBytes, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
+	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
 	{
-        DecoderInput stream(pInCompressed + inOffsetBytes);
-		DecoderOutput output(pOut16Bit + outOffsetBytes, width * height * sizeof(uint16_t));
-
+		
+        DecoderInput stream(pInCompressed);
+		DecoderOutput output(pOut16Bit, width * height * sizeof(uint16_t));
+		
 		LosslessJpegDecoder decoder(&stream, &output, false);
-
+		
 		uint32_t imageWidth;
 		uint32_t imageHeight;
 		uint32_t imageChannels;
@@ -1518,7 +1526,6 @@ namespace Octopus::Player::Decoders::LJ92
 
 		if (stream.Position() > compressedSizeBytes)
 			return Core::eError::BadImageData;
-
 		return Core::eError::None;
 	}
 }

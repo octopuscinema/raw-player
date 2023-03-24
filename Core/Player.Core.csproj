@@ -4,14 +4,9 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Octopus.Player.Core</RootNamespace>
 	<NrtRevisionFormat>{semvertag+chash}</NrtRevisionFormat>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Decode\**" />
     <EmbeddedResource Remove="Decode\**" />

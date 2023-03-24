@@ -173,10 +173,19 @@ namespace Octopus.Player.Core.IO.DNG
                         try
                         {
                             contentReader.Read((long)offsets[i], packedData.AsMemory(inputOffset, segmentSizeBytes));
-                            if (BitDepth == 12)
-                                Unpack.Unpack12to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (uint)inputOffset, (UIntPtr)segmentSizeBytes);
-                            else
-                                Unpack.Unpack14to16Bit(dataOut, (UIntPtr)dataOutOffset, packedData, (UIntPtr)segmentSizeBytes);
+                            unsafe
+                            {
+                                fixed(byte* pDataOut = &dataOut[dataOutOffset])
+                                {
+                                    fixed (byte* pPackedData = &packedData[inputOffset])
+                                    {
+                                        if (BitDepth == 12)
+                                            Unpack.Unpack12to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                        else
+                                            Unpack.Unpack14to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                    }
+                                }
+                            }
                             packedDataOffset += segmentSizeBytes;
                             dataOutOffset += (segmentSizeBytes * (int)DecodedBitDepth) / (int)BitDepth;
                         }
@@ -239,11 +248,11 @@ namespace Octopus.Player.Core.IO.DNG
                         Error decodeError;
                         unsafe
                         {
-                            fixed (byte* pCompressedData = &compressedData[0])
+                            fixed (byte* pCompressedData = &compressedData[taskMemoryStart])
                             {
-                                fixed (byte* pDataOut = &dataOut[0])
+                                fixed (byte* pDataOut = &dataOut[dataOutOffset])
                                 {
-                                    decodeError = LJ92.Decode(new IntPtr(pDataOut), (uint)dataOutOffset, new IntPtr(pCompressedData), (uint)taskMemoryStart, (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                    decodeError = LJ92.Decode(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                                 }
                             }
                         }
@@ -296,10 +305,9 @@ namespace Octopus.Player.Core.IO.DNG
                     {
                         fixed (byte* pCompressedData = &compressedData[0])
                         {
-                            fixed (byte* pDataOut = &dataOut[0])
+                            fixed (byte* pDataOut = &dataOut[dataOutOffset])
                             {
-                                decodeError = LJ92.Decode(new IntPtr(pDataOut), (uint)dataOutOffset, new IntPtr(pCompressedData), 0, (uint)byteCount,
-                                    (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                decodeError = LJ92.Decode(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                             }
                         }
                     }
