@@ -6,15 +6,15 @@ out highp vec2 normalisedCoordinates;
 
 layout(location = 0) in highp vec2 VertexPosition;
 
-//uniform vec4 RectUV;
+uniform vec4 RectUV;
 uniform highp vec4 RectBounds;
 uniform highp vec2 OrthographicBoundsInverse;
 
 void main(void)
 {
 	// Calculate Texture Coordinates from vertex position
-	highp vec2 UV0 = vec2(0.0,1.0);//RectUV.xy;
-	highp vec2 UV1 = vec2(1.0,0.0);//RectUV.zw;
+	highp vec2 UV0 = RectUV.xz;
+	highp vec2 UV1 = RectUV.wy;
 	normalisedCoordinates = UV0 + VertexPosition*(UV1-UV0);
 	
 	// Calculate position

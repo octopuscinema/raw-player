@@ -1,32 +1,19 @@
-/*
-LJ92.cpp (original)
-(c) Andrew Baldwin 2014
-
-LJ92.cpp (modifications/optimisations)
-(c) OCTOPUS CINEMA 2022
-*/
-
 #include "LJ92.h"
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// Adapted from Adobe DNG SDK 1.5.1: https://github.com/shahminfikri/dng_sdk_1.5.1_-_gpr_sdk_1.0.0/blob/master/dng_sdk/dng_lossless_jpeg.cpp
+
+#include "JpegMarker.h"
+
+#include <assert.h>
+#include <vector>
 
 #ifdef _MSC_VER
-#include <intrin.h>
+#define FORCE_INLINE __forceinline
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-// Required to support some bayer SlimRAW output modes
-// See https://github.com/yanburman/dng_sdk/blob/ae301a57b4e14a6826914e29daf6d40459ef6acf/source/dng_lossless_jpeg.cpp 
-//#define WIP_MULTI_COMPONENT_SUPPORT
-
-BOOL APIENTRY DllMain(HMODULE hModule,
-	DWORD  ul_reason_for_call,
-	LPVOID lpReserved
-)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved )
 {
 	switch (ul_reason_for_call)
 	{
@@ -38,907 +25,1507 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	}
 	return TRUE;
 }
+#else
+#ifdef __clang__
+#define FORCE_INLINE __attribute__((always_inline))
+#else
+#define FORCE_INLINE inline
+#endif
 #endif
 
 namespace Octopus::Player::Decoders::LJ92
 {
-	typedef uint8_t u8;
-	typedef uint16_t u16;
-	typedef uint32_t u32;
-
-	static const uint32_t MaxComponents = 4;
-
-#ifdef _MSC_VER
-	// MSVC implementation of clz, from
-	// https://stackoverflow.com/questions/355967/how-to-use-msvc-intrinsics-to-get-the-equivalent-of-this-gcc-code
-	uint32_t __inline __builtin_clz(uint32_t value)
+	static FORCE_INLINE void ThrowBadFormat()
 	{
-		unsigned long leading_zero = 0;
-
-		if (_BitScanReverse(&leading_zero, value))
-		{
-			return 31 - leading_zero;
-		}
-		else
-		{
-			// This is undefined, I better choose 32 than 0
-			return 32;
-		}
+		// Handle error here
 	}
-#endif
 
-	//#define DEBUG
-	//#define PROFILE_DURATION
+	struct sHuffmanTable
+	{
+		/*
+		 * These two fields directly represent the contents of a JPEG DHT
+		 * marker
+		 */
+		uint8_t bits[17];
+		uint8_t huffval[256];
 
-		//#define SLOW_HUFF
+		/*
+		 * The remaining fields are computed from the above to allow more
+		 * efficient coding and decoding.  These fields should be considered
+		 * private to the Huffman compression & decompression modules.
+		 */
+		uint16_t mincode[17];
+		int32_t maxcode[18];
+		int16_t valptr[17];
+		int32_t numbits[256];
+		int32_t value[256];
 
-	struct ljp {
-		u8* data;
-		u8* dataend;
-		int datalen;
-		int scanstart;
-		int ix;
-		int x; // Width
-		int y; // Height
-		int numComponents; // Number of componenets
-		int bits; // Bit depth
-		int writelen; // Write rows this long
-		int skiplen; // Skip this many values after each row
-		u16* linearize; // Linearization table
-		int linlen;
-		int sssshist[16];
-
-		// Huffman table - only one supported, and probably needed
-#ifdef SLOW_HUFF
-		int* maxcode;
-		int* mincode;
-		int* valptr;
-		u8* huffval;
-		int* huffsize;
-		int* huffcode;
-#else
-		u16* hufflut[MaxComponents];
-		int huffbits;
-#endif
-		// Parse state
-		int cnt;
-		u32 b;
-		u16* image;
-		u16* rowcache;
-		u16* outrow[2];
+		uint16_t ehufco[256];
+		int8_t ehufsi[256];
 	};
 
-	enum LJ92_ERRORS {
-		LJ92_ERROR_NONE = 0,
-		LJ92_ERROR_CORRUPT = -1,
-		LJ92_ERROR_NO_MEMORY = -2,
-		LJ92_ERROR_BAD_HANDLE = -3,
-		LJ92_ERROR_TOO_WIDE = -4,
+	// Computes the derived fields in the Huffman table structure.
+	static void FixHuffTbl(sHuffmanTable* htbl)
+	{
+
+		int32_t l;
+		int32_t i;
+
+		const uint32_t bitMask[] =
+		{
+            0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff,
+            0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff,
+            0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff,
+            0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff,
+            0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff,
+            0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff,
+            0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
+            0x0000000f, 0x00000007, 0x00000003, 0x00000001
+		};
+
+		// Figure C.1: make table of Huffman code length for each symbol
+		// Note that this is in code-length order.
+
+		int8_t huffsize[257];
+
+		int32_t p = 0;
+
+		for (l = 1; l <= 16; l++)
+		{
+			for (i = 1; i <= (int32_t)htbl->bits[l]; i++)
+				huffsize[p++] = (int8_t)l;
+		}
+
+		huffsize[p] = 0;
+		int32_t lastp = p;
+
+		// Figure C.2: generate the codes themselves
+		// Note that this is in code-length order.
+
+		uint16_t huffcode[257];
+		uint16_t code = 0;
+		int32_t si = huffsize[0];
+
+		p = 0;
+
+		while (huffsize[p])
+		{
+			while (((int32_t)huffsize[p]) == si)
+			{
+				huffcode[p++] = code;
+				code++;
+			}
+
+			code <<= 1;
+
+			si++;
+		}
+
+		// Figure C.3: generate encoding tables
+		// These are code and size indexed by symbol value
+		// Set any codeless symbols to have code length 0; this allows
+		// EmitBits to detect any attempt to emit such symbols.
+
+		memset(htbl->ehufsi, 0, sizeof(htbl->ehufsi));
+
+		for (p = 0; p < lastp; p++)
+		{
+			htbl->ehufco[htbl->huffval[p]] = huffcode[p];
+			htbl->ehufsi[htbl->huffval[p]] = huffsize[p];
+		}
+
+		// Figure F.15: generate decoding tables
+		p = 0;
+
+		for (l = 1; l <= 16; l++)
+		{
+			if (htbl->bits[l])
+			{
+				htbl->valptr[l] = (int16_t)p;
+				htbl->mincode[l] = huffcode[p];
+
+				p += htbl->bits[l];
+
+				htbl->maxcode[l] = huffcode[p - 1];
+			}
+			else
+			{
+				htbl->maxcode[l] = -1;
+			}
+		}
+
+		// We put in this value to ensure HuffDecode terminates.
+		htbl->maxcode[17] = 0xFFFFFL;
+
+		// Build the numbits, value lookup tables.
+		// These table allow us to gather 8 bits from the bits stream,
+		// and immediately lookup the size and value of the huffman codes.
+		// If size is zero, it means that more than 8 bits are in the huffman
+		// code (this happens about 3-4% of the time).
+		memset(htbl->numbits, 0, sizeof(htbl->numbits));
+
+		for (p = 0; p < lastp; p++)
+		{
+			int32_t size = huffsize[p];
+
+			if (size <= 8)
+			{
+				int32_t value = htbl->huffval[p];
+
+				code = huffcode[p];
+
+				int32_t ll = code << (8 - size);
+
+				int32_t ul = (size < 8 ? ll | bitMask[24 + size]
+					: ll);
+
+				if (ul >= static_cast<int32_t> (sizeof(htbl->numbits) / sizeof(htbl->numbits[0])) ||
+					ul >= static_cast<int32_t> (sizeof(htbl->value) / sizeof(htbl->value[0])))
+				{
+					ThrowBadFormat();
+				}
+
+				for (i = ll; i <= ul; i++)
+				{
+					htbl->numbits[i] = size;
+					htbl->value[i] = value;
+				}
+			}
+		}
+	}
+
+	/*****************************************************************************/
+
+	/*
+	 * The following structure stores basic information about one component.
+	 */
+
+	struct sJpegComponentInfo
+	{
+		/*
+		 * These values are fixed over the whole image.
+		 * They are read from the SOF marker.
+		 */
+		int16_t componentId;		/* identifier for this component (0..255) */
+		int16_t componentIndex;	/* its index in SOF or cPtr->compInfo[]   */
+
+		/*
+		 * Downsampling is not normally used in lossless JPEG, although
+		 * it is permitted by the JPEG standard (DIS). We set all sampling
+		 * factors to 1 in this program.
+		 */
+		int16_t hSampFactor;		/* horizontal sampling factor */
+		int16_t vSampFactor;		/* vertical sampling factor   */
+
+		/*
+		 * Huffman table selector (0..3). The value may vary
+		 * between scans. It is read from the SOS marker.
+		 */
+		int16_t dcTblNo;
 	};
 
-	typedef struct ljp lj92;
-
-#ifdef PROFILE_DURATION
-	CJ3Timer g_Timer;
-#endif
-
-	static int find(ljp* self) {
-		int ix = self->ix;
-		u8* data = self->data;
-		while (data[ix] != 0xFF && ix < (self->datalen - 1)) {
-			ix += 1;
-		}
-		ix += 2;
-		if (ix >= self->datalen) return -1;
-		self->ix = ix;
-		return data[ix - 1];
-	}
-
-#define BEH(ptr) ((((int)(*&ptr))<<8)|(*(&ptr+1)))
-
-	static LJ92_ERRORS parseHuff(ljp* self)
+	/*
+	 * One of the following structures is used to pass around the
+	 * decompression information.
+	 */
+	struct sDecompressInfo
 	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		u8* huffhead = &self->data[self->ix]; // xstruct.unpack('>HB16B',self.data[self.ix:self.ix+19])
-		u8* bits = &huffhead[2];
-		int componentIndex = huffhead[2];
-		bits[0] = 0; // Because table starts from 1
-		int hufflen = BEH(huffhead[0]);
-		if ((self->ix + hufflen) >= self->datalen) return ret;
-#ifdef SLOW_HUFF
-		u8* huffval = calloc(hufflen - 19, sizeof(u8));
-		if (huffval == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->huffval = huffval;
-		for (int hix = 0; hix < (hufflen - 19); hix++) {
-			huffval[hix] = self->data[self->ix + 19 + hix];
-#ifdef DEBUG
-			printf("huffval[%d]=%d\n", hix, huffval[hix]);
-#endif
-		}
-		self->ix += hufflen;
-		// Generate huffman table
-		int k = 0;
-		int i = 1;
-		int j = 1;
-		int huffsize_needed = 1;
-		// First calculate how long huffsize needs to be
-		while (i <= 16) {
-			while (j <= bits[i]) {
-				huffsize_needed++;
-				k = k + 1;
-				j = j + 1;
-			}
-			i = i + 1;
-			j = 1;
-		}
-		// Now allocate and do it
-		int* huffsize = calloc(huffsize_needed, sizeof(int));
-		if (huffsize == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->huffsize = huffsize;
-		k = 0;
-		i = 1;
-		j = 1;
-		// First calculate how long huffsize needs to be
-		int hsix = 0;
-		while (i <= 16) {
-			while (j <= bits[i]) {
-				huffsize[hsix++] = i;
-				k = k + 1;
-				j = j + 1;
-			}
-			i = i + 1;
-			j = 1;
-		}
-		huffsize[hsix++] = 0;
+		/*
+		 * Image width, height, and image data precision (bits/sample)
+		 * These fields are set by ReadFileHeader or ReadScanHeader
+		 */
+		int32_t imageWidth;
+		int32_t imageHeight;
+		int32_t dataPrecision;
 
-		// Calculate the size of huffcode array
-		int huffcode_needed = 0;
-		k = 0;
-		int code = 0;
-		int si = huffsize[0];
-		while (1) {
-			while (huffsize[k] == si) {
-				huffcode_needed++;
-				code = code + 1;
-				k = k + 1;
-			}
-			if (huffsize[k] == 0)
-				break;
-			while (huffsize[k] != si) {
-				code = code << 1;
-				si = si + 1;
-			}
-		}
-		// Now fill it
-		int* huffcode = calloc(huffcode_needed, sizeof(int));
-		if (huffcode == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->huffcode = huffcode;
-		int hcix = 0;
-		k = 0;
-		code = 0;
-		si = huffsize[0];
-		while (1) {
-			while (huffsize[k] == si) {
-				huffcode[hcix++] = code;
-				code = code + 1;
-				k = k + 1;
-			}
-			if (huffsize[k] == 0)
-				break;
-			while (huffsize[k] != si) {
-				code = code << 1;
-				si = si + 1;
-			}
+		/*
+		 * compInfo[i] describes component that appears i'th in SOF
+		 * numComponents is the # of color components in JPEG image.
+		 */
+		sJpegComponentInfo* compInfo;
+		int16_t numComponents;
+
+		/*
+		 * *curCompInfo[i] describes component that appears i'th in SOS.
+		 * compsInScan is the # of color components in current scan.
+		 */
+		sJpegComponentInfo* curCompInfo[4];
+		int16_t compsInScan;
+
+		/*
+		 * MCUmembership[i] indexes the i'th component of MCU into the
+		 * curCompInfo array.
+		 */
+		int16_t MCUmembership[10];
+
+		/*
+		 * ptrs to Huffman coding tables, or NULL if not defined
+		 */
+		sHuffmanTable* dcHuffTblPtrs[4];
+
+		/*
+		 * prediction selection value (PSV) and point transform parameter (Pt)
+		 */
+		int32_t Ss;
+		int32_t Pt;
+
+		/*
+		 * In lossless JPEG, restart interval shall be an integer
+		 * multiple of the number of MCU in a MCU row.
+		 */
+		int32_t restartInterval;/* MCUs per restart interval, 0 = no restart */
+		int32_t restartInRows; /*if > 0, MCU rows per restart interval; 0 = no restart*/
+
+		/*
+		 * these fields are private data for the entropy decoder
+		 */
+		int32_t restartRowsToGo;	/* MCUs rows left in this restart interval */
+		int16_t nextRestartNum;	/* # of next RSTn marker (0..7) */
+	};
+
+
+	typedef uint16_t ComponentType;
+	typedef ComponentType* MCU;
+
+	class DecoderInput
+	{
+	public:
+		DecoderInput(uint8_t* pStream)
+			: m_pStream(pStream)
+			, m_position(0ull)
+		{}
+
+		FORCE_INLINE uint8_t Get_uint8() { return m_pStream[m_position++]; }
+		FORCE_INLINE uint64_t Position() const { return m_position; }
+		FORCE_INLINE void SetReadPosition(uint64_t position) { m_position = position; }
+		FORCE_INLINE void Skip(uint64_t length) { m_position += length; }
+
+	private:
+
+		uint8_t* m_pStream;
+		uint64_t m_position;
+	};
+
+	class DecoderOutput
+	{
+	public:
+		DecoderOutput(uint8_t* pOutput, uint64_t outputSize)
+			: m_pOutput(pOutput)
+			, m_pBufferEnd(pOutput + outputSize)
+		{
 		}
 
-		i = 0;
-		j = 0;
+		FORCE_INLINE void Spool(const void* pData, uint32_t count)
+		{
+			assert((m_pOutput + count) <= m_pBufferEnd);
 
-		int* maxcode = calloc(17, sizeof(int));
-		if (maxcode == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->maxcode = maxcode;
-		int* mincode = calloc(17, sizeof(int));
-		if (mincode == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->mincode = mincode;
-		int* valptr = calloc(17, sizeof(int));
-		if (valptr == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->valptr = valptr;
+			memcpy(m_pOutput, pData, count);
+			m_pOutput += count;
+		}
 
-		while (1) {
-			while (1) {
-				i++;
-				if (i > 16)
+	private:
+
+		uint8_t* m_pOutput;
+		uint8_t* m_pBufferEnd;
+	};
+ 
+    class LosslessJpegAllocator
+    {
+    public:
+        LosslessJpegAllocator(uint8_t* pBuffer, uint64_t bufferSize)
+        : m_pBuffer(pBuffer)
+        , m_bufferSize(bufferSize)
+        {}
+        
+		FORCE_INLINE bool CanAllocate(uint64_t size)
+        {
+            return ( size <= m_bufferSize );
+        }
+        
+		FORCE_INLINE uint8_t* Allocate(uint64_t size)
+        {
+            if ( CanAllocate(size) )
+            {
+                const auto pBuffer = m_pBuffer;
+                m_pBuffer += size;
+                m_bufferSize -= size;
+                return pBuffer;
+            }
+            return nullptr;
+        }
+    
+    private:
+    
+        uint8_t* m_pBuffer;
+        uint64_t m_bufferSize;
+    };
+    
+    class LosslessJpegMemory
+	{
+	public:
+ 
+        LosslessJpegMemory(LosslessJpegAllocator* pAllocator)
+        : m_pStaticBuffer(nullptr)
+        , m_pAllocator(pAllocator)
+        {}
+
+		FORCE_INLINE void Allocate(uint64_t size)
+		{
+            if ( m_pAllocator && m_pAllocator->CanAllocate(size))
+                m_pStaticBuffer = m_pAllocator->Allocate(size);
+            else
+                m_data.resize(size);
+		}
+
+		FORCE_INLINE void Allocate(uint64_t count, uint64_t elementSize)
+		{
+            const auto size = count * elementSize;
+            if ( m_pAllocator && m_pAllocator->CanAllocate(size))
+                m_pStaticBuffer = m_pAllocator->Allocate(size);
+            else
+                m_data.resize(size);
+		}
+
+		FORCE_INLINE uint8_t* Buffer() { return m_pStaticBuffer ? m_pStaticBuffer : m_data.data(); }
+
+	private:
+
+        LosslessJpegAllocator* m_pAllocator;
+        uint8_t* m_pStaticBuffer;
+		std::vector<uint8_t> m_data;
+	};
+
+	class LosslessJpegDecoder
+	{
+	public:
+
+		LosslessJpegDecoder(DecoderInput* stream, DecoderOutput* spooler, bool bug16, LosslessJpegAllocator* pAllocator = nullptr)
+			: fStream(stream)
+			, fSpooler(spooler)
+			, fBug16(bug16)
+            , huffmanBuffer{pAllocator, pAllocator, pAllocator, pAllocator}
+			, compInfoBuffer(pAllocator)
+			, info()
+			, mcuBuffer1(pAllocator)
+			, mcuBuffer2(pAllocator)
+			, mcuBuffer3(pAllocator)
+			, mcuBuffer4(pAllocator)
+			, mcuROW1(nullptr)
+			, mcuROW2(nullptr)
+			, getBuffer(0)
+			, bitsLeft(0)
+		{
+			memset(&info, 0, sizeof(info));
+		}
+
+		void StartRead(uint32_t& imageWidth, uint32_t& imageHeight, uint32_t& imageChannels)
+		{
+			ReadFileHeader();
+			ReadScanHeader();
+			DecoderStructInit();
+			HuffDecoderInit();
+
+			imageWidth = info.imageWidth;
+			imageHeight = info.imageHeight;
+			imageChannels = info.compsInScan;
+		}
+
+		void FinishRead()
+		{
+			DecodeImage();
+		}
+
+	private:
+
+		FORCE_INLINE uint8_t GetJpegChar()
+		{
+			return fStream->Get_uint8();
+		}
+
+		FORCE_INLINE void UnGetJpegChar()
+		{
+			fStream->SetReadPosition(fStream->Position() - 1);
+		}
+
+		FORCE_INLINE uint16_t Get2bytes()
+		{
+			uint16_t a = GetJpegChar();
+			return (uint16_t)((a << 8) + GetJpegChar());
+		}
+
+		FORCE_INLINE void SkipVariable()
+		{
+			uint32_t length = Get2bytes() - 2;
+			fStream->Skip(length);
+		}
+
+		void GetDht()
+		{
+			int32_t length = Get2bytes() - 2;
+
+			while (length > 0)
+			{
+
+				int32_t index = GetJpegChar();
+
+				if (index < 0 || index >= 4)
+				{
+					ThrowBadFormat();
+				}
+
+				sHuffmanTable*& htblptr = info.dcHuffTblPtrs[index];
+
+				if (htblptr == NULL)
+				{
+					huffmanBuffer[index].Allocate(sizeof(sHuffmanTable));
+					htblptr = (sHuffmanTable*)huffmanBuffer[index].Buffer();
+				}
+
+				htblptr->bits[0] = 0;
+
+				int32_t count = 0;
+
+				for (int32_t i = 1; i <= 16; i++)
+				{
+					htblptr->bits[i] = GetJpegChar();
+					count += htblptr->bits[i];
+				}
+
+				if (count > 256)
+				{
+					ThrowBadFormat();
+				}
+
+				for (int32_t j = 0; j < count; j++)
+				{
+					htblptr->huffval[j] = GetJpegChar();
+				}
+
+				length -= 1 + 16 + count;
+			}
+		}
+
+		void GetDri()
+		{
+			if (Get2bytes() != 4)
+			{
+				ThrowBadFormat();
+			}
+			info.restartInterval = Get2bytes();
+		}
+
+		FORCE_INLINE void GetApp0()
+		{
+			SkipVariable();
+		}
+
+		void GetSof(int32_t code)
+		{
+			int32_t length = Get2bytes();
+
+			info.dataPrecision = GetJpegChar();
+			info.imageHeight = Get2bytes();
+			info.imageWidth = Get2bytes();
+			info.numComponents = GetJpegChar();
+
+			// We don't support files in which the image height is initially
+			// specified as 0 and is later redefined by DNL.  As long as we
+			// have to check that, might as well have a general sanity check.
+			if ((info.imageHeight <= 0) || (info.imageWidth <= 0) || (info.numComponents <= 0))
+			{
+				ThrowBadFormat();
+			}
+
+			// Lossless JPEG specifies data precision to be from 2 to 16 bits/sample.
+
+			const int32_t MinPrecisionBits = 2;
+			const int32_t MaxPrecisionBits = 16;
+
+			if ((info.dataPrecision < MinPrecisionBits) || (info.dataPrecision > MaxPrecisionBits))
+			{
+				ThrowBadFormat();
+			}
+
+			// Check length of tag.
+			if (length != (info.numComponents * 3 + 8))
+			{
+				ThrowBadFormat();
+			}
+
+			// Allocate per component info.
+
+			// We can cast info.numComponents to a uint32_t because the check above
+			// guarantees that it cannot be negative.
+			compInfoBuffer.Allocate(static_cast<uint32_t> (info.numComponents),
+				sizeof(sJpegComponentInfo));
+
+			info.compInfo = (sJpegComponentInfo*)compInfoBuffer.Buffer();
+
+			// Read in the per compent info.
+			for (int32_t ci = 0; ci < info.numComponents; ci++)
+			{
+				sJpegComponentInfo* compptr = &info.compInfo[ci];
+
+				compptr->componentIndex = (int16_t)ci;
+
+				compptr->componentId = GetJpegChar();
+
+				int32_t c = GetJpegChar();
+
+				compptr->hSampFactor = (int16_t)((c >> 4) & 15);
+				compptr->vSampFactor = (int16_t)((c) & 15);
+
+				(void)GetJpegChar();   /* skip Tq */
+			}
+		}
+
+		void GetSos()
+		{
+			int32_t length = Get2bytes();
+
+			// Get the number of image components.
+
+			int32_t n = GetJpegChar();
+			info.compsInScan = (int16_t)n;
+
+			// Check length.
+
+			length -= 3;
+
+			if (length != (n * 2 + 3) || n < 1 || n > 4)
+			{
+				ThrowBadFormat();
+			}
+
+			// Find index and huffman table for each component.
+			for (int32_t i = 0; i < n; i++)
+			{
+
+				int32_t cc = GetJpegChar();
+				int32_t c = GetJpegChar();
+
+				int32_t ci;
+
+				for (ci = 0; ci < info.numComponents; ci++)
+				{
+					if (cc == info.compInfo[ci].componentId)
+					{
+						break;
+					}
+				}
+
+				if (ci >= info.numComponents)
+				{
+					ThrowBadFormat();
+				}
+
+				sJpegComponentInfo* compptr = &info.compInfo[ci];
+
+				info.curCompInfo[i] = compptr;
+
+				compptr->dcTblNo = (int16_t)((c >> 4) & 15);
+			}
+
+			// Get the PSV, skip Se, and get the point transform parameter.
+
+			info.Ss = GetJpegChar();
+
+			(void)GetJpegChar();
+
+			info.Pt = GetJpegChar() & 0x0F;
+		}
+
+		void GetSoi()
+		{
+			// Reset all parameters that are defined to be reset by SOI
+			info.restartInterval = 0;
+		}
+
+		int32_t NextMarker()
+		{
+			int32_t c;
+
+			do
+			{
+				// skip any non-FF bytes
+				do
+				{
+					c = GetJpegChar();
+				} while (c != 0xFF);
+
+				// skip any duplicate FFs, since extra FFs are legal
+				do
+				{
+					c = GetJpegChar();
+				} while (c == 0xFF);
+
+			} while (c == 0);		// repeat if it was a stuffed FF/00
+
+			return c;
+		}
+
+		JpegMarker ProcessTables()
+		{
+			while (true)
+			{
+				int32_t c = NextMarker();
+
+				switch (c)
+				{
+				case M_SOF0:
+				case M_SOF1:
+				case M_SOF2:
+				case M_SOF3:
+				case M_SOF5:
+				case M_SOF6:
+				case M_SOF7:
+				case M_JPG:
+				case M_SOF9:
+				case M_SOF10:
+				case M_SOF11:
+				case M_SOF13:
+				case M_SOF14:
+				case M_SOF15:
+				case M_SOI:
+				case M_EOI:
+				case M_SOS:
+					return (JpegMarker)c;
+				case M_DHT:
+					GetDht();
 					break;
-				if (bits[i] != 0)
+				case M_DQT:
 					break;
-				maxcode[i] = -1;
+				case M_DRI:
+					GetDri();
+					break;
+				case M_APP0:
+					GetApp0();
+					break;
+				case M_RST0:	// these are all parameterless
+				case M_RST1:
+				case M_RST2:
+				case M_RST3:
+				case M_RST4:
+				case M_RST5:
+				case M_RST6:
+				case M_RST7:
+				case M_TEM:
+					break;
+				default:		// must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn
+					SkipVariable();
+					break;
+				}
 			}
-			if (i > 16)
+
+			return M_ERROR;
+		}
+
+		void ReadFileHeader()
+		{
+			// Demand an SOI marker at the start of the stream --- otherwise it's
+			// probably not a JPEG stream at all.
+			int32_t c = GetJpegChar();
+			int32_t c2 = GetJpegChar();
+
+			if ((c != 0xFF) || (c2 != M_SOI))
+			{
+				ThrowBadFormat();
+			}
+
+			// OK, process SOI
+			GetSoi();
+
+			// Process markers until SOF
+			c = ProcessTables();
+
+			switch (c)
+			{
+			case M_SOF0:
+			case M_SOF1:
+			case M_SOF3:
+				GetSof(c);
 				break;
-			valptr[i] = j;
-			mincode[i] = huffcode[j];
-			j = j + bits[i] - 1;
-			maxcode[i] = huffcode[j];
-			j++;
-		}
-		free(huffsize);
-		self->huffsize = NULL;
-		free(huffcode);
-		self->huffcode = NULL;
-		ret = LJ92_ERROR_NONE;
-#else
-		/* Calculate huffman direct lut */
-		// How many bits in the table - find highest entry
-		u8* huffvals = &self->data[self->ix + 19];
-		int maxbits = 16;
-		while (maxbits > 0) {
-			if (bits[maxbits]) break;
-			maxbits--;
-		}
-		self->huffbits = maxbits;
-		/* Now fill the lut */
-		u16* hufflut = (u16*)malloc(((size_t)1 << maxbits) * sizeof(u16));
-		if (hufflut == NULL) return LJ92_ERROR_NO_MEMORY;
-		self->hufflut[componentIndex] = hufflut;
-		int i = 0;
-		int hv = 0;
-		int rv = 0;
-		int vl = 0; // i
-		int hcode;
-		int bitsused = 1;
-#ifdef DEBUG
-		printf("%04x:%x:%d:%x\n", i, huffvals[hv], bitsused, 1 << (maxbits - bitsused));
-#endif
-		while (i < 1 << maxbits) {
-			if (bitsused > maxbits) {
-				break; // Done. Should never get here!
-			}
-			if (vl >= bits[bitsused]) {
-				bitsused++;
-				vl = 0;
-				continue;
-			}
-			if (rv == 1 << (maxbits - bitsused)) {
-				rv = 0;
-				vl++;
-				hv++;
-#ifdef DEBUG
-				printf("%04x:%x:%d:%x\n", i, huffvals[hv], bitsused, 1 << (maxbits - bitsused));
-#endif
-				continue;
-			}
-			hcode = huffvals[hv];
-			hufflut[i] = hcode << 8 | bitsused;
-			//printf("%d %d %d\n",i,bitsused,hcode);
-			i++;
-			rv++;
-		}
-		ret = LJ92_ERROR_NONE;
-#endif
-		return ret;
-	}
-
-	static LJ92_ERRORS parseSof3(ljp* self) {
-		if (self->ix + 6 >= self->datalen) return LJ92_ERROR_CORRUPT;
-		self->y = BEH(self->data[self->ix + 3]);
-		self->x = BEH(self->data[self->ix + 5]);
-		self->numComponents = self->data[self->ix + 7];
-		self->bits = self->data[self->ix + 2];
-		self->ix += BEH(self->data[self->ix]);
-		return LJ92_ERROR_NONE;
-	}
-
-	static LJ92_ERRORS parseBlock(ljp* self, int marker) {
-		self->ix += BEH(self->data[self->ix]);
-		if (self->ix >= self->datalen) return LJ92_ERROR_CORRUPT;
-		return LJ92_ERROR_NONE;
-	}
-
-#ifdef SLOW_HUFF
-	static int nextbit(ljp* self) {
-		u32 b = self->b;
-		if (self->cnt == 0) {
-			u8* data = &self->data[self->ix];
-			u32 next = *data++;
-			b = next;
-			if (next == 0xff) {
-				data++;
-				self->ix++;
-			}
-			self->ix++;
-			self->cnt = 8;
-		}
-		int bit = b >> 7;
-		self->cnt--;
-		self->b = (b << 1) & 0xFF;
-		return bit;
-	}
-
-	static int decode(ljp* self) {
-		int i = 1;
-		int code = nextbit(self);
-		while (code > self->maxcode[i]) {
-			i++;
-			code = (code << 1) + nextbit(self);
-		}
-		int j = self->valptr[i];
-		j = j + code - self->mincode[i];
-		int value = self->huffval[j];
-		return value;
-	}
-
-	static int receive(ljp* self, int ssss) {
-		int i = 0;
-		int v = 0;
-		while (i != ssss) {
-			i++;
-			v = (v << 1) + nextbit(self);
-		}
-		return v;
-	}
-
-	static int extend(ljp* self, int v, int t) {
-		int vt = 1 << (t - 1);
-		if (v < vt) {
-			vt = (-1 << t) + 1;
-			v = v + vt;
-		}
-		return v;
-	}
-#endif
-
-	inline static int nextdiff(ljp* self, int Px, int componentIndex) {
-#ifdef SLOW_HUFF
-		int t = decode(self);
-		int diff = receive(self, t);
-		diff = extend(self, diff, t);
-		//printf("%d %d %d %x\n",Px+diff,Px,diff,t);//,index,usedbits);
-#else
-		u32 b = self->b;
-		int cnt = self->cnt;
-		int huffbits = self->huffbits;
-		int ix = self->ix;
-		int next;
-		while (cnt < huffbits) {
-			next = *(u16*)&self->data[ix];
-			int one = next & 0xFF;
-			int two = next >> 8;
-			b = (b << 16) | (one << 8) | two;
-			cnt += 16;
-			ix += 2;
-			if (one == 0xFF) {
-				//printf("%x %x %x %x %d\n",one,two,b,b>>8,cnt);
-				b >>= 8;
-				cnt -= 8;
-			}
-			else if (two == 0xFF)
-				ix++;
-		}
-		int index = b >> (cnt - huffbits);
-		u16 ssssused = (self->hufflut[componentIndex])[index];
-		int usedbits = ssssused & 0xFF;
-		int t = ssssused >> 8;
-		self->sssshist[t]++;
-		cnt -= usedbits;
-		int keepbitsmask = (1 << cnt) - 1;
-		b &= keepbitsmask;
-		while (cnt < t) {
-			next = *(u16*)&self->data[ix];
-			int one = next & 0xFF;
-			int two = next >> 8;
-			b = (b << 16) | (one << 8) | two;
-			cnt += 16;
-			ix += 2;
-			if (one == 0xFF) {
-				b >>= 8;
-				cnt -= 8;
-			}
-			else if (two == 0xFF)
-				ix++;
-		}
-		cnt -= t;
-		int diff = b >> cnt;
-		int vt = 1 << (t - 1);
-		if (diff < vt) {
-			vt = (-1 << t) + 1;
-			diff += vt;
-		}
-		keepbitsmask = (1 << cnt) - 1;
-		self->b = b & keepbitsmask;
-		self->cnt = cnt;
-		self->ix = ix;
-		//printf("%d %d\n",t,diff);
-		//printf("%d %d %d %x %x %d\n",Px+diff,Px,diff,t,index,usedbits);
-#ifdef DEBUG
-#endif
-#endif
-		return diff;
-	}
-
-	static LJ92_ERRORS parsePred1NoSkipNoLinearize(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		self->ix += BEH(self->data[self->ix]);
-		self->cnt = 0;
-		self->b = 0;
-
-		// Now need to decode huffman coded values
-		int c = 0;
-		int pixels = self->y * self->x;
-		u16* out = self->image;
-		u16* thisrow = self->outrow[0];
-		u16* lastrow = self->outrow[1];
-
-		int componentIndex = 0;
-
-		// First pixel predicted from base value
-		int diff;
-		int Px = 1 << (self->bits - 1); // First pixel uses middle grey value
-		int col = 0;
-		int left = 0;
-		while (c < pixels) {
-
-			diff = nextdiff(self, Px, componentIndex);
-			left = Px + diff;
-			Px = left; // Default use left pixel
-			//printf("%d %d %d\n",c,diff,left);
-
-			thisrow[col] = left;
-			out[c++] = left;
-			if (++col == self->x) {
-				col = 0;
-				u16* temprow = lastrow;
-				lastrow = thisrow;
-				thisrow = temprow;
-				Px = lastrow[col]; // Use value above for first pixel in row
-			}
-
-			if (self->ix >= self->datalen + 2) break;
-		}
-		if (c >= pixels) ret = LJ92_ERROR_NONE;
-		return ret;
-	}
-
-	static LJ92_ERRORS parsePred2NoSkipNoLinearize(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		self->ix += BEH(self->data[self->ix]);
-		self->cnt = 0;
-		self->b = 0;
-
-		// Now need to decode huffman coded values
-		int pixels = self->y * self->x;
-		u16* out = self->image;
-
-		int componentIndex = 0;
-
-		// First pixel predicted from base value
-		int diff;
-		int Px = 1 << (self->bits - 1); // First pixel uses middle grey value
-		int col = 0;
-		int left = 0;
-		int c = 0;
-
-		// First row (except first pixel) is always pixel to the left
-		while (c < self->x) {
-			diff = nextdiff(self, Px, componentIndex);
-			left = Px + diff;
-
-			out[c++] = left;
-
-			if (self->ix >= self->datalen + 2)
+			default:
+				ThrowBadFormat();
 				break;
-			Px = left;
-		}
-
-		// Remaining rows are always pixel above
-		while (c < pixels) {
-
-			// Set pixel to above pixel
-			Px = out[c - self->x];
-
-			diff = nextdiff(self, Px, componentIndex);
-			left = Px + diff;
-
-			out[c++] = left;
-
-			if (self->ix >= self->datalen + 2)
-				break;
-		}
-
-		if (c >= pixels) ret = LJ92_ERROR_NONE;
-		return ret;
-	}
-
-	static LJ92_ERRORS parsePred6(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		self->ix = self->scanstart;
-		//int compcount = self->data[self->ix+2];
-		self->ix += BEH(self->data[self->ix]);
-		self->cnt = 0;
-		self->b = 0;
-		int write = self->writelen;
-		// Now need to decode huffman coded values
-		int c = 0;
-		int pixels = self->y * self->x;
-		u16* out = self->image;
-		u16* temprow;
-		u16* thisrow = self->outrow[0];
-		u16* lastrow = self->outrow[1];
-
-		int componentIndex = 0;
-
-		// First pixel predicted from base value
-		int diff;
-		int Px;
-		int col = 0;
-		int row = 0;
-		int left = 0;
-		int linear;
-
-		// First pixel
-		diff = nextdiff(self, 0, componentIndex);
-		Px = 1 << (self->bits - 1);
-		left = Px + diff;
-		if (self->linearize)
-			linear = self->linearize[left];
-		else
-			linear = left;
-		thisrow[col++] = left;
-		out[c++] = linear;
-		if (self->ix >= self->datalen) return ret;
-		--write;
-		int rowcount = self->x - 1;
-		while (rowcount--) {
-			diff = nextdiff(self, 0, componentIndex);
-			Px = left;
-			left = Px + diff;
-			if (self->linearize)
-				linear = self->linearize[left];
-			else
-				linear = left;
-			thisrow[col++] = left;
-			out[c++] = linear;
-			//printf("%d %d %d %d %x\n",col-1,diff,left,thisrow[col-1],&thisrow[col-1]);
-			if (self->ix >= self->datalen) return ret;
-			if (--write == 0) {
-				out += self->skiplen;
-				write = self->writelen;
 			}
 		}
-		temprow = lastrow;
-		lastrow = thisrow;
-		thisrow = temprow;
-		row++;
-		//printf("%x %x\n",thisrow,lastrow);
-		while (c < pixels) {
-			col = 0;
-			diff = nextdiff(self, 0, componentIndex);
-			Px = lastrow[col]; // Use value above for first pixel in row
-			left = Px + diff;
-			if (self->linearize) {
-				if (left > self->linlen) return LJ92_ERROR_CORRUPT;
-				linear = self->linearize[left];
+
+		int32_t ReadScanHeader()
+		{
+			// Process markers until SOS or EOI
+			int32_t c = ProcessTables();
+
+			switch (c)
+			{
+
+			case M_SOS:
+				GetSos();
+				return 1;
+			case M_EOI:
+				return 0;
+			default:
+				ThrowBadFormat();
+				break;
+			}
+
+			return 0;
+		}
+
+		void DecoderStructInit()
+		{
+			int32_t ci;
+			{
+				// Check sampling factor validity.
+				for (ci = 0; ci < info.numComponents; ci++)
+				{
+					sJpegComponentInfo* compPtr = &info.compInfo[ci];
+
+					if (compPtr->hSampFactor != 1 ||
+						compPtr->vSampFactor != 1)
+					{
+						ThrowBadFormat();
+					}
+				}
+			}
+
+			// Prepare array describing MCU composition.
+			if (info.compsInScan < 0 || info.compsInScan > 4)
+			{
+				ThrowBadFormat();
+			}
+
+			for (ci = 0; ci < info.compsInScan; ci++)
+			{
+				info.MCUmembership[ci] = (int16_t)ci;
+			}
+
+			// Initialize mucROW1 and mcuROW2 which buffer two rows of
+			// pixels for predictor calculation.
+
+			// This multiplication cannot overflow because info.compsInScan is
+			// guaranteed to be between 0 and 4 inclusive (see checks above).
+
+			int32_t mcuSize = info.compsInScan * (uint32_t)sizeof(ComponentType);
+
+			mcuBuffer1.Allocate(info.imageWidth, sizeof(MCU));
+			mcuBuffer2.Allocate(info.imageWidth, sizeof(MCU));
+
+			mcuROW1 = (MCU*)mcuBuffer1.Buffer();
+			mcuROW2 = (MCU*)mcuBuffer2.Buffer();
+
+			mcuBuffer3.Allocate(info.imageWidth, mcuSize);
+			mcuBuffer4.Allocate(info.imageWidth, mcuSize);
+
+			mcuROW1[0] = (ComponentType*)mcuBuffer3.Buffer();
+			mcuROW2[0] = (ComponentType*)mcuBuffer4.Buffer();
+
+			for (int32_t j = 1; j < info.imageWidth; j++)
+			{
+				mcuROW1[j] = mcuROW1[j - 1] + info.compsInScan;
+				mcuROW2[j] = mcuROW2[j - 1] + info.compsInScan;
+			}
+		}
+
+		void HuffDecoderInit()
+		{
+			// Initialize bit parser state
+			getBuffer = 0;
+			bitsLeft = 0;
+
+			// Prepare Huffman tables.
+			for (int16_t ci = 0; ci < info.compsInScan; ci++)
+			{
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+				// Make sure requested tables are present
+				if (compptr->dcTblNo < 0 || compptr->dcTblNo > 3)
+				{
+					ThrowBadFormat();
+				}
+
+				if (info.dcHuffTblPtrs[compptr->dcTblNo] == NULL)
+				{
+					ThrowBadFormat();
+				}
+
+				// Compute derived values for Huffman tables.
+				// We may do this more than once for same table, but it's not a
+				// big deal
+				FixHuffTbl(info.dcHuffTblPtrs[compptr->dcTblNo]);
+			}
+
+			// Initialize restart stuff
+			info.restartInRows = info.restartInterval / info.imageWidth;
+			info.restartRowsToGo = info.restartInRows;
+			info.nextRestartNum = 0;
+		}
+
+		FORCE_INLINE void ProcessRestart()
+		{
+			// Throw away and unused odd bits in the bit buffer.
+			fStream->SetReadPosition(fStream->Position() - bitsLeft / 8);
+
+			bitsLeft = 0;
+			getBuffer = 0;
+
+			// Scan for next JPEG marker
+			int32_t c;
+
+			do
+			{
+				// skip any non-FF bytes
+				do
+				{
+					c = GetJpegChar();
+				} while (c != 0xFF);
+
+				// skip any duplicate FFs
+				do
+				{
+					c = GetJpegChar();
+				} while (c == 0xFF);
+
+			} while (c == 0);		// repeat if it was a stuffed FF/00
+
+			// Verify correct restart code.
+			if (c != (M_RST0 + info.nextRestartNum))
+			{
+				ThrowBadFormat();
+			}
+
+			// Update restart state.
+			info.restartRowsToGo = info.restartInRows;
+			info.nextRestartNum = (info.nextRestartNum + 1) & 7;
+		}
+
+		FORCE_INLINE void FillBitBuffer(int32_t nbits)
+		{
+			const int32_t kMinGetBits = sizeof(uint32_t) * 8 - 7;
+
+			while (bitsLeft < kMinGetBits)
+			{
+				int32_t c = GetJpegChar();
+
+				// If it's 0xFF, check and discard stuffed zero byte
+				if (c == 0xFF)
+				{
+					int32_t c2 = GetJpegChar();
+
+					if (c2 != 0)
+					{
+						// Oops, it's actually a marker indicating end of
+						// compressed data.  Better put it back for use later.
+						UnGetJpegChar();
+						UnGetJpegChar();
+
+						// There should be enough bits still left in the data
+						// segment; if so, just break out of the while loop.
+						if (bitsLeft >= nbits)
+							break;
+
+						// Uh-oh.  Corrupted data: stuff zeroes into the data
+						// stream, since this sometimes occurs when we are on the
+						// last show_bits8 during decoding of the Huffman
+						// segment.
+						c = 0;
+					}
+				}
+
+				getBuffer = (getBuffer << 8) | c;
+				bitsLeft += 8;
+			}
+		}
+
+		FORCE_INLINE int32_t show_bits8()
+		{
+			if (bitsLeft < 8)
+				FillBitBuffer(8);
+
+			return (int32_t)((getBuffer >> (bitsLeft - 8)) & 0xff);
+		}
+
+		FORCE_INLINE void flush_bits(int32_t nbits)
+		{
+			bitsLeft -= nbits;
+		}
+
+		FORCE_INLINE int32_t get_bits(int32_t nbits)
+		{
+			if (nbits > 16)
+			{
+				ThrowBadFormat();
+			}
+
+			if (bitsLeft < nbits)
+				FillBitBuffer(nbits);
+
+			return (int32_t)((getBuffer >> (bitsLeft -= nbits)) & (0x0FFFF >> (16 - nbits)));
+		}
+
+		FORCE_INLINE int32_t get_bit()
+		{
+			if (!bitsLeft)
+				FillBitBuffer(1);
+
+			return (int32_t)((getBuffer >> (--bitsLeft)) & 1);
+		}
+
+		FORCE_INLINE int32_t HuffDecode(sHuffmanTable* htbl)
+		{
+			// If the huffman code is less than 8 bits, we can use the fast
+			// table lookup to get its value.  It's more than 8 bits about
+			// 3-4% of the time.
+			int32_t code = show_bits8();
+
+			if (htbl->numbits[code])
+			{
+				flush_bits(htbl->numbits[code]);
+
+				return htbl->value[code];
 			}
 			else
-				linear = left;
-			thisrow[col++] = left;
-			//printf("%d %d %d %d\n",col,diff,left,lastrow[col]);
-			out[c++] = linear;
-			if (self->ix >= self->datalen) break;
-			rowcount = self->x - 1;
-			if (--write == 0) {
-				out += self->skiplen;
-				write = self->writelen;
-			}
-			while (rowcount--) {
-				diff = nextdiff(self, 0, componentIndex);
-				Px = lastrow[col] + ((left - lastrow[col - 1]) >> 1);
-				left = Px + diff;
-				//printf("%d %d %d %d %d %x\n",col,diff,left,lastrow[col],lastrow[col-1],&lastrow[col]);
-				if (self->linearize) {
-					if (left > self->linlen) return LJ92_ERROR_CORRUPT;
-					linear = self->linearize[left];
+			{
+				flush_bits(8);
+
+				int32_t l = 8;
+
+				while (code > htbl->maxcode[l])
+				{
+					code = (code << 1) | get_bit();
+					l++;
+				}
+
+				// With garbage input we may reach the sentinel value l = 17.
+				if (l > 16)
+				{
+					return 0;		// fake a zero as the safest result
 				}
 				else
-					linear = left;
-				thisrow[col++] = left;
-				out[c++] = linear;
-				if (--write == 0) {
-					out += self->skiplen;
-					write = self->writelen;
+				{
+					return htbl->huffval[htbl->valptr[l] +
+						((int32_t)(code - htbl->mincode[l]))];
 				}
 			}
-			temprow = lastrow;
-			lastrow = thisrow;
-			thisrow = temprow;
-			if (self->ix >= self->datalen) break;
 		}
-		if (c >= pixels) ret = LJ92_ERROR_NONE;
-		return ret;
-	}
 
-	static LJ92_ERRORS parseScan(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		memset(self->sssshist, 0, sizeof(self->sssshist));
-		self->ix = self->scanstart;
-		int compcount = self->data[self->ix + 2];
-
-		int huffmanTableIndicesLocation = self->ix + 3;
-		for (int i = 0; i < compcount; i++)
+#ifdef __clang__
+		__attribute__((no_sanitize("undefined")))
+#endif
+		FORCE_INLINE void HuffExtend(int32_t& x, int32_t s)
 		{
-			auto cc = self->data[huffmanTableIndicesLocation++];
-			auto c = self->data[huffmanTableIndicesLocation++];
-
-			int ci;
-			for (ci = 0; ci < self->numComponents; ci++)
+			if (x < (0x08000 >> (16 - s)))
 			{
-				//if ( cc == )
-				//break;
+				x += (-1 << s) + 1;
 			}
 		}
 
-		int pred = self->data[self->ix + 3 + 2 * compcount];
-		if (pred < 0 || pred>7) return ret;
-		// Fast path for predictor 2
-		if (pred == 2 && self->skiplen == 0 && self->linearize == nullptr)
-			return parsePred2NoSkipNoLinearize(self);
-		// Fast path for predictor 6
-		if (pred == 6)
-			return parsePred6(self);
-		// Fast path for predictor 1
-		if (pred == 1 && self->skiplen == 0 && self->linearize == nullptr)
-			return parsePred1NoSkipNoLinearize(self);
+		FORCE_INLINE void PmPutRow(MCU* buf, int32_t numComp, int32_t numCol, int32_t row)
+		{
+			uint16_t* sPtr = &buf[0][0];
 
-		self->ix += BEH(self->data[self->ix]);
-		self->cnt = 0;
-		self->b = 0;
-		int write = self->writelen;
-		// Now need to decode huffman coded values
-		int c = 0;
-		int pixels = self->y * self->x;
-		u16* out = self->image;
-		u16* thisrow = self->outrow[0];
-		u16* lastrow = self->outrow[1];
+			uint32_t pixels = numCol * numComp;
 
-		int componentIndex = 0;
+			fSpooler->Spool(sPtr, pixels * (uint32_t)sizeof(uint16_t));
+		}
 
-		// First pixel predicted from base value
-		int diff;
-		int Px;
-		int col = 0;
-		int row = 0;
-		int left = 0;
-		while (c < pixels) {
-			if (c == 0) {
-				Px = 1 << (self->bits - 1);
+		FORCE_INLINE void DecodeFirstRow(MCU* curRowBuf)
+		{
+			int32_t compsInScan = info.compsInScan;
+
+			// Process the first column in the row.
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+			{
+				int32_t ci = info.MCUmembership[curComp];
+
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+				sHuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
+
+				// Section F.2.2.1: decode the difference
+				int32_t d = 0;
+				int32_t s = HuffDecode(dctbl);
+
+				if (s)
+				{
+					if (s == 16 && !fBug16)
+					{
+						d = -32768;
+					}
+					else
+					{
+						d = get_bits(s);
+						HuffExtend(d, s);
+					}
+				}
+
+				// Add the predictor to the difference.
+				int32_t Pr = info.dataPrecision;
+				int32_t Pt = info.Pt;
+
+				curRowBuf[0][curComp] = (ComponentType)(d + (1 << (Pr - Pt - 1)));
 			}
-			else if (row == 0) {
-				Px = left;
-			}
-			else if (col == 0) {
-				Px = lastrow[col]; // Use value above for first pixel in row
-			}
-			else {
-				switch (pred) {
-				case 0:
-					Px = 0; break; // No prediction... should not be used
-				case 1:
-					Px = left; break;
-				case 2:
-					Px = lastrow[col]; break;
-				case 3:
-					Px = lastrow[col - 1]; break;
-				case 4:
-					Px = left + lastrow[col] - lastrow[col - 1]; break;
-				case 5:
-					Px = left + ((lastrow[col] - lastrow[col - 1]) >> 1); break;
-				case 6:
-					Px = lastrow[col] + ((left - lastrow[col - 1]) >> 1); break;
-				case 7:
-					Px = (left + lastrow[col]) >> 1; break;
+
+			// Process the rest of the row.
+			int32_t numCOL = info.imageWidth;
+
+			for (int32_t col = 1; col < numCOL; col++)
+			{
+				for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+				{
+					int32_t ci = info.MCUmembership[curComp];
+
+					sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+					sHuffmanTable* dctbl = info.dcHuffTblPtrs[compptr->dcTblNo];
+
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+
+					int32_t s = HuffDecode(dctbl);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// Add the predictor to the difference.
+					curRowBuf[col][curComp] = (ComponentType)(d + curRowBuf[col - 1][curComp]);
 				}
 			}
-			diff = nextdiff(self, Px, componentIndex);
-			left = Px + diff;
-			//printf("%d %d %d\n",c,diff,left);
-			int linear;
-			if (self->linearize) {
-				if (left > self->linlen) return LJ92_ERROR_CORRUPT;
-				linear = self->linearize[left];
+
+			// Update the restart counter
+			if (info.restartInRows)
+			{
+				info.restartRowsToGo--;
 			}
-			else
-				linear = left;
-			thisrow[col] = left;
-			out[c++] = linear;
-			if (++col == self->x) {
-				col = 0;
-				row++;
-				u16* temprow = lastrow;
-				lastrow = thisrow;
-				thisrow = temprow;
-			}
-			if (--write == 0) {
-				out += self->skiplen;
-				write = self->writelen;
-			}
-			if (self->ix >= self->datalen + 2)
-				break;
 		}
-		if (c >= pixels) ret = LJ92_ERROR_NONE;
-		/*for (int h=0;h<17;h++) {
-		printf("ssss:%d=%d (%f)\n",h,self->sssshist[h],(float)self->sssshist[h]/(float)(pixels));
-		}*/
-		return ret;
-	}
 
-	static LJ92_ERRORS parseImage(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_NONE;
-		while (1) {
-			int nextMarker = find(self);
-			if (nextMarker == 0xc4)
-				ret = parseHuff(self);
-			else if (nextMarker == 0xc3)
-				ret = parseSof3(self);
-			else if (nextMarker == 0xfe)// Comment
-				ret = parseBlock(self, nextMarker);
-			else if (nextMarker == 0xd9) // End of image
-				break;
-			else if (nextMarker == 0xda) {
-				self->scanstart = self->ix;
-				ret = LJ92_ERROR_NONE;
-				break;
+#define swap(type,a,b) {type c; c=(a); (a)=(b); (b)=c;}
+
+        void DecodeImage2ComponentsPredictor7()
+        {
+            int32_t numCOL = info.imageWidth;
+			int32_t numROW = info.imageHeight;
+			const int32_t compsInScan = 2;
+            assert(info.compsInScan == compsInScan);
+
+			// Precompute the decoding table for each table.
+			sHuffmanTable* ht[4];
+
+			memset(ht, 0, sizeof(ht));
+
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+			{
+				int32_t ci = info.MCUmembership[curComp];
+
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+				ht[curComp] = info.dcHuffTblPtrs[compptr->dcTblNo];
 			}
-			else if (nextMarker == -1) {
-				ret = LJ92_ERROR_CORRUPT;
-				break;
+
+			MCU* prevRowBuf = mcuROW1;
+			MCU* curRowBuf = mcuROW2;
+
+			// Decode the first row of image. Output the row and
+			// turn this row into a previous row for later predictor
+			// calculation.
+			DecodeFirstRow(mcuROW1);
+			PmPutRow(mcuROW1, compsInScan, numCOL, 0);
+
+			// Process each row.
+			for (int32_t row = 1; row < numROW; row++)
+			{
+				// Account for restart interval, process restart marker if needed.
+				if (info.restartInRows)
+				{
+					if (info.restartRowsToGo == 0)
+					{
+						ProcessRestart();
+
+						// Reset predictors at restart.
+						DecodeFirstRow(curRowBuf);
+
+						PmPutRow(curRowBuf, compsInScan, numCOL, row);
+
+						swap(MCU*, prevRowBuf, curRowBuf);
+
+						continue;
+					}
+
+					info.restartRowsToGo--;
+				}
+
+				// The upper neighbors are predictors for the first column.
+				{
+                    const int32_t curComp = 0;
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// First column of row above is predictor for first column.
+					curRowBuf[0][curComp] = (ComponentType)(d + prevRowBuf[0][curComp]);
+				}
+                {
+                    const int32_t curComp = 1;
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// First column of row above is predictor for first column.
+					curRowBuf[0][curComp] = (ComponentType)(d + prevRowBuf[0][curComp]);
+				}
+                
+                for (int32_t col = 1; col < numCOL; col++)
+                {
+                    {
+                        const int32_t curComp = 0;
+                        // Section F.2.2.1: decode the difference
+                        int32_t d = 0;
+                        int32_t s = HuffDecode(ht[curComp]);
+
+                        if (s)
+                        {
+                            if (s == 16 && !fBug16)
+                            {
+                                d = -32768;
+                            }
+                            else
+                            {
+                                d = get_bits(s);
+                                HuffExtend(d, s);
+                            }
+                        }
+
+                        // Predict the pixel value.
+                        const int32_t upper = prevRowBuf[col][curComp];
+                        const int32_t left = curRowBuf[col - 1][curComp];
+                        int32_t predictor = (left + upper) >> 1;
+                        
+                        // Save the difference.
+                        curRowBuf[col][curComp] = (ComponentType)(d + predictor);
+                    }
+                    {
+                        const int32_t curComp = 1;
+                        // Section F.2.2.1: decode the difference
+                        int32_t d = 0;
+                        int32_t s = HuffDecode(ht[curComp]);
+
+                        if (s)
+                        {
+                            if (s == 16 && !fBug16)
+                            {
+                                d = -32768;
+                            }
+                            else
+                            {
+                                d = get_bits(s);
+                                HuffExtend(d, s);
+                            }
+                        }
+
+                        // Predict the pixel value.
+                        const int32_t upper = prevRowBuf[col][curComp];
+                        const int32_t left = curRowBuf[col - 1][curComp];
+                        int32_t predictor = (left + upper) >> 1;
+                        
+                        // Save the difference.
+                        curRowBuf[col][curComp] = (ComponentType)(d + predictor);
+                    }
+                }
+				
+
+				PmPutRow(curRowBuf, compsInScan, numCOL, row);
+				swap(MCU*, prevRowBuf, curRowBuf);
 			}
-			else
-				ret = parseBlock(self, nextMarker);
-			if (ret != LJ92_ERROR_NONE) break;
-		}
-		return ret;
-	}
+        }
 
-	static LJ92_ERRORS findSoI(ljp* self)
-	{
-		LJ92_ERRORS ret = LJ92_ERROR_CORRUPT;
-		if (find(self) == 0xd8)
-			ret = parseImage(self);
-		return ret;
-	}
-
-	static void free_memory(ljp* self)
-	{
-#ifdef SLOW_HUFF
-		free(self->maxcode);
-		self->maxcode = NULL;
-		free(self->mincode);
-		self->mincode = NULL;
-		free(self->valptr);
-		self->valptr = NULL;
-		free(self->huffval);
-		self->huffval = NULL;
-		free(self->huffsize);
-		self->huffsize = NULL;
-		free(self->huffcode);
-		self->huffcode = NULL;
-#else
-		for (int i = 0; i < self->numComponents; i++)
+		void DecodeImage()
 		{
-			free(self->hufflut[i]);
-			self->hufflut[i] = nullptr;
-		}
-#endif
-		if (self->rowcache != nullptr) {
-			free(self->rowcache);
-			self->rowcache = nullptr;
-		}
-	}
+			int32_t numCOL = info.imageWidth;
+			int32_t numROW = info.imageHeight;
+			int32_t compsInScan = info.compsInScan;
+   
+            if ( compsInScan == 2 && info.Ss == 7 )
+            {
+                DecodeImage2ComponentsPredictor7();
+                return;
+            }
 
-	LJ92_ERRORS lj92_open(lj92& lj, const uint8_t* data, int datalen, int* width, int* height, int* bitdepth/*, std::vector<u16>* pWorkingCache*/)
-	{
-		ljp* self = &lj;
-		memset(self, 0, sizeof(ljp));
+			// Precompute the decoding table for each table.
 
-		self->data = (u8*)data;
-		self->dataend = self->data + datalen;
-		self->datalen = datalen;
+			sHuffmanTable* ht[4];
 
-		LJ92_ERRORS ret = findSoI(self);
+			memset(ht, 0, sizeof(ht));
 
-		if (ret == LJ92_ERROR_NONE) 
-		{
-			//if (pWorkingCache == nullptr) {
-			u16* rowcache = (u16*)calloc(self->x * 2, sizeof(u16));
-			if (rowcache == NULL)
-				ret = LJ92_ERROR_NO_MEMORY;
-			else {
-				self->rowcache = rowcache;
-				self->outrow[0] = rowcache;
-				self->outrow[1] = rowcache + self->x;
+			for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+			{
+				int32_t ci = info.MCUmembership[curComp];
+
+				sJpegComponentInfo* compptr = info.curCompInfo[ci];
+
+				ht[curComp] = info.dcHuffTblPtrs[compptr->dcTblNo];
 			}
-			/*} else {
-				self->rowcache = nullptr;
-				pWorkingCache->resize(self->x * 2);
-				self->outrow[0] = pWorkingCache->data();
-				self->outrow[1] = pWorkingCache->data() + self->x;
-			}*/
+
+			MCU* prevRowBuf = mcuROW1;
+			MCU* curRowBuf = mcuROW2;
+
+			// Decode the first row of image. Output the row and
+			// turn this row into a previous row for later predictor
+			// calculation.
+			DecodeFirstRow(mcuROW1);
+			PmPutRow(mcuROW1, compsInScan, numCOL, 0);
+
+			// Process each row.
+			for (int32_t row = 1; row < numROW; row++)
+			{
+				// Account for restart interval, process restart marker if needed.
+				if (info.restartInRows)
+				{
+					if (info.restartRowsToGo == 0)
+					{
+						ProcessRestart();
+
+						// Reset predictors at restart.
+						DecodeFirstRow(curRowBuf);
+
+						PmPutRow(curRowBuf, compsInScan, numCOL, row);
+
+						swap(MCU*, prevRowBuf, curRowBuf);
+
+						continue;
+					}
+
+					info.restartRowsToGo--;
+				}
+
+				// The upper neighbors are predictors for the first column.
+				for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+				{
+					// Section F.2.2.1: decode the difference
+					int32_t d = 0;
+					int32_t s = HuffDecode(ht[curComp]);
+
+					if (s)
+					{
+						if (s == 16 && !fBug16)
+						{
+							d = -32768;
+						}
+						else
+						{
+							d = get_bits(s);
+							HuffExtend(d, s);
+						}
+					}
+
+					// First column of row above is predictor for first column.
+					curRowBuf[0][curComp] = (ComponentType)(d + prevRowBuf[0][curComp]);
+				}
+
+				// For the rest of the column on this row, predictor
+				// calculations are based on PSV. 
+				if (compsInScan == 2 && info.Ss == 1 && numCOL > 1)
+				{
+					// This is the combination used by both the Canon and Kodak raw formats. 
+					// Unrolling the general case logic results in a significant speed increase.
+					uint16_t* dPtr = &curRowBuf[1][0];
+
+					int32_t prev0 = dPtr[-2];
+					int32_t prev1 = dPtr[-1];
+
+					for (int32_t col = 1; col < numCOL; col++)
+					{
+						int32_t s = HuffDecode(ht[0]);
+
+						if (s)
+						{
+
+							int32_t d;
+
+							if (s == 16 && !fBug16)
+							{
+								d = -32768;
+							}
+							else
+							{
+								d = get_bits(s);
+								HuffExtend(d, s);
+							}
+
+							prev0 += d;
+						}
+
+						s = HuffDecode(ht[1]);
+
+						if (s)
+						{
+							int32_t d;
+
+							if (s == 16 && !fBug16)
+							{
+								d = -32768;
+							}
+							else
+							{
+								d = get_bits(s);
+								HuffExtend(d, s);
+							}
+
+							prev1 += d;
+						}
+
+						dPtr[0] = (uint16_t)prev0;
+						dPtr[1] = (uint16_t)prev1;
+
+						dPtr += 2;
+					}
+				}
+				else
+				{
+					for (int32_t col = 1; col < numCOL; col++)
+					{
+						for (int32_t curComp = 0; curComp < compsInScan; curComp++)
+						{
+							// Section F.2.2.1: decode the difference
+							int32_t d = 0;
+							int32_t s = HuffDecode(ht[curComp]);
+
+							if (s)
+							{
+								if (s == 16 && !fBug16)
+								{
+									d = -32768;
+								}
+								else
+								{
+									d = get_bits(s);
+									HuffExtend(d, s);
+								}
+							}
+
+							// Predict the pixel value.
+                            int32_t predictor = 0;
+                            {
+                                const int32_t diag = prevRowBuf[col - 1][curComp];
+                                const int32_t upper = prevRowBuf[col][curComp];
+                                const int32_t left = curRowBuf[col - 1][curComp];
+
+                                switch (info.Ss)
+                                {
+                                case 1:
+                                    predictor = left;
+                                    break;
+                                case 2:
+                                    predictor = upper;
+                                    break;
+                                case 3:
+                                    predictor = diag;
+                                    break;
+                                case 4:
+                                    predictor = left + upper - diag;
+                                    break;
+                                case 5:
+                                    predictor = left + ((upper - diag) >> 1);
+                                    break;
+                                case 6:
+                                    predictor = upper + ((left - diag) >> 1);
+                                    break;
+                                case 7:
+                                    predictor = (left + upper) >> 1;
+                                    break;
+                                }
+                            }
+                            
+							// Save the difference.
+							curRowBuf[col][curComp] = (ComponentType)(d + predictor);
+						}
+					}
+				}
+
+				PmPutRow(curRowBuf, compsInScan, numCOL, row);
+				swap(MCU*, prevRowBuf, curRowBuf);
+			}
 		}
+  
+  #undef swap
 
-		if (ret != LJ92_ERROR_NONE)
-			free_memory(self);
-		else
-		{
-			*width = self->x;
-			*height = self->y;
-			*bitdepth = self->bits;
-		}
+		DecoderInput* fStream;		// Input data.
 
-		return ret;
-	}
+		DecoderOutput* fSpooler;		// Output data.
 
-	LJ92_ERRORS lj92_decode(lj92& lj,
-		uint16_t* target, int writeLength, int skipLength,
-		uint16_t* linearize, int linearizeLength)
+		bool fBug16;				// Decode data with the "16-bit" bug.
+
+		LosslessJpegMemory huffmanBuffer[4];
+
+		LosslessJpegMemory compInfoBuffer;
+
+		sDecompressInfo info;
+
+		LosslessJpegMemory mcuBuffer1;
+		LosslessJpegMemory mcuBuffer2;
+		LosslessJpegMemory mcuBuffer3;
+		LosslessJpegMemory mcuBuffer4;
+
+		MCU* mcuROW1;
+		MCU* mcuROW2;
+
+		uint64_t getBuffer;			// current bit-extraction buffer
+		int32_t bitsLeft;
+	};
+    
+	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
 	{
-		LJ92_ERRORS ret = LJ92_ERROR_NONE;
-		ljp* self = &lj;
-		self->image = target;
-		self->writelen = writeLength;
-		self->skiplen = skipLength;
-		self->linearize = linearize;
-		self->linlen = linearizeLength;
-		ret = parseScan(self);
-		return ret;
-	}
-
-	void lj92_close(lj92& lj)
-	{
-		ljp* self = &lj;
-		if (self != nullptr)
-			free_memory(self);
-	}
-
-	Core::eError LJ92Error(LJ92_ERRORS error)
-	{
-		switch (error) {
-		case LJ92_ERROR_NONE:
-			return Core::eError::None;
-		case LJ92_ERROR_CORRUPT:
-			return Core::eError::BadImageData;
-		case LJ92_ERROR_NO_MEMORY:
-			return Core::eError::NotImplmeneted;
-		case LJ92_ERROR_BAD_HANDLE:
-			return Core::eError::BadImageData;
-		case LJ92_ERROR_TOO_WIDE:
+		
+        DecoderInput stream(pInCompressed);
+		DecoderOutput output(pOut16Bit, width * height * sizeof(uint16_t));
+		
+		LosslessJpegDecoder decoder(&stream, &output, false);
+		
+		uint32_t imageWidth;
+		uint32_t imageHeight;
+		uint32_t imageChannels;
+		decoder.StartRead(imageWidth, imageHeight, imageChannels);
+		if (imageWidth * imageHeight * imageChannels != width * height)
 			return Core::eError::BadMetadata;
-		default:
-			return Core::eError::NotImplmeneted;
-		}
-	}
+		decoder.FinishRead();
 
-	extern "C" Core::eError Decode(uint8_t * pOut16Bit, uint32_t outOffsetBytes, uint8_t * pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
-	{
-		int actualWidth, actualHeight, actualBitDepth;
-		lj92 lj;
-		auto error = LJ92Error(lj92_open(lj, pInCompressed, compressedSizeBytes, &actualWidth, &actualHeight, &actualBitDepth));
-		if (error == Core::eError::None)
-		{
-			// Don't compare width/height directly, lossless jpeg bayer compression may change the width and height to improve compression/predictor efficiency
-#ifdef WIP_MULTI_COMPONENT_SUPPORT
-			if ((actualWidth * actualHeight * lj.numComponents) == (width * height) && actualBitDepth == bitDepth)
-#else
-			if ((actualWidth * actualHeight) == (width * height) && actualBitDepth == bitDepth)
-#endif
-				error = LJ92Error(lj92_decode(lj, (uint16_t*)(pOut16Bit + outOffsetBytes), 0, 0, nullptr, 0));
-			else
-				error = Core::eError::BadMetadata;
-			lj92_close(lj);
-		}
-		return error;
+		if (stream.Position() > compressedSizeBytes)
+			return Core::eError::BadImageData;
+		return Core::eError::None;
 	}
 }

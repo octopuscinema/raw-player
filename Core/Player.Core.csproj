@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Octopus.Player.Core</RootNamespace>
 	<NrtRevisionFormat>{semvertag+chash}</NrtRevisionFormat>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

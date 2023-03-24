@@ -19,7 +19,7 @@ namespace Octopus.Player.Core.Playback
 
 		public SequenceFrame(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
         {
-			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
+			decodedImage = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
 #if SEQUENCE_FRAME_DEBUG
 			count++;
@@ -37,7 +37,7 @@ namespace Octopus.Player.Core.Playback
 #endif
 		}
 
-		public abstract Error Decode(IClip clip);
+		public abstract Error Decode(IClip clip, byte[] workingBuffer = null);
 
 		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null);
     }

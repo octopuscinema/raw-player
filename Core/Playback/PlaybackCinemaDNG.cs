@@ -11,6 +11,7 @@ namespace Octopus.Player.Core.Playback
 {
 	public class PlaybackCinemaDNG : Playback
 	{
+        private static readonly uint nativeMemoryBufferSize = 0;
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
 
@@ -34,7 +35,6 @@ namespace Octopus.Player.Core.Playback
 
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
-        
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
             : base(playerWindow, renderContext, bufferDurationFrames)
@@ -125,15 +125,15 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames);
+            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
 
             // Allocate display frame
-            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.Dimensions.Area()];
+            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
             // Create display texture with preview frame
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
-            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.Dimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, 
+            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, 
                 TextureFilter.Nearest, "displayFrame");
 
             // Tiled preview frame requires copying to GPU seperately
@@ -172,7 +172,7 @@ namespace Octopus.Player.Core.Playback
                 SeekFrame = new SequenceFrameDNG(RenderContext, Clip, displayFrameGPU.Format);
 
             // Decode seek frame processing
-            Func<Error> decodeSeekFrame = () =>
+            Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>
             {
                 if (!ActiveSeekRequest.HasValue)
                     return Error.None;
@@ -412,11 +412,12 @@ namespace Octopus.Player.Core.Playback
                 }
                 Vector2i rectPos;
                 Vector2i rectSize;
+                Vector2 rectUv = Clip.Metadata.Dimensions.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2();
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };
                 if (LinearizeTable != null)
                     textures["linearizeTable"] = LinearizeTable;
-                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize);
+                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(0,0, rectUv.X, rectUv.Y));
             }
         }
 

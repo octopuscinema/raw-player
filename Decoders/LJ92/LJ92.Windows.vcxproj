@@ -22,6 +22,7 @@
     <ClCompile Include="LJ92.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="JpegMarker.h" />
     <ClInclude Include="LJ92.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -159,6 +160,8 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

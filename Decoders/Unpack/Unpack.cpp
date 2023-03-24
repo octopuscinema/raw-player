@@ -8,13 +8,11 @@ namespace Octopus::Player::Decoders::Unpack
 {
 	namespace NonSIMD
 	{
-		static inline void Unpack12to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p12BitPacked, uint32_t inOffsetBytes, std::size_t sizeBytes)
+		static inline void Unpack12to16Bit(uint8_t* pOut, const uint8_t* p12BitPacked, uint32_t sizeBytes)
 		{
-			p12BitPacked += inOffsetBytes;
-
 			const uint8_t* pEnd = p12BitPacked + sizeBytes;
 			uint8_t b0, b1, b2;
-			uint16_t* p16BitOut = (uint16_t*)(pOut + outOffsetBytes);
+			uint16_t* p16BitOut = (uint16_t*)(pOut);
 
 			while (p12BitPacked != pEnd)
 			{
@@ -67,7 +65,7 @@ namespace Octopus::Player::Decoders::Unpack
 		}
 
 		// Helper function does the above but with an arbitrary length input
-		static inline void Unpack12to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p12BitPacked, std::size_t sizeBytes)
+		static inline void Unpack12to16Bit(uint8_t* pOut, const uint8_t* p12BitPacked, uint32_t sizeBytes)
 		{
 			static const u32 Stride12Bit16 = (16 * 12) / 8;
 			const auto NumElements = (InputSizeBytes * 8) / 12;
@@ -92,7 +90,7 @@ namespace Octopus::Player::Decoders::Unpack
 	}
 #endif
 
-	extern "C" void Unpack10to16Bit(uint8_t * pOut, std::size_t outOffsetBytes, const uint8_t * p12BitPacked, std::size_t sizeBytes)
+	extern "C" void Unpack10to16Bit(uint8_t* pOut, const uint8_t* p12BitPacked, uint32_t sizeBytes)
 	{
 		// TODO
 	}
@@ -106,20 +104,20 @@ namespace Octopus::Player::Decoders::Unpack
 #endif
 	}
 
-	extern "C" void Unpack12to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p12BitPacked, uint32_t inOffsetBytes, std::size_t sizeBytes)
+	extern "C" void Unpack12to16Bit(uint8_t* pOut, const uint8_t* p12BitPacked, uint32_t sizeBytes)
 	{
 #ifdef __AVX2__
 		SIMD::Unpack12to16Bit();
 #else
-		NonSIMD::Unpack12to16Bit(pOut, outOffsetBytes, p12BitPacked, inOffsetBytes, sizeBytes);
+		NonSIMD::Unpack12to16Bit(pOut, p12BitPacked, sizeBytes);
 #endif
 	}
 
-	extern "C" void Unpack14to16Bit(uint8_t* pOut, std::size_t outOffsetBytes, const uint8_t* p14BitPacked, std::size_t sizeBytes)
+	extern "C" void Unpack14to16Bit(uint8_t* pOut, const uint8_t* p14BitPacked, uint32_t sizeBytes)
 	{
 		const uint8_t* pEnd = p14BitPacked + sizeBytes;
 		uint8_t b0, b1, b2, b3, b4, b5, b6;
-		uint16_t* p16BitOut = (uint16_t*)(pOut + outOffsetBytes);
+		uint16_t* p16BitOut = (uint16_t*)(pOut);
 
 		while (p14BitPacked != pEnd)
 		{

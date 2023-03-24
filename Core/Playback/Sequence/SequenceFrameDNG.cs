@@ -17,7 +17,7 @@ namespace Octopus.Player.Core.Playback
 
         }
 
-        Error TryDecode(IClip clip)
+        Error TryDecode(IClip clip, byte[] workingBuffer = null)
         {
             // Cast to DNG clip/metadata
             var dngClip = (ClipCinemaDNG)clip;
@@ -59,8 +59,8 @@ namespace Octopus.Player.Core.Playback
                 case IO.DNG.Compression.None:
                 case IO.DNG.Compression.LosslessJPEG:
                     var bytesPerPixel = clip.Metadata.BitDepth <= 8 ? 1 : 2;
-                    Debug.Assert(decodedImage.Length == bytesPerPixel * clip.Metadata.Dimensions.Area());
-                    decodeDataError = DNGReader.DecodeImageData(decodedImage);
+                    Debug.Assert(decodedImage.Length == bytesPerPixel * clip.Metadata.PaddedDimensions.Area());
+                    decodeDataError = DNGReader.DecodeImageData(decodedImage, workingBuffer);
                     break;
                 default:
                     DNGReader.Dispose();
@@ -74,9 +74,9 @@ namespace Octopus.Player.Core.Playback
             return decodeDataError;
         }
 
-        public override Error Decode(IClip clip)
+        public override Error Decode(IClip clip, byte[] workingBuffer = null)
         {
-            var result = TryDecode(clip);
+            var result = TryDecode(clip, workingBuffer);
             if (result != Error.None)
                 System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImage[0], 0, (uint)decodedImage.Length);
             LastError = result;
@@ -103,9 +103,9 @@ namespace Octopus.Player.Core.Playback
                 {
                     var frameOffset = 0;
                     var tileSizeBytes = (cinemaDNGMetadata.TileDimensions.Area() * clip.Metadata.DecodedBitDepth) / 8;
-                    for (int y = 0; y < clip.Metadata.Dimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
+                    for (int y = 0; y < clip.Metadata.PaddedDimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
                     {
-                        for (int x = 0; x < clip.Metadata.Dimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
+                        for (int x = 0; x < clip.Metadata.PaddedDimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
                         {
                             var tileDimensions = cinemaDNGMetadata.TileDimensions;
                             var maxTileSize = gpuImage.Dimensions - new Vector2i(x, y);
