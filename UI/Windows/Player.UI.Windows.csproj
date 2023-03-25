@@ -10,7 +10,7 @@
     <AssemblyName>OCTOPUS RAW Player</AssemblyName>
     <Authors>OCTOPUSCINEMA</Authors>
     <Version>1.0.0</Version>
-    <Copyright>© 2022 OCTOPUSCINEMA</Copyright>
+    <Copyright>© 2023 OCTOPUSCINEMA</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
