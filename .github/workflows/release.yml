@@ -77,7 +77,7 @@ jobs:
 
     - name: Sign .exe
       shell: pwsh
-      working-directory: 'codesigntool'
+      working-directory: 'codesigntool\CodeSignTool-v1.2.7-windows'
       run: |
         New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
         Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
@@ -100,7 +100,7 @@ jobs:
       
     - name: Sign .msi
       shell: pwsh
-      working-directory: 'codesigntool'
+      working-directory: 'codesigntool\CodeSignTool-v1.2.7-windows'
       run: |
         New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
         Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}"
