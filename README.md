@@ -15,7 +15,7 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 - Timecode and metadata display
 - Support for real-time 8K playback
 
-**Tested Cameras**
+**Tested Cameras & Software**
 - Sigma Fp
 - DJI Xenmuse X5,X5R,X7
 - Blackmagic Cinema Camera 2.5K
