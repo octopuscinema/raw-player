@@ -17,12 +17,14 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 
 **Tested Cameras & Software**
 - Sigma Fp
+- MotionCam Android App
 - DJI Xenmuse X5,X5R,X7
 - Blackmagic Cinema Camera 2.5K
 - Blackmagic Pocket Cinema Camera (Original)
 - Blackmagic Micro Cinema Camera
 - Blackmagic Ursa Mini 4K
 - OCTOPUSCAMERA 8K/4K/MONO
+- SlimRAW (Lossless)
 
 For more information, please visit:
 https://www.octopuscinema.com/raw-player
