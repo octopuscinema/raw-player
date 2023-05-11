@@ -33,7 +33,7 @@ jobs:
       shell: pwsh
       run: .\ApplyVersion.ps1
 
-    - uses: microsoft/setup-msbuild@v1.0.2
+    - uses: microsoft/setup-msbuild@v1.3.1
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
