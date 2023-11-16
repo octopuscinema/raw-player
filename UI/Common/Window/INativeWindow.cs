@@ -65,6 +65,7 @@ namespace Octopus.Player.UI
 		PlayerApplication PlayerApplication { get; }
 		bool DropAreaVisible { get; set; }
 		void ShowInNavigator(List<string> paths);
-	}
+        bool RenderContinuouslyHint { set; }
+    }
 }
 
