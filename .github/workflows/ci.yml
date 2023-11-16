@@ -121,7 +121,7 @@ jobs:
     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        brew install create-dmg
+        brew install create-dmg@1.0.10
         create-dmg --volname "OCTOPUS RAW Player (dev)" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
     - name: Notarize .DMG
