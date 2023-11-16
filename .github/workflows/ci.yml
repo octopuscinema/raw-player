@@ -85,7 +85,7 @@ jobs:
       run: ./ApplyVersion.sh
     
     - name: "Import distribution certificate"
-      uses: devbotsxyz/import-signing-certificate@main
+      uses: BoundfoxStudios/action-xcode-import-certificate@v1
       with:
         certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         certificate-passphrase: ${{ secrets.P12_PASSWORD }}
