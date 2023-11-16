@@ -412,12 +412,14 @@ namespace Octopus.Player.Core.Playback
                 }
                 Vector2i rectPos;
                 Vector2i rectSize;
-                Vector2 rectUv = Clip.Metadata.Dimensions.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2();
+                Vector2i clipDimensions = Clip.Metadata.ActiveSensorArea.HasValue ? Clip.Metadata.ActiveSensorArea.Value.Zw : Clip.Metadata.Dimensions;
+                Vector2 rectUvMin = Clip.Metadata.ActiveSensorArea.HasValue ? (Clip.Metadata.ActiveSensorArea.Value.Xy.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2()) : Vector2.Zero;
+                Vector2 rectUvMax = rectUvMin + (clipDimensions / Clip.Metadata.PaddedDimensions.ToVector2());
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };
                 if (LinearizeTable != null)
                     textures["linearizeTable"] = LinearizeTable;
-                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(0,0, rectUv.X, rectUv.Y));
+                RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(rectUvMin.X, rectUvMin.Y, rectUvMax.X, rectUvMax.Y));
             }
         }
 

@@ -73,6 +73,8 @@ namespace Octopus.Player.Core.IO.DNG
             if (reader.ContainsTimeCode)
                 StartTimeCode = reader.TimeCode;
             PixelAspectRatio = reader.ContainsDefaultScale ? reader.DefaultScale : new Vector2(1, 1);
+            if (reader.ContainsDefaultCropOrigin && reader.ContainsDefaultCropSize)
+                ActiveSensorArea = new Vector4i(reader.DefaultCropOrigin, reader.DefaultCropSize);
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);
