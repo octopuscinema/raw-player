@@ -85,25 +85,19 @@ jobs:
       run: ./ApplyVersion.sh
     
     - name: "Import distribution certificate"
-      uses: devbotsxyz/import-signing-certificate@main
+      uses: apple-actions/import-codesign-certs@v2
       with:
-        certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-        certificate-passphrase: ${{ secrets.P12_PASSWORD }}
+        p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
     - name: "Build LJ92 decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: LJ92
-        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "LJ92" clean archive -configuration release -archivePath "${{env.DECODER_LJ92_ARCHIVE_PATH}}"
         
     - name: "Build Unpack decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: Unpack
-        archive-path: ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "Unpack" clean archive -configuration release -archivePath "${{env.DECODER_UNPACK_ARCHIVE_PATH}}"
     
     - name: Prepare decoder native libraries
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -127,7 +121,7 @@ jobs:
     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        brew install create-dmg
+        brew install create-dmg@1.0.10
         create-dmg --volname "OCTOPUS RAW Player (dev)" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
     - name: Notarize .DMG
