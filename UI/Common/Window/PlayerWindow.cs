@@ -781,6 +781,7 @@ namespace Octopus.Player.UI
         private void OnPlaybackStateChanged(object sender, EventArgs e)
         {
             Debug.Assert(Playback != null);
+            NativeWindow.RenderContinuouslyHint = (Playback.State == Core.Playback.State.Playing || Playback.State == Core.Playback.State.PlayingFromBuffer);
             switch (Playback.State)
             {
                 case Core.Playback.State.Stopped:

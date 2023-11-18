@@ -40,6 +40,11 @@ namespace Octopus.Player.UI.macOS
 			get { return !FindView(ContentView, "dropArea").Hidden; }
 			set { FindView(ContentView, "dropArea").Hidden = !value; }
 		}
+		
+		public bool RenderContinuouslyHint
+		{
+			set { }
+		}
 
         private IDisposable appearanceObserver;
 

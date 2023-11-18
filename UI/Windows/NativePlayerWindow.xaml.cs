@@ -78,6 +78,11 @@ namespace Octopus.Player.UI.Windows
             set { dropArea.Visibility = value ? Visibility.Visible : Visibility.Hidden; }
         }
 
+        public bool RenderContinuouslyHint
+        {
+            set { GLControl.RenderContinuously = value; }
+        }
+
         private IntPtr? hwnd;
 
         private HashSet<Slider> activeSliders = new HashSet<Slider>();
