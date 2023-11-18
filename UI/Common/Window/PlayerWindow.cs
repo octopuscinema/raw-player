@@ -81,8 +81,10 @@ namespace Octopus.Player.UI
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
 
             // Check for updates on startup
+#if !DEBUG
             if (NetworkInterface.GetIsNetworkAvailable())
                 NativeWindow.PlayerApplication.CheckForUpdatesAsync(this);
+#endif
         }
 
         public void OnReady()
