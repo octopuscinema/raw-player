@@ -139,6 +139,9 @@
     <ProjectReference Include="..\..\Core\Player.Core.csproj">
       <Name>Player.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\GPU\OpenCL\Player.GPU.OpenCL.csproj">
+      <Name>Player.GPU.OpenCL</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\..\Decoders\LJ92\Build\Products\Release\libLJ92.dylib">

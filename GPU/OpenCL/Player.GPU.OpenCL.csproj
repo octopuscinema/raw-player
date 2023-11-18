@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Octopus.Player.GPU.OpenCL</RootNamespace>
+	<NrtRevisionFormat>{semvertag+chash}</NrtRevisionFormat>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTK.Mathematics" Version="4.8.1" />
+    <PackageReference Include="Unclassified.NetRevisionTask" Version="0.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Silk.NET.OpenCL" Version="2.19.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Player.GPU.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Compute\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Compute\" />
+  </ItemGroup>
+</Project>
