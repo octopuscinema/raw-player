@@ -17,6 +17,8 @@ namespace Octopus.Player.Core.IO.DNG
 		CameraCalibration1 = 50723,
 		ColorMatrix2 = 50722,
 		ColorMatrix1 = 50721,
+        DefaultCropSize = 50720,
+        DefaultCropOrigin = 50719,
         DefaultScale = 50718,
         WhiteLevel = 50717,
 		BlackLevel = 50714,

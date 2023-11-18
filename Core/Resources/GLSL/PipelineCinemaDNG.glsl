@@ -13,9 +13,9 @@ uniform highp vec2 OrthographicBoundsInverse;
 void main(void)
 {
 	// Calculate Texture Coordinates from vertex position
-	highp vec2 UV0 = RectUV.xz;
-	highp vec2 UV1 = RectUV.wy;
-	normalisedCoordinates = UV0 + VertexPosition*(UV1-UV0);
+	highp vec2 UV0 = RectUV.xw;
+	highp vec2 UV1 = RectUV.zy;
+	normalisedCoordinates = mix(UV0, UV1, VertexPosition);
 	
 	// Calculate position
 	vec2 Translate = RectBounds.xy;

@@ -59,6 +59,10 @@ namespace Octopus.Player.Core.IO.DNG
         private bool? CachedContainsTimeCode { get; set; }
         private bool? CachedContainsDefaultScale { get; set; }
         private Vector2? CachedDefaultScale { get; set; }
+        private bool? CachedContainsDefaultCropSize { get; set; }
+        private Vector2i? CachedDefaultCropSize { get; set; }
+        private bool? CachedContainsDefaultCropOrigin { get; set; }
+        private Vector2i? CachedDefaultCropOrigin { get; set; }
 
         public Reader(string filePath)
         {
@@ -802,6 +806,86 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedContainsDefaultScale.HasValue)
                     CachedContainsDefaultScale = Ifd.Contains((TiffTag)TiffTagDNG.DefaultScale);
                 return CachedContainsDefaultScale.Value;
+            }
+        }
+
+        public Vector2i DefaultCropSize
+        {
+            get
+            {
+                if (!CachedDefaultCropSize.HasValue)
+                {
+
+                    try
+                    {
+                        var defaultCropSize = TagReader.ReadRationalField((TiffTag)TiffTagDNG.DefaultCropSize, 2);
+                        CachedDefaultCropSize = new Vector2i((int)defaultCropSize[0].ToSingle(), (int)defaultCropSize[1].ToSingle());
+                        return CachedDefaultCropSize.Value;
+                    }
+                    catch { }
+                    try
+                    {
+                        var defaultCropSize = TagReader.ReadShortField((TiffTag)TiffTagDNG.DefaultCropSize, 2);
+                        CachedDefaultCropSize = new Vector2i(defaultCropSize[0], defaultCropSize[1]);
+                        return CachedDefaultCropSize.Value;
+                    }
+                    catch { }
+                    {
+                        var defaultCropSize = TagReader.ReadLongField((TiffTag)TiffTagDNG.DefaultCropSize, 2);
+                        CachedDefaultCropSize = new Vector2i((int)defaultCropSize[0], (int)defaultCropSize[1]);
+                    }
+                }
+                return CachedDefaultCropSize.Value;
+            }
+        }
+
+        public bool ContainsDefaultCropSize
+        {
+            get
+            {
+                if (!CachedContainsDefaultCropSize.HasValue)
+                    CachedContainsDefaultCropSize = Ifd.Contains((TiffTag)TiffTagDNG.DefaultCropSize);
+                return CachedContainsDefaultCropSize.Value;
+            }
+        }
+
+        public Vector2i DefaultCropOrigin
+        {
+            get
+            {
+                if (!CachedDefaultCropOrigin.HasValue)
+                {
+
+                    try
+                    {
+                        var defaultCropOrigin = TagReader.ReadRationalField((TiffTag)TiffTagDNG.DefaultCropOrigin, 2);
+                        CachedDefaultCropOrigin = new Vector2i((int)defaultCropOrigin[0].ToSingle(), (int)defaultCropOrigin[1].ToSingle());
+                        return CachedDefaultCropOrigin.Value;
+                    }
+                    catch { }
+                    try
+                    {
+                        var defaultCropOrigin = TagReader.ReadShortField((TiffTag)TiffTagDNG.DefaultCropOrigin, 2);
+                        CachedDefaultCropOrigin = new Vector2i(defaultCropOrigin[0], defaultCropOrigin[1]);
+                        return CachedDefaultCropOrigin.Value;
+                    }
+                    catch { }
+                    {
+                        var defaultCropOrigin = TagReader.ReadLongField((TiffTag)TiffTagDNG.DefaultCropOrigin, 2);
+                        CachedDefaultCropOrigin = new Vector2i((int)defaultCropOrigin[0], (int)defaultCropOrigin[1]);
+                    }
+                }
+                return CachedDefaultCropOrigin.Value;
+            }
+        }
+
+        public bool ContainsDefaultCropOrigin
+        {
+            get
+            {
+                if (!CachedContainsDefaultCropOrigin.HasValue)
+                    CachedContainsDefaultCropOrigin = Ifd.Contains((TiffTag)TiffTagDNG.DefaultCropOrigin);
+                return CachedContainsDefaultCropOrigin.Value;
             }
         }
 
