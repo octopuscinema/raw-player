@@ -51,7 +51,7 @@ jobs:
     - name: Prepare artifact upload
       shell: pwsh
       run: |
-        $artifact_name=${${{env.BUILD_ARTIFACT_NAME }}/\//-}
+        $artifact_name="${{env.BUILD_ARTIFACT_NAME}}" -replace '[\\/]', '_'
         "BUILD_ARTIFACT_NAME_SANITISED=$artifact_name" >> $env:GITHUB_ENV
 
     - name: Upload artifacts
