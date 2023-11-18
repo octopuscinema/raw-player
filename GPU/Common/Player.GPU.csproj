@@ -9,6 +9,6 @@
     <None Remove="OpenTK.Mathematics" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTK.Mathematics" Version="4.7.4" />
+    <PackageReference Include="OpenTK.Mathematics" Version="4.8.1" />
   </ItemGroup>
 </Project>
