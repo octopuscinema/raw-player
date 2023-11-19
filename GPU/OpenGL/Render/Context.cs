@@ -42,7 +42,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
         public string ApiShadingLanguageVersion { get; private set; }
         public Vector3 BackgroundColor { get; set; }
         public RedrawBackground RedrawBackground { get; set; }
-        public object NativeContext { get; private set; }
+        public object NativeHandle { get; private set; }
+        public IntPtr NativeContext { get; private set; }
+        public IntPtr NativeDeviceContext { get; private set; }
         public Vector2i FramebufferSize { get { return NativeWindow.FramebufferSize; } }
         public event ForceRender ForceRender;
 
@@ -64,10 +66,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         private int DefaultVertexArrayHandle { get; set; }
 
-        public Context(UI.INativeWindow nativeWindow, object nativeContext)
+        public Context(UI.INativeWindow nativeWindow, object nativeHandle, IntPtr nativeContext, IntPtr nativeDeviceContext)
         {
             // Initialise GPU resource lists
             NativeWindow = nativeWindow;
+            NativeHandle = nativeHandle;
+            NativeDeviceContext = nativeDeviceContext;
             NativeContext = nativeContext;
             textures = new List<ITexture>();
             shaders = new List<IShader>();

@@ -18,6 +18,15 @@ using OpenTK.Wpf;
 
 namespace Octopus.Player.UI.Windows
 {
+    static internal class WGL
+    {
+        [DllImport("opengl32.dll", EntryPoint = "wglGetCurrentDC")]
+        public extern static IntPtr wglGetCurrentDC();
+
+        [DllImport("opengl32.dll", EntryPoint = "wglGetCurrentContext")]
+        public extern static IntPtr wglGetCurrentContext();
+    }
+
     static partial class Extensions
     {
         public static List<string> ToModifierList(this ModifierKeys modifiers)
@@ -64,7 +73,9 @@ namespace Octopus.Player.UI.Windows
 
         private WindowState NonFullscreenWindowState { get; set; }
         private PlayerWindow PlayerWindow { get; set; }
-        public GPU.OpenGL.Render.Context RenderContext { get; private set; } = default!;
+        public GPU.Render.IContext RenderContext { get; private set; } = default!;
+
+        public GPU.Compute.IContext ComputeContext { get; private set; } = default!;
 
         public Vector2i FramebufferSize { get; private set; }
         public bool MouseInsidePlaybackControls { get; private set; }
@@ -138,9 +149,15 @@ namespace Octopus.Player.UI.Windows
         {
             if (RenderContext == null)
             {
-                RenderContext = new GPU.OpenGL.Render.Context(this, GLControl);
+                RenderContext = new GPU.OpenGL.Render.Context(this, GLControl, WGL.wglGetCurrentContext(), WGL.wglGetCurrentDC() );
                 RenderContext.ForceRender += delegate { GLControl.InvalidateVisual(); };
                 PlayerWindow.OnRenderInit(RenderContext);
+            }
+
+            if ( ComputeContext == null )
+            {
+                ComputeContext = GPU.OpenCL.Compute.Context.CreateContext(RenderContext);
+                //PlayerWindow.OnComputeInit(ComputeContext);
             }
 
             PlayerWindow.OnRenderFrame(delta.TotalSeconds);

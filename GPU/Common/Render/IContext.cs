@@ -31,8 +31,9 @@ namespace Octopus.Player.GPU.Render
 
         Vector3 BackgroundColor {get; set;}
         RedrawBackground RedrawBackground {get; set;}
-
-        object NativeContext { get; }
+        object NativeHandle { get; }
+        IntPtr NativeContext { get; }
+        IntPtr NativeDeviceContext { get; }
         Vector2i FramebufferSize { get; }
 
         event ForceRender ForceRender;

@@ -9,9 +9,13 @@ namespace Octopus.Player.GPU.Compute
         CUDA
     }
 
-    public interface IContext
+    public interface IContext : IDisposable
     {
         Api Api { get; }
+
+        string ApiVersion { get; }
+        string ApiName { get; }
+        string ApiVendor { get; }
     }
 }
 
