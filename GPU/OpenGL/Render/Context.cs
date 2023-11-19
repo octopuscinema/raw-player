@@ -6,6 +6,7 @@ using System.Linq;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using iTunesLibrary;
 
 // Xamarin.mac uses a baked in old version of OpenTK which doesn't expose GL3+ functions, expose them manually
 #if __MACOS__
@@ -21,11 +22,11 @@ namespace OpenTK.Graphics.OpenGL
         internal extern static void GenVertexArrays(Int32 n, [Out] UInt32[] arrays);
 
         [System.Security.SuppressUnmanagedCodeSecurity()]
-        [System.Runtime.InteropServices.DllImport(Library, EntryPoint = "glBindVertexArray", ExactSpelling = true)]
+        [DllImport(Library, EntryPoint = "glBindVertexArray", ExactSpelling = true)]
         internal extern static void BindVertexArray(UInt32 array);
 
         [System.Security.SuppressUnmanagedCodeSecurity()]
-        [System.Runtime.InteropServices.DllImport(Library, EntryPoint = "glDeleteProgram", ExactSpelling = true)]
+        [DllImport(Library, EntryPoint = "glDeleteProgram", ExactSpelling = true)]
         internal extern static void DeleteProgram(UInt32 program);
     }
 }

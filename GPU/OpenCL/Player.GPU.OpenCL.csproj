@@ -20,6 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Silk.NET.OpenCL" Version="2.19.0" />
+    <PackageReference Include="Silk.NET.OpenCL.Extensions.APPLE" Version="2.19.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Player.GPU.csproj" />

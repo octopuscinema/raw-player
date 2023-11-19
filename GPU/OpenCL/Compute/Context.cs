@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.DotNet.PlatformAbstractions;
 using Octopus.Player.GPU.Compute;
 using Silk.NET.OpenCL;
 
@@ -72,6 +70,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private void OnCreateContext()
         {
+            //Handle.GetContextInfo()
             /*
             SupportsAutoGLSync = DeviceExtensionSupported(Handle, device, "cl_khr_gl_event");
             ApiName = GetDeviceInfo(Handle, device, DeviceInfo.Name);
@@ -184,7 +183,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 var name = GetPlatformInfo(handle, platform, PlatformInfo.Name);
                 var vendor = GetPlatformInfo(handle, platform, PlatformInfo.Vendor);
                 var version = GetPlatformInfo(handle, platform, PlatformInfo.Version);
-                if ( PlatformExtensionSupported(handle, platform, "cl_khr_gl_sharing") )
+                if ( PlatformExtensionSupported(handle, platform, "cl_khr_gl_sharing") || PlatformExtensionSupported(handle, platform, "cl_APPLE_gl_sharing") )
                 {
                     platformsSupportingGLSharing.Add(platform);
                     Trace.WriteLine("CL Platform: " + name + ", Vendor: " + vendor + ", Version: " + version + ", GL/CL sharing support, " + devices.Length + " device(s)");
@@ -196,7 +195,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 {
                     var deviceName = GetDeviceInfo(handle, device, DeviceInfo.Name);
                     var deviceVersion = GetDeviceInfo(handle, device, DeviceInfo.Version);
-                    string deviceContextSharing = DeviceExtensionSupported(handle, device, "cl_khr_gl_sharing") ? ", GL/CL sharing support, " : ", no CL/GL sharing support, ";
+                    string deviceContextSharing = (DeviceExtensionSupported(handle, device, "cl_khr_gl_sharing") || DeviceExtensionSupported(handle, device, "cl_APPLE_gl_sharing"))
+                        ? ", GL/CL sharing support, " : ", no CL/GL sharing support, ";
                     Trace.WriteLine("CL Device: " + deviceName + ", Version: " + deviceVersion );
                 }
             }
@@ -216,7 +216,16 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             };
 
             // Get shared GL device
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var GLSharingContextProperties = new nint[] {
+                    new IntPtr(0x10000000), // CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE
+                    renderContext.NativeDeviceContext, 0
+                };
+
+                return new Context(handle, DeviceType.Gpu, supportsGLSharing, supportsGLSharing ? GLSharingContextProperties : defaultContextProperties);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var GLSharingContextProperties = new nint[] {
                     (nint)Silk.NET.OpenCL.Extensions.KHR.KHR.GLContextKhr, renderContext.NativeContext,
@@ -226,7 +235,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
                 // Create context
                 if (bestPlatformDevices.Length == 1 || !supportsGLSharing)
-                    return new Context(handle, DeviceType.Gpu,supportsGLSharing, supportsGLSharing ? GLSharingContextProperties : defaultContextProperties);
+                    return new Context(handle, DeviceType.Gpu, supportsGLSharing, supportsGLSharing ? GLSharingContextProperties : defaultContextProperties);
                 else
                 {
                     // Get device currently associated with OpenGL Context

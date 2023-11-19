@@ -10,10 +10,22 @@ using CoreAnimation;
 using CoreVideo;
 using OpenGL;
 using System.Runtime.InteropServices;
-using OpenTK.Graphics.OpenGL;
 
 namespace Octopus.Player.UI.macOS
 {
+    static internal class CGL
+    {
+        internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "CGLGetCurrentContext", ExactSpelling = true)]
+        internal extern static IntPtr CGLGetCurrentContext();
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "CGLGetShareGroup", ExactSpelling = true)]
+        internal extern static IntPtr CGLGetShareGroup(IntPtr context);
+    }
+
     public partial class OpenGLLayer : CoreAnimation.CAOpenGLLayer
     {
         // Not defined in Xamarin.Mac :(
@@ -22,6 +34,7 @@ namespace Octopus.Player.UI.macOS
 
         PlayerWindow PlayerWindow { get; set; }
         public GPU.OpenGL.Render.Context RenderContext { get; private set; }
+        public GPU.OpenCL.Compute.Context ComputeContext { get; private set; }
 
         volatile bool forceRender;
         
@@ -60,9 +73,14 @@ namespace Octopus.Player.UI.macOS
         {
             if (RenderContext == null)
             {
-                RenderContext = new GPU.OpenGL.Render.Context(PlayerWindow.NativeWindow, glContext);
+                RenderContext = new GPU.OpenGL.Render.Context(PlayerWindow.NativeWindow, glContext, CGL.CGLGetCurrentContext(), CGL.CGLGetShareGroup(CGL.CGLGetCurrentContext()));
                 RenderContext.ForceRender += delegate { forceRender = true; };
                 PlayerWindow.OnRenderInit(RenderContext);
+            }
+
+            if ( ComputeContext == null)
+            {
+                ComputeContext = GPU.OpenCL.Compute.Context.CreateContext(RenderContext);
             }
 
             PlayerWindow.OnRenderFrame(timeInterval);

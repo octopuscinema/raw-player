@@ -22,8 +22,6 @@ namespace Octopus.Player.UI.macOS
 
         private HashSet<string> activeSliders = new HashSet<string>();
 
-        private GPU.Compute.IContext ComputeContext { get; set; }
-
         // Called when created from unmanaged code
         public PlayerView(IntPtr handle) : base(handle)
         {
@@ -54,8 +52,6 @@ namespace Octopus.Player.UI.macOS
             Layer = new CALayer();
             Layer.AddSublayer(GLLayer);
             WantsLayer = true;
-
-            ComputeContext = new GPU.OpenCL.Compute.Context();
 
             // Register for drag/drop
             RegisterForDraggedTypes(new string[] { NSPasteboard.NSFilenamesType }); 
