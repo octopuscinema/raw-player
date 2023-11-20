@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Octopus.Player.GPU.Compute;
+using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
@@ -271,6 +273,16 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 Debug.CheckError(Handle.ReleaseContext(NativeHandle));
                 NativeHandle = 0;
             }
+        }
+
+        public IProgram CreateProgram(Assembly assembly, string resourceName, string name = null, IList<string> defines = null)
+        {
+            return null;
+        }
+
+        public IImage CreateImage(Vector2i dimensions, GPU.Compute.ImageFormat format, string name = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

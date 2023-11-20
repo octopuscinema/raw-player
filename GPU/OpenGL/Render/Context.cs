@@ -6,7 +6,6 @@ using System.Linq;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
-using iTunesLibrary;
 
 // Xamarin.mac uses a baked in old version of OpenTK which doesn't expose GL3+ functions, expose them manually
 #if __MACOS__

@@ -30,7 +30,4 @@
   <ItemGroup>
     <None Remove="Compute\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Compute\" />
-  </ItemGroup>
 </Project>
