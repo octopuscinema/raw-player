@@ -11,7 +11,7 @@ namespace Octopus.Player.Core.Playback
     {
         private IO.DNG.Reader DNGReader { get; set; }
 
-        public SequenceFrameDNG(IContext gpuContext, IClip clip, GPU.Render.TextureFormat gpuFormat)
+        public SequenceFrameDNG(IContext gpuContext, IClip clip, GPU.Format gpuFormat)
             : base(gpuContext, clip, gpuFormat)
         {
 

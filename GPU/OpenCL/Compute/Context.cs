@@ -18,7 +18,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         }
     }
 
-	public class Context : GPU.Compute.IContext
+	public class Context : IContext
     {
         public Api Api { get { return Api.OpenCL; } }
 
@@ -27,8 +27,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public string ApiName{ get; private set; }
 
         public string ApiVendor { get; private set; }
-        private CL Handle { get; set; }
-        private nint NativeHandle { get; set; }
+        internal CL Handle { get; private set; }
+        internal nint NativeHandle { get; set; }
+        internal nint NativeDevice { get; set; }
 
         private bool SupportsGLSharing { get; set; }
         private bool SupportsAutoGLSync { get; set; }
@@ -72,6 +73,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private void OnCreateContext()
         {
+            throw new NotImplementedException();
+            // TODO: get device
+            // NativeDevice = ...
             //Handle.GetContextInfo()
             /*
             SupportsAutoGLSync = DeviceExtensionSupported(Handle, device, "cl_khr_gl_event");
@@ -275,14 +279,15 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
-        public IProgram CreateProgram(Assembly assembly, string resourceName, string name = null, IList<string> defines = null)
+        public IProgram CreateProgram(Assembly assembly, string resourceName, IList<string> functions, IList<string> defines = null, string name = null)
         {
-            return null;
+            return new Program(this, assembly, resourceName, functions, defines, name);
         }
 
-        public IImage CreateImage(Vector2i dimensions, GPU.Compute.ImageFormat format, string name = null)
+        public IImage CreateImage(Vector2i dimensions, GPU.Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
+            MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
-            throw new NotImplementedException();
+            return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
         }
     }
 }

@@ -16,12 +16,12 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private Context Context { get; set; }
         private TextureTarget TextureType { get; set; }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)
+        public Texture(Context context, Vector2i dimensions, Format format, TextureFilter filter = TextureFilter.Nearest, string name = null)
             : this(context, dimensions, format, null, filter, name)
         {
         }
 
-        public Texture(Context context, Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
+        public Texture(Context context, Vector2i dimensions, Format format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
 		{
             Name = name;
             Dimensions = dimensions;
@@ -46,7 +46,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             context.EnqueueRenderAction(createTextureAction);
         }
 
-        public Texture(Context context, uint size, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
+        public Texture(Context context, uint size, Format format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
         {
             Name = name;
             Dimensions = new Vector2i((int)size,1);
@@ -72,7 +72,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
 
         public Vector2i Dimensions { get; private set; }
 
-        public TextureFormat Format { get; private set; }
+        public Format Format { get; private set; }
 
         public TextureFilter Filter { get; private set; }
 
@@ -140,39 +140,39 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Context.CheckError();
         }
 
-        private static PixelFormat GLPixelFormat(TextureFormat format)
+        private static PixelFormat GLPixelFormat(Format format)
         {
             switch (format)
             {
-                case TextureFormat.RGB8:
-                case TextureFormat.RGB16:
+                case Format.RGB8:
+                case Format.RGB16:
                     return PixelFormat.Rgb;
-                case TextureFormat.RGBA8:
-                case TextureFormat.RGBX8:
-                case TextureFormat.RGBA16:
-                case TextureFormat.RGBX16:
+                case Format.RGBA8:
+                case Format.RGBX8:
+                case Format.RGBA16:
+                case Format.RGBX16:
                     return PixelFormat.Rgba;
-                case TextureFormat.R16:
-                case TextureFormat.R8:
+                case Format.R16:
+                case Format.R8:
                     return PixelFormat.Red;
                 default:
                     throw new Exception("Unhandled texture format: " + format.ToString());
             }
         }
 
-        private static PixelType GLPixelType(TextureFormat format)
+        private static PixelType GLPixelType(Format format)
         {
             switch (format)
             {
-                case TextureFormat.RGBA8:
-                case TextureFormat.RGBX8:
-                case TextureFormat.RGB8:
-                case TextureFormat.R8:
+                case Format.RGBA8:
+                case Format.RGBX8:
+                case Format.RGB8:
+                case Format.R8:
                     return PixelType.UnsignedByte;
-                case TextureFormat.RGBA16:
-                case TextureFormat.RGBX16:
-                case TextureFormat.RGB16:
-                case TextureFormat.R16:
+                case Format.RGBA16:
+                case Format.RGBX16:
+                case Format.RGB16:
+                case Format.R16:
                     return PixelType.UnsignedShort;
                 default:
                     throw new Exception("Unhandled texture format: " + format.ToString());
@@ -205,23 +205,23 @@ namespace Octopus.Player.GPU.OpenGL.Render
         }
 
 
-        private static PixelInternalFormat GLPixelInternalFormat(TextureFormat format)
+        private static PixelInternalFormat GLPixelInternalFormat(Format format)
         {
             switch (format)
             {
-                case TextureFormat.RGBA8:
-                case TextureFormat.RGBX8:
+                case Format.RGBA8:
+                case Format.RGBX8:
                     return PixelInternalFormat.Rgba8;
-                case TextureFormat.RGB8:
+                case Format.RGB8:
                     return PixelInternalFormat.Rgb8;
-                case TextureFormat.RGBA16:
-                case TextureFormat.RGBX16:
+                case Format.RGBA16:
+                case Format.RGBX16:
                     return PixelInternalFormat.Rgba16;
-                case TextureFormat.RGB16:
+                case Format.RGB16:
                     return PixelInternalFormat.Rgb16;
-                case TextureFormat.R16:
+                case Format.R16:
                     return PixelInternalFormat.R16;
-                case TextureFormat.R8:
+                case Format.R8:
                     return PixelInternalFormat.R8;
                 default:
                     throw new Exception("Unhandled texture format: " + format.ToString());

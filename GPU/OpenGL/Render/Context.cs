@@ -114,19 +114,19 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Trace.WriteLine("GLSL version: " + ApiShadingLanguageVersion);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, TextureFilter filter = TextureFilter.Nearest, string name = null)
+        public ITexture CreateTexture(Vector2i dimensions, Format format, TextureFilter filter = TextureFilter.Nearest, string name = null)
         {
             return CreateTexture(dimensions, format, null, filter, name);
         }
 
-        public ITexture CreateTexture(Vector2i dimensions, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
+        public ITexture CreateTexture(Vector2i dimensions, Format format, byte[] imageData, TextureFilter filter = TextureFilter.Nearest, string name = null)
         {
             var texture = new Texture(this, dimensions, format, imageData, filter);
             textures.Add(texture);
             return texture;
         }
 
-        public ITexture CreateTexture(uint size, TextureFormat format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
+        public ITexture CreateTexture(uint size, Format format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null)
         {
             var texture = new Texture(this, size, format, imageData, filter);
             textures.Add(texture);

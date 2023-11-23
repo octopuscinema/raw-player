@@ -21,7 +21,7 @@ namespace Octopus.Player.Core.Playback
 
         List<Worker<FrameRequestResult>> Workers { get; set; }
 
-        public SequenceStream(IClip clip, IContext gpuContext, TextureFormat gpuFormat, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
+        public SequenceStream(IClip clip, IContext gpuContext, GPU.Format gpuFormat, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;

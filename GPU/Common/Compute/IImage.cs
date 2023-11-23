@@ -5,19 +5,18 @@ using System.Text;
 
 namespace Octopus.Player.GPU.Compute
 {
-    public enum ImageFormat
+    public interface IImage : IBuffer
     {
-        R16,
-        RGBA8888
-    }
-
-    public interface IImage : IDisposable
-    {
-        ImageFormat Format { get; }
+        Format Format { get; }
     }
 
     public interface IImage2D : IImage
     {
         Vector2i Dimensions { get; }
+    }
+
+    public interface IImage3D : IImage
+    {
+        Vector3i Dimensions { get; }
     }
 }

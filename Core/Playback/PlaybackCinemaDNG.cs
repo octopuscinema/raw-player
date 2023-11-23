@@ -100,7 +100,7 @@ namespace Octopus.Player.Core.Playback
             var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)cinemaDNGClip.Metadata;
 
             // Attempt to decode first frame as preview, if that fails bail out
-            var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Render.TextureFormat.R8 : GPU.Render.TextureFormat.R16;
+            var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Format.R8 : GPU.Format.R16;
             var previewFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
             previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
             var decodeError = previewFrame.Decode(clip);
@@ -153,7 +153,7 @@ namespace Octopus.Player.Core.Playback
                 if (LinearizeTable != null)
                     LinearizeTable.Dispose();
                 Span<byte> tableData = System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, byte>(cinemaDNGMetadata.LinearizationTable);
-                LinearizeTable = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Render.TextureFormat.R16, tableData.ToArray());
+                LinearizeTable = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Format.R16, tableData.ToArray());
             }
             
             return Error.None;

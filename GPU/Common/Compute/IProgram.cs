@@ -6,5 +6,7 @@ namespace Octopus.Player.GPU.Compute
 {
     public interface IProgram : IDisposable
     {
+        string Name { get; }
+        IList<string> Functions { get; }
     }
 }
