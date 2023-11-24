@@ -6,5 +6,6 @@ namespace Octopus.Player.GPU.Compute
 {
     public interface IQueue : IDisposable
     {
+        string Name { get; }
     }
 }

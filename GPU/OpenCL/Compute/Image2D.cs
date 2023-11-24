@@ -13,6 +13,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         internal nint NativeHandle { get; private set; }
 
+        Context Context { get; set; }
+
         internal Image2D(Context context, Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
@@ -22,6 +24,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             MemoryHostAccess = memoryHostAccess;
             MemoryLocation = memoryLocation;
             Name = name;
+            Context = context;
 
             // Create CL image
             var memFlags = Buffer.MemFlag(memoryDeviceAccess) | Buffer.MemFlag(memoryHostAccess) | Buffer.MemFlag(memoryLocation);
@@ -39,9 +42,10 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Format = texture.Format;
         }
 
-        override public void  Dispose()
+        override public void Dispose()
         {
-            
+            Debug.CheckError(Context.Handle.ReleaseMemObject(NativeHandle));
+            NativeHandle = 0;
         }
     }
 }

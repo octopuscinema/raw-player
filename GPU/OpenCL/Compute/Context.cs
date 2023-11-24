@@ -73,17 +73,27 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private void OnCreateContext()
         {
-            throw new NotImplementedException();
-            // TODO: get device
-            // NativeDevice = ...
-            //Handle.GetContextInfo()
-            /*
-            SupportsAutoGLSync = DeviceExtensionSupported(Handle, device, "cl_khr_gl_event");
-            ApiName = GetDeviceInfo(Handle, device, DeviceInfo.Name);
-            ApiVendor = GetDeviceInfo(Handle, device, DeviceInfo.Vendor);
-            ApiVersion = GetDeviceInfo(Handle, device, DeviceInfo.Version);
+            unsafe
+            {
+                nuint paramterSize;
+                Debug.CheckError(Handle.GetContextInfo(NativeHandle, ContextInfo.Devices, 0, null, out paramterSize));
+
+                nint[] devices = new nint[paramterSize / (nuint)sizeof(nint)];
+                if (devices.Length == 0)
+                    throw new Exception("Could not query OpenCL context device(s)");
+                
+                fixed (nint* p = devices)
+                {
+                    Debug.CheckError(Handle.GetContextInfo(NativeHandle, ContextInfo.Devices, paramterSize, p, null));
+                }
+                NativeDevice = devices[0];
+            }
+
+            SupportsAutoGLSync = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_gl_event");
+            ApiName = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Name);
+            ApiVendor = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Vendor);
+            ApiVersion = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Version);
             Trace.WriteLine("Created OpenCL context for device: " + ApiName);
-            */
         }
 
         private unsafe void CallbackHandler(byte* errinfo, void* privateInfo, nuint cb, void* userData)
@@ -270,7 +280,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return null;
         }
 
-        void System.IDisposable.Dispose()
+        public void Dispose()
         {
             if (NativeHandle != 0)
             {
@@ -284,7 +294,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return new Program(this, assembly, resourceName, functions, defines, name);
         }
 
-        public IImage CreateImage(Vector2i dimensions, GPU.Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
+        public IImage CreateImage(Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);

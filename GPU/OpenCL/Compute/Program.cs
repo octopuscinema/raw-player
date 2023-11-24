@@ -18,10 +18,13 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private IDictionary<string, nint> Kernels {get; set;}
 
+        private Context Context { get; set; }
+
         internal Program(Context context, Assembly assembly, string resourceName, IList<string> functions, IList<string> defines = null, string name = null)
         {
             Name = name;
             Functions = functions;
+            Context = context;
 
             // Load and preprocess source
             var sourceStream = assembly.GetManifestResourceStream(resourceName);
@@ -123,7 +126,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            foreach (var kernel in Kernels)
+                Debug.CheckError(Context.Handle.ReleaseKernel(kernel.Value));
+            Kernels.Clear();
+
+            Debug.CheckError(Context.Handle.ReleaseProgram(NativeHandle));
+            NativeHandle = 0;
         }
     }
 }
