@@ -11,9 +11,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
     {
         public Vector2i Dimensions { get; private set; }
 
-        internal nint NativeHandle { get; private set; }
-
         Context Context { get; set; }
+
+        internal nint NativeHandle { get; private set; }
 
         internal Image2D(Context context, Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)

@@ -299,6 +299,11 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         {
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
         }
+
+        public IQueue CreateQueue(string name = null)
+        {
+            return new Queue(this, name);
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using Octopus.Player.GPU.Compute;
+using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,32 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         {
             Debug.CheckError(Context.Handle.ReleaseCommandQueue(NativeHandle));
             NativeHandle = 0;
+        }
+
+        public void WaitForComplete()
+        {
+            Debug.CheckError(Context.Handle.Finish(NativeHandle));
+        }
+
+        public void AsyncWaitForComplete()
+        {
+           Debug.CheckError(Context.Handle.EnqueueBarrier(NativeHandle));
+        }
+
+        public void Flush()
+        {
+            Debug.CheckError(Context.Handle.Flush(NativeHandle));
+        }
+
+        public unsafe byte* MapImage(IImage2D image, Vector2i regionOrigin, Vector2i regionSize)
+        {
+            return null;
+        }
+
+        public unsafe void UnmapImage(IImage2D image, byte* mappedRegion)
+        {
+            var imageCL = (Image2D)image;
+            //Context.Handle.EnqueueUnmapMemObject(NativeHandle, image.)
         }
     }
 }

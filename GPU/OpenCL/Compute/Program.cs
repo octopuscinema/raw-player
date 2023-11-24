@@ -3,6 +3,8 @@ using Silk.NET.Core.Native;
 using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
@@ -42,21 +44,35 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             // Build program
             nint[] devices = new nint[] { context.NativeDevice };
             string buildOptions = "";
+            string buildLog = null;
+            ErrorCodes buildResult;
             unsafe
             {
-                var buildResult = context.Handle.BuildProgram(NativeHandle, (uint)devices.Length, devices.AsSpan(), buildOptions, null, null);
+                buildResult = (ErrorCodes)context.Handle.BuildProgram(NativeHandle, (uint)devices.Length, devices.AsSpan(), buildOptions, null, null);
+
+                // Get build log size
                 nuint buildLogSize;
                 Debug.CheckError(context.Handle.GetProgramBuildInfo(NativeHandle, context.NativeDevice, ProgramBuildInfo.BuildLog, 0, null, out buildLogSize));
 
-                // Get the size of the build log
-                throw new NotImplementedException();
-                /*
-                size_t BuildLogSize = 0;
-                cl_int ReturnValue = clGetProgramBuildInfo(Program, (cl_device_id)pContext->NativeDeviceHandle(),
-                    CL_PROGRAM_BUILD_LOG, 0, nullptr, &BuildLogSize);
-                CHECK_CL_ERROR(ReturnValue);
-                */
+                // Get build log
+                if (buildLogSize > 1) {
+                    byte[] buildLogData = new byte[buildLogSize+1];
+                    fixed (byte* p = buildLogData)
+                    {
+                        Debug.CheckError(context.Handle.GetProgramBuildInfo(NativeHandle, context.NativeDevice, ProgramBuildInfo.BuildLog, buildLogSize, p, null));
+                    }
+                    buildLog = System.Text.Encoding.ASCII.GetString(buildLogData);
+                }
             }
+
+            // Build feedback
+            if (buildLog != null && buildLog.Length > 0)
+                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + resourceName + "' failed to build:\n" + buildLog
+                   : "OpenCL program '" + resourceName + "' built:\n" + buildLog);
+            else
+                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + resourceName + "' failed to build"
+                    : "OpenCL program '" + resourceName + "' built");
+            Debug.CheckError((int)buildResult);
 
             // Create kernel for each function
             foreach(var function in Functions)

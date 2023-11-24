@@ -22,6 +22,7 @@ namespace Octopus.Player.GPU.Compute
         IProgram CreateProgram(System.Reflection.Assembly assembly, string resourceName, IList<string> functions, IList<string> defines = null, string name = null);
         IImage CreateImage(Vector2i dimensions, GPU.Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess,
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
+        IQueue CreateQueue(string name = null);
     }
 }
 
