@@ -14,7 +14,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
     {
         public string Name { get; private set; }
 
-        public IList<string> Functions { get; private set; }
+        public IReadOnlyList<string> Functions { get; private set; }
+
+        public IReadOnlyList<string> Defines { get; private set; }
 
         internal nint NativeHandle { get; private set; }
 
@@ -22,11 +24,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private Context Context { get; set; }
 
-        internal Program(Context context, Assembly assembly, string resourceName, IList<string> functions, IList<string> defines = null, string name = null)
+        internal Program(Context context, Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyList<string> defines = null, string name = null)
         {
             Name = name;
             Functions = functions;
             Context = context;
+            Defines = defines;
 
             // Load and preprocess source
             var sourceStream = assembly.GetManifestResourceStream(resourceName);
@@ -82,14 +85,14 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
-        string Preprocess(string source, Assembly assembly, IList<string> defines)
+        string Preprocess(string source, Assembly assembly, IReadOnlyList<string> defines)
         {
             uint includeDepth = 0;
             var localResources = assembly.GetManifestResourceNames();
             return AddIncludes(defines == null ? source : AddDefines(source, defines), assembly, localResources, ref includeDepth);
         }
 
-        string AddDefines(string source, IList<string> defines)
+        string AddDefines(string source, IReadOnlyList<string> defines)
         {
             string defineBlock = "";
             foreach (var define in defines)

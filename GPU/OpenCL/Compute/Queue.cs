@@ -1,8 +1,11 @@
-﻿using Octopus.Player.GPU.Compute;
+﻿using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU.Compute;
+using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
@@ -44,15 +47,29 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Debug.CheckError(Context.Handle.Flush(NativeHandle));
         }
 
-        public unsafe byte* MapImage(IImage2D image, Vector2i regionOrigin, Vector2i regionSize)
-        {
-            return null;
-        }
-
-        public unsafe void UnmapImage(IImage2D image, byte* mappedRegion)
+        public void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0)
         {
             var imageCL = (Image2D)image;
-            //Context.Handle.EnqueueUnmapMemObject(NativeHandle, image.)
+            if (imageCL == null)
+                throw new ArgumentException("Invalid image object");
+
+            var originArray = new Vector3i(origin, 0).ToArray().Cast<nuint>().ToArray();
+            var sizeArray = new Vector3i(size, 0).ToArray().Cast<nuint>().ToArray();
+
+            nuint stride = (nuint)image.Dimensions.X * image.Format.BytesPerPixel();
+            unsafe
+            {
+                fixed (nuint* pOrigin = originArray)
+                {
+                    fixed (nuint* pSize = sizeArray)
+                    {
+                        fixed (byte* pImageData = imageData)
+                        {
+                            Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, stride, 0, pImageData + imageDataOffset, 0, null, null));
+                        }
+                    }
+                }
+            }
         }
     }
 }

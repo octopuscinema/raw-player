@@ -40,6 +40,7 @@ namespace Octopus.Player.Core.Playback
         static private readonly Rational defaultFramerate = new Rational(24000, 1001);
 
         protected GPU.Render.IContext RenderContext { get; private set; }
+        protected GPU.Compute.IContext ComputeContext { get; private set; }
         protected IPlayerWindow PlayerWindow { get; private set; }
 
         public virtual List<Essence> SupportedEssence { get; }
@@ -70,12 +71,13 @@ namespace Octopus.Player.Core.Playback
         public event IPlayback.FrameDisplayedEventHandler SeekFrameDisplayed;
         public event IPlayback.FrameMissingEventHandler SeekFrameMissing;
 
-        public Playback(IPlayerWindow playerWindow, GPU.Render.IContext renderContext, uint bufferDurationFrames)
+        public Playback(IPlayerWindow playerWindow, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext, uint bufferDurationFrames)
         {
             requestFrame = null;
             displayFrame = null;
             State = State.Empty;
             PlayerWindow = playerWindow;
+            ComputeContext = computeContext;
             RenderContext = renderContext;
             BufferDurationFrames = bufferDurationFrames;
             Velocity = PlaybackVelocity.Forward1x;

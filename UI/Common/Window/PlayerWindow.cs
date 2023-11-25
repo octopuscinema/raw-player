@@ -15,6 +15,7 @@ namespace Octopus.Player.UI
         public INativeWindow NativeWindow { get; private set; }
         public Core.Playback.IPlayback Playback { get; private set; }
         private GPU.Render.IContext RenderContext { get; set; }
+        private GPU.Compute.IContext ComputeContext { get; set; }
         private Timer AnimateOutControlsTimer { get; set; }
         private ITheme theme;
         public ITheme Theme
@@ -752,7 +753,7 @@ namespace Octopus.Player.UI
             // Create the playback if necessary
             if (Playback == null)
             {
-                Playback = Activator.CreateInstance(typeof(T), this, RenderContext) as T;
+                Playback = Activator.CreateInstance(typeof(T), this, ComputeContext, RenderContext) as T;
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;
@@ -977,6 +978,11 @@ namespace Octopus.Player.UI
             RenderContext = renderContext;
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
+        }
+
+        public void OnComputeInit(GPU.Compute.IContext computeContext)
+        {
+            ComputeContext = computeContext;
         }
 
         public void OnRenderFrame(double timeInterval)

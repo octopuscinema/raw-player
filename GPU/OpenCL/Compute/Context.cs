@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -34,6 +35,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         private bool SupportsGLSharing { get; set; }
         private bool SupportsAutoGLSync { get; set; }
 
+        private List<Program> programs;
+
         private Context(CL handle, DeviceType deviceType, bool supportsGLSharing, nint[] contextProperties)
         {
             Handle = handle;
@@ -50,6 +53,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
             if (NativeHandle != 0)
                 OnCreateContext();
+
+            programs = new List<Program>();
         }
 
         private Context(CL handle, nint device, bool supportsGLSharing, nint[] contextProperties)
@@ -289,9 +294,23 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
-        public IProgram CreateProgram(Assembly assembly, string resourceName, IList<string> functions, IList<string> defines = null, string name = null)
+        public IProgram CreateProgram(Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyList<string> defines = null, string name = null)
         {
-            return new Program(this, assembly, resourceName, functions, defines, name);
+            if (!Path.HasExtension(resourceName))
+                resourceName += ".cl";
+
+            var resources = assembly.GetManifestResourceNames();
+            foreach (string resource in resources)
+            {
+                if (resource.Contains(resourceName))
+                {
+                    var program = new Program(this, assembly, resourceName, functions, defines, name);
+                    programs.Add(program);
+                    return program;
+                }
+            }
+
+            throw new Exception("Error locating OpenCL program resource: " + resourceName);
         }
 
         public IImage CreateImage(Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
@@ -306,4 +325,3 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         }
     }
 }
-

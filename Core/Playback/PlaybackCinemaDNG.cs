@@ -21,6 +21,7 @@ namespace Octopus.Player.Core.Playback
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
+        private GPU.Compute.IProgram GpuPipelineComputeProgram { get; set; }
         private ITexture LinearizeTable { get; set; }
 
         public override event EventHandler ClipOpened;
@@ -36,8 +37,8 @@ namespace Octopus.Player.Core.Playback
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
 
-        public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Render.IContext renderContext)
-            : base(playerWindow, renderContext, bufferDurationFrames)
+        public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext)
+            : base(playerWindow, computeContext, renderContext, bufferDurationFrames)
         {
             SeekFrameMutex = new Mutex();
         }
@@ -121,6 +122,12 @@ namespace Octopus.Player.Core.Playback
                 if (GpuPipelineProgram != null)
                     GpuPipelineProgram.Dispose();
                 GpuPipelineProgram = RenderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
+            }
+            if (GpuPipelineComputeProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineComputeProgram.Defines))
+            {
+                if (GpuPipelineComputeProgram != null)
+                    GpuPipelineComputeProgram.Dispose();
+                //GpuPipelineComputeProgram = ComputeC
             }
 
             // Create the sequence stream

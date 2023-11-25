@@ -157,7 +157,7 @@ namespace Octopus.Player.UI.Windows
             if ( ComputeContext == null )
             {
                 ComputeContext = GPU.OpenCL.Compute.Context.CreateContext(RenderContext);
-                //PlayerWindow.OnComputeInit(ComputeContext);
+                PlayerWindow.OnComputeInit(ComputeContext);
             }
 
             PlayerWindow.OnRenderFrame(delta.TotalSeconds);

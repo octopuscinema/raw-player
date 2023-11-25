@@ -10,8 +10,7 @@ namespace Octopus.Player.GPU.Compute
     {
         string Name { get; }
 
-        unsafe byte* MapImage(IImage2D image, Vector2i regionOrigin, Vector2i regionSize);
-        unsafe void UnmapImage(IImage2D image, byte* mappedRegion);
+        void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
 
         void WaitForComplete();
         void AsyncWaitForComplete();
