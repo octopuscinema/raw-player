@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Render;
@@ -117,17 +118,18 @@ namespace Octopus.Player.Core.Playback
 
             // Rebuild the shader if the defines have changed
             var requiredShaderDefines = ShaderDefinesForClip(clip);
+            var requiredKernel = ComputeKernelForClip(clip);
             if ( GpuPipelineProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
             {
                 if (GpuPipelineProgram != null)
                     GpuPipelineProgram.Dispose();
-                GpuPipelineProgram = RenderContext.CreateShader(System.Reflection.Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
+                GpuPipelineProgram = RenderContext.CreateShader(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
             }
-            if (GpuPipelineComputeProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineComputeProgram.Defines))
+            if (GpuPipelineComputeProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineComputeProgram.Defines) || !GpuPipelineComputeProgram.Functions.Contains(requiredKernel))
             {
                 if (GpuPipelineComputeProgram != null)
                     GpuPipelineComputeProgram.Dispose();
-                //GpuPipelineComputeProgram = ComputeC
+                GpuPipelineComputeProgram = ComputeContext.CreateProgram(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", new List<string>() { requiredKernel }, requiredShaderDefines, "PipelineCinemaDNG");
             }
 
             // Create the sequence stream
@@ -288,7 +290,21 @@ namespace Octopus.Player.Core.Playback
             SequenceStream.ReclaimReadyFrames();
         }
 
-        private IList<string> ShaderDefinesForClip(IClip clip)
+        private string ComputeKernelForClip(IClip clip)
+        {
+            Debug.Assert(SupportsClip(clip));
+            var dngMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+            Debug.Assert(dngMetadata != null);
+
+            string kernel = "Process";
+            if (dngMetadata.CFAPattern != IO.CFAPattern.None)
+                kernel += "Bayer";
+            kernel += (dngMetadata.LinearizationTable != null && dngMetadata.LinearizationTable.Length > 0) ? "NonLinear" : "Linear";
+
+            return kernel;
+        }
+
+        private IReadOnlyCollection<string> ShaderDefinesForClip(IClip clip)
         {
             Debug.Assert(SupportsClip(clip));
             var dngMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;

@@ -16,7 +16,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public IReadOnlyList<string> Functions { get; private set; }
 
-        public IReadOnlyList<string> Defines { get; private set; }
+        public IReadOnlyCollection<string> Defines { get; private set; }
 
         internal nint NativeHandle { get; private set; }
 
@@ -24,9 +24,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         private Context Context { get; set; }
 
-        internal Program(Context context, Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyList<string> defines = null, string name = null)
+        internal Program(Context context, Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyCollection<string> defines = null, string name = null)
         {
-            Name = name;
+            Name = name!=null ? name : resourceName;
             Functions = functions;
             Context = context;
             Defines = defines;
@@ -58,8 +58,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 Debug.CheckError(context.Handle.GetProgramBuildInfo(NativeHandle, context.NativeDevice, ProgramBuildInfo.BuildLog, 0, null, out buildLogSize));
 
                 // Get build log
-                if (buildLogSize > 1) {
-                    byte[] buildLogData = new byte[buildLogSize+1];
+                if (buildLogSize > 2) {
+                    byte[] buildLogData = new byte[buildLogSize];
                     fixed (byte* p = buildLogData)
                     {
                         Debug.CheckError(context.Handle.GetProgramBuildInfo(NativeHandle, context.NativeDevice, ProgramBuildInfo.BuildLog, buildLogSize, p, null));
@@ -70,29 +70,30 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
             // Build feedback
             if (buildLog != null && buildLog.Length > 0)
-                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + resourceName + "' failed to build:\n" + buildLog
-                   : "OpenCL program '" + resourceName + "' built:\n" + buildLog);
+                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + Name + "' failed to build:\n" + buildLog
+                   : "OpenCL program '" + Name + "' built:\n" + buildLog);
             else
-                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + resourceName + "' failed to build"
-                    : "OpenCL program '" + resourceName + "' built");
+                Trace.WriteLine(buildResult == ErrorCodes.BuildProgramFailure ? "OpenCL program '" + Name + "' failed to build"
+                    : "OpenCL program '" + Name + "' built");
             Debug.CheckError((int)buildResult);
 
             // Create kernel for each function
-            foreach(var function in Functions)
+            Kernels = new Dictionary<string, nint>();
+            foreach (var function in Functions)
             {
                 Kernels[function] = context.Handle.CreateKernel(NativeHandle, function, out result);
                 Debug.CheckError(result);
             }
         }
 
-        string Preprocess(string source, Assembly assembly, IReadOnlyList<string> defines)
+        string Preprocess(string source, Assembly assembly, IReadOnlyCollection<string> defines)
         {
             uint includeDepth = 0;
             var localResources = assembly.GetManifestResourceNames();
             return AddIncludes(defines == null ? source : AddDefines(source, defines), assembly, localResources, ref includeDepth);
         }
 
-        string AddDefines(string source, IReadOnlyList<string> defines)
+        string AddDefines(string source, IReadOnlyCollection<string> defines)
         {
             string defineBlock = "";
             foreach (var define in defines)

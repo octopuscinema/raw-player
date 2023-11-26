@@ -43,7 +43,7 @@ namespace Octopus.Player.GPU.Render
         ITexture CreateTexture(uint size, Format format, byte[] imageData, TextureFilter filter = TextureFilter.Linear, string name = null);
         void DestroyTexture(ITexture texture);
 
-        IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IList<string> defines = null);
+        IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IReadOnlyCollection<string> defines = null);
         void DestroyShader(IShader shader);
         
         void EnqueueRenderAction(Action action);

@@ -294,7 +294,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
-        public IProgram CreateProgram(Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyList<string> defines = null, string name = null)
+        public IProgram CreateProgram(Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyCollection<string> defines = null, string name = null)
         {
             if (!Path.HasExtension(resourceName))
                 resourceName += ".cl";
@@ -304,7 +304,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             {
                 if (resource.Contains(resourceName))
                 {
-                    var program = new Program(this, assembly, resourceName, functions, defines, name);
+                    var program = new Program(this, assembly, resource, functions, defines, name);
                     programs.Add(program);
                     return program;
                 }

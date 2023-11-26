@@ -139,7 +139,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             texture.Dispose();
         }
 
-        public IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IList<string> defines = null)
+        public IShader CreateShader(System.Reflection.Assembly assembly, string shaderResourceName, string name = null, IReadOnlyCollection<string> defines = null)
         {
             if (!Path.HasExtension(shaderResourceName))
                 shaderResourceName += ".glsl";
