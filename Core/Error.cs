@@ -17,6 +17,7 @@ namespace Octopus.Player.Core
         FrameNotReady,
         FrameRequestError,
         NotImplmeneted,
-        SeekRequestAlreadyActive
+        SeekRequestAlreadyActive,
+        ComputeError
     }
 }

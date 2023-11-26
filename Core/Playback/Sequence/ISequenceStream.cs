@@ -18,6 +18,12 @@ namespace Octopus.Player.Core.Playback
         ErrorUnknown
     }
 
+    public enum FrameStorage
+    {
+        Cpu,
+        GpuCompute
+    }
+
     public interface ISequenceStream : IDisposable
     {
         FrameRequestResult RequestFrame(uint frameNumber);

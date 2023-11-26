@@ -12,6 +12,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public string Name { get; protected set; }
 
         public Format Format { get; protected set; }
+        public abstract int SizeBytes { get; }
 
         internal static ImageFormat ImageFormat(Format format)
         {

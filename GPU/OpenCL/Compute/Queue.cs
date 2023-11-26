@@ -56,7 +56,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             var originArray = new Vector3i(origin, 0).ToArray().Cast<nuint>().ToArray();
             var sizeArray = new Vector3i(size, 0).ToArray().Cast<nuint>().ToArray();
 
-            nuint stride = (nuint)image.Dimensions.X * image.Format.BytesPerPixel();
+            nuint stride = (nuint)image.Dimensions.X * (nuint)image.Format.BytesPerPixel();
             unsafe
             {
                 fixed (nuint* pOrigin = originArray)

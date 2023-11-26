@@ -103,7 +103,7 @@ namespace Octopus.Player.Core.Playback
 
             // Attempt to decode first frame as preview, if that fails bail out
             var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Format.R8 : GPU.Format.R16;
-            var previewFrame = new SequenceFrameDNG(RenderContext, clip, gpuFormat);
+            var previewFrame = new SequenceFrameDNG(clip, gpuFormat);
             previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
             var decodeError = previewFrame.Decode(clip);
             if (decodeError != Error.None)
@@ -134,7 +134,7 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, RenderContext, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
+            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
 
             // Allocate display frame
             displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
@@ -142,7 +142,7 @@ namespace Octopus.Player.Core.Playback
             // Create display texture with preview frame
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
-            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImage : null, 
+            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImageCpu : null, 
                 TextureFilter.Nearest, "displayFrame");
 
             // Tiled preview frame requires copying to GPU seperately
@@ -178,7 +178,7 @@ namespace Octopus.Player.Core.Playback
 
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
-                SeekFrame = new SequenceFrameDNG(RenderContext, Clip, displayFrameGPU.Format);
+                SeekFrame = new SequenceFrameDNG(Clip, displayFrameGPU.Format);
 
             // Decode seek frame processing
             Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>

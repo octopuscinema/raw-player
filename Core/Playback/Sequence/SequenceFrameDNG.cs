@@ -11,8 +11,14 @@ namespace Octopus.Player.Core.Playback
     {
         private IO.DNG.Reader DNGReader { get; set; }
 
-        public SequenceFrameDNG(IContext gpuContext, IClip clip, GPU.Format gpuFormat)
-            : base(gpuContext, clip, gpuFormat)
+        public SequenceFrameDNG(IClip clip, GPU.Format format)
+            : base(clip, format)
+        {
+
+        }
+
+        public SequenceFrameDNG(GPU.Compute.IContext computeContext, GPU.Compute.IQueue computeQueue, IClip clip, GPU.Format format)
+            : base(computeContext, computeQueue, clip, format)
         {
 
         }
@@ -52,15 +58,47 @@ namespace Octopus.Player.Core.Playback
             if ( DNGReader.ContainsTimeCode )
                 timeCode = new TimeCode(DNGReader.TimeCode);
 
-            // Read the data
+            // Read/decode the data
             var decodeDataError = Error.None;
             switch (DNGReader.Compression)
             {
                 case IO.DNG.Compression.None:
                 case IO.DNG.Compression.LosslessJPEG:
                     var bytesPerPixel = clip.Metadata.BitDepth <= 8 ? 1 : 2;
-                    Debug.Assert(decodedImage.Length == bytesPerPixel * clip.Metadata.PaddedDimensions.Area());
-                    decodeDataError = DNGReader.DecodeImageData(decodedImage, workingBuffer);
+
+                    // Decode and copy to GPU
+                    if (decodedImageGpu != null)
+                    {
+                        Debug.Assert(decodedImageGpu.Dimensions == clip.Metadata.PaddedDimensions);
+                        var decodedImage = System.Buffers.ArrayPool<byte>.Shared.Rent(bytesPerPixel * clip.Metadata.PaddedDimensions.Area());
+                        decodeDataError = DNGReader.DecodeImageData(decodedImage, workingBuffer);
+                        try
+                        {
+                            if (decodeDataError == Error.None)
+                            {
+                                var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+                                if (metadata.TileCount > 0)
+                                    ForEachTile(metadata, (origin, size, offset) => { ComputeQueue.ModifyImage(decodedImageGpu, origin, size, decodedImage, offset); });
+                                else
+                                    ComputeQueue.ModifyImage(decodedImageGpu, Vector2i.Zero, decodedImageGpu.Dimensions, decodedImage);
+                            }
+                        }
+                        catch
+                        {
+                            decodeDataError = Error.ComputeError;
+                        }
+                        finally
+                        {
+                            System.Buffers.ArrayPool<byte>.Shared.Return(decodedImage);
+                        }
+                    }
+
+                    // Decode to CPU buffer
+                    else
+                    {
+                        Debug.Assert(decodedImageCpu != null && decodedImageCpu.Length == bytesPerPixel * clip.Metadata.PaddedDimensions.Area());
+                        decodeDataError = DNGReader.DecodeImageData(decodedImageCpu, workingBuffer);
+                    }
                     break;
                 default:
                     DNGReader.Dispose();
@@ -78,10 +116,28 @@ namespace Octopus.Player.Core.Playback
         {
             var result = TryDecode(clip, workingBuffer);
             if (result != Error.None)
-                System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImage[0], 0, (uint)decodedImage.Length);
+                System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImageCpu[0], 0, (uint)decodedImageCpu.Length);
             LastError = result;
             NeedsGPUCopy = true;
             return result;
+        }
+
+        private void ForEachTile(IO.DNG.MetadataCinemaDNG metadata, Action<Vector2i, Vector2i, uint> action)
+        {
+            uint dataOffset = 0;
+            var tileSizeBytes = (uint)(metadata.TileDimensions.Area() * metadata.DecodedBitDepth) / 8;
+            for (int y = 0; y < metadata.PaddedDimensions.Y; y += metadata.TileDimensions.Y)
+            {
+                for (int x = 0; x < metadata.PaddedDimensions.X; x += metadata.TileDimensions.X)
+                {
+                    var tileDimensions = metadata.TileDimensions;
+                    var maxTileSize = metadata.PaddedDimensions - new Vector2i(x, y);
+                    tileDimensions.X = Math.Min(maxTileSize.X, tileDimensions.X);
+                    tileDimensions.Y = Math.Min(maxTileSize.Y, tileDimensions.Y);
+                    action(new Vector2i(x, y), tileDimensions, dataOffset);
+                    dataOffset += tileSizeBytes;
+                }
+            }
         }
 
         public override Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null)
@@ -89,33 +145,18 @@ namespace Octopus.Player.Core.Playback
             // Copy to staging array if supplied
             if (stagingImage != null)
             {
-                Debug.Assert(decodedImage.Length == stagingImage.Length);
-                Buffer.BlockCopy(decodedImage, 0, stagingImage, 0, stagingImage.Length);
+                Debug.Assert(decodedImageCpu.Length == stagingImage.Length);
+                Buffer.BlockCopy(decodedImageCpu, 0, stagingImage, 0, stagingImage.Length);
             }
             else
-                stagingImage = decodedImage;
+                stagingImage = decodedImageCpu;
 
             Action renderAction = () =>
             {
-                // Tiled DNG
-                var cinemaDNGMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
-                if (cinemaDNGMetadata.TileCount > 0)
-                {
-                    var frameOffset = 0;
-                    var tileSizeBytes = (cinemaDNGMetadata.TileDimensions.Area() * clip.Metadata.DecodedBitDepth) / 8;
-                    for (int y = 0; y < clip.Metadata.PaddedDimensions.Y; y += cinemaDNGMetadata.TileDimensions.Y)
-                    {
-                        for (int x = 0; x < clip.Metadata.PaddedDimensions.X; x += cinemaDNGMetadata.TileDimensions.X)
-                        {
-                            var tileDimensions = cinemaDNGMetadata.TileDimensions;
-                            var maxTileSize = gpuImage.Dimensions - new Vector2i(x, y);
-                            tileDimensions.X = Math.Min(maxTileSize.X, tileDimensions.X);
-                            tileDimensions.Y = Math.Min(maxTileSize.Y, tileDimensions.Y);
-                            gpuImage.Modify(renderContext, new Vector2i(x, y), tileDimensions, stagingImage, (uint)frameOffset);
-                            frameOffset += (int)tileSizeBytes;
-                        }
-                    }
-                }
+                // Modify the texture linear or tiled
+                var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+                if (metadata.TileCount > 0)
+                    ForEachTile(metadata, (origin, size, offset) => { gpuImage.Modify(renderContext, origin, size, stagingImage, offset); });
                 else
                     gpuImage.Modify(renderContext, Vector2i.Zero, gpuImage.Dimensions, stagingImage);
 

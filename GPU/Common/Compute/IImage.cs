@@ -8,6 +8,7 @@ namespace Octopus.Player.GPU.Compute
     public interface IImage : IBuffer
     {
         Format Format { get; }
+        int SizeBytes { get; }
     }
 
     public interface IImage2D : IImage

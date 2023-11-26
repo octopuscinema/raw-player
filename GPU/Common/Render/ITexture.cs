@@ -5,7 +5,7 @@ namespace Octopus.Player.GPU.Render
 {
 	public static class Extensions
 	{
-		public static uint BytesPerPixel(this Format format)
+		public static int BytesPerPixel(this Format format)
 		{
             switch (format)
             {
