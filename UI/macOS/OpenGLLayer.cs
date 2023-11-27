@@ -81,6 +81,7 @@ namespace Octopus.Player.UI.macOS
             if ( ComputeContext == null)
             {
                 ComputeContext = GPU.OpenCL.Compute.Context.CreateContext(RenderContext);
+                PlayerWindow.OnComputeInit(ComputeContext);
             }
 
             PlayerWindow.OnRenderFrame(timeInterval);
