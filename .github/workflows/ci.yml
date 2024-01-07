@@ -79,6 +79,7 @@ jobs:
       DECODER_UNPACK_ARCHIVE_PATH: Decoders/Unpack.xcarchive
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-dmg-${{github.ref_name}}-${{github.sha}}"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_DIR:  "${{ github.workspace }}/UI/macOS/bin/Release"
       STANDALONE_BUILD_DMG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.dmg"
       STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/artifact/standalone"
 
@@ -130,7 +131,7 @@ jobs:
       run: |
         brew install graphicsmagick imagemagick
         npm install --global create-dmg
-        create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DMG_PATH }}"
+        create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DIR }}"
       #brew install create-dmg
       #create-dmg --volname "OCTOPUS RAW Player (dev)" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
 
