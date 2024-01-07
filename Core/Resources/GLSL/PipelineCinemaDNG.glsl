@@ -67,26 +67,30 @@ void main()
 	// Sample monochrome pixel
 #ifdef MONOCHROME
 	mediump float cameraMonochrome = texture(rawImage,normalisedCoordinates).r;
+#ifdef LINEARIZE
+	cameraMonochrome = texture(linearizeTable, min(1.0, cameraMonochrome / linearizeTableRange)).r;
+#endif
 	mediump vec3 cameraRgb = vec3(cameraMonochrome, cameraMonochrome, cameraMonochrome);
 #endif
 
-	// Sample and debayer
+	// Sample and linearize debayer
+#ifdef LINEARIZE
+#ifdef BAYER_XGGX
+	mediump vec3 cameraRgb = LinearizeDebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)), linearizeTable, linearizeTableRange);
+#endif
+#ifdef BAYER_GXXG
+	mediump vec3 cameraRgb = LinearizeDebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)), linearizeTable, linearizeTableRange);
+#endif
+#else
 #ifdef BAYER_XGGX
 	mediump vec3 cameraRgb = DebayerXGGX(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)));
 #endif
 #ifdef BAYER_GXXG
 	mediump vec3 cameraRgb = DebayerGXXG(rawImage, ivec2(normalisedCoordinates * textureSize(rawImage, 0)));
 #endif
+#endif
 #ifdef BAYER_BR
 	cameraRgb.xz = cameraRgb.zx;
-#endif
-
-	// Linearise
-#ifdef LINEARIZE
-	mediump vec3 linearizeTableIndex = min(vec3(1.0), cameraRgb / linearizeTableRange);
-	cameraRgb.x = texture(linearizeTable, linearizeTableIndex.x).r;
-	cameraRgb.y = texture(linearizeTable, linearizeTableIndex.y).r;
-	cameraRgb.z = texture(linearizeTable, linearizeTableIndex.z).r;
 #endif
 
 	// Apply black and white level
