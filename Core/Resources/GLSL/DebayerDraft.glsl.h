@@ -55,9 +55,9 @@ mediump vec3 Debayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 gre
 	}
 }
 
-mediump float Linearize(mediump float input, sampler1D table, highp float tableRange)
+mediump float Linearize(mediump float nonLinear, sampler1D table, highp float tableRange)
 {
-	return texture(table, min(1.0, input / tableRange)).r;
+	return texture(table, min(1.0, nonLinear / tableRange)).r;
 }
 
 mediump vec3 LinearizeDebayer(sampler2D bayerImage, highp ivec2 coords, mediump ivec2 greenLocations[2], mediump ivec2 nonGreen1Location, sampler1D linearize, highp float linearizeRange)
