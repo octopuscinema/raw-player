@@ -39,6 +39,7 @@ namespace Octopus.Player.Core.IO.DNG
         public bool Monochrome { get; private set; }
         public string UniqueCameraModel { get; private set; }
         public Vector2 PixelAspectRatio { get; private set; }
+        public Vector4i ActiveArea { get; private set; }
 
         public override Maths.Rational AspectRatio
         {
@@ -74,7 +75,8 @@ namespace Octopus.Player.Core.IO.DNG
                 StartTimeCode = reader.TimeCode;
             PixelAspectRatio = reader.ContainsDefaultScale ? reader.DefaultScale : new Vector2(1, 1);
             if (reader.ContainsDefaultCropOrigin && reader.ContainsDefaultCropSize)
-                ActiveSensorArea = new Vector4i(reader.DefaultCropOrigin, reader.DefaultCropSize);
+                DefaultCrop = new Vector4i(reader.DefaultCropOrigin, reader.DefaultCropSize);
+            ActiveArea = reader.ContainsActiveArea ? reader.ActiveArea : new Vector4i(0,0, reader.Dimensions.Y, reader.Dimensions.X);
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);
