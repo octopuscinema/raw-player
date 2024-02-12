@@ -80,17 +80,26 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-dmg-${{github.ref_name}}-${{github.sha}}"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
       STANDALONE_BUILD_DIR:  "${{ github.workspace }}/UI/macOS/bin/Release"
-      STANDALONE_BUILD_DMG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.dmg"
+      STANDALONE_BUILD_DMG_PATH:  "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
       STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}/artifact/standalone"
 
     steps:
     - uses: actions/checkout@v3
       with:
         lfs: 'true'
-        
+    
+    - name: Read Version
+      id: version
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: "${{ github.workspace }}/Version"
+
     - name: Apply Version
       shell: bash
-      run: ./ApplyVersion.sh
+      run: |
+        ./ApplyVersion.sh
+        dmg_path="${{ env.STANDALONE_BUILD_DMG_PATH }} ${{ steps.version.outputs.content }}.dmg"
+        echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
     
     - name: "Import distribution certificate"
       uses: apple-actions/import-codesign-certs@v2
