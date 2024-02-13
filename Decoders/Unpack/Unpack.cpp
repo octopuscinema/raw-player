@@ -90,9 +90,29 @@ namespace Octopus::Player::Decoders::Unpack
 	}
 #endif
 
-	extern "C" void Unpack10to16Bit(uint8_t* pOut, const uint8_t* p12BitPacked, uint32_t sizeBytes)
+	extern "C" void Unpack10to16Bit(uint8_t* pOut, const uint8_t* p10BitPacked, uint32_t sizeBytes)
 	{
-		// TODO
+		const uint8_t* pEnd = p10BitPacked + sizeBytes;
+		uint16_t* p16BitOut = (uint16_t*)(pOut);
+
+		uint8_t Bytes[8];
+
+		while (p10BitPacked != pEnd)
+		{
+			// Read 4 pixel block of packed 10-bit (5 bytes)
+			// Reverse order for DNG big endian to little endian conversion
+			Bytes[4] = *p10BitPacked++;
+			Bytes[3] = *p10BitPacked++;
+			Bytes[2] = *p10BitPacked++;
+			Bytes[1] = *p10BitPacked++;
+			Bytes[0] = *p10BitPacked++;
+			const uint64_t Block = *((uint64_t*)Bytes);
+
+			*p16BitOut++ = (Block >> 30) & 0x3ff;
+			*p16BitOut++ = (Block >> 20) & 0x3ff;
+			*p16BitOut++ = (Block >> 10) & 0x3ff;
+			*p16BitOut++ = Block & 0x3ff;
+		}
 	}
 
 	extern "C" uint32_t Unpack12InputOffsetBytes()
