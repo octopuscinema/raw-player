@@ -5,7 +5,7 @@ Copyright (c) 2006-2019 Stefanos Apostolopoulos (OpenTK)
 Copyright (c) 2019 varon (GLWpfControl)
 Copyright (c) 2018-2021 yigolden (TiffLibrary)
 Copyright (c) 2019 Yves Goergen (NetRevisionTask)
-Copyright (c) 2023 OCTOPUSCINEMA
+Copyright (c) 2024 OCTOPUSCINEMA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
