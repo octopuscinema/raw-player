@@ -134,6 +134,7 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_PATH_NO_EXT: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
       STANDALONE_BUILD_DIR:  "${{ github.workspace }}/UI/macOS/bin/Release"
       STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
       INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
@@ -197,6 +198,7 @@ jobs:
         brew install graphicsmagick imagemagick
         npm install --global create-dmg
         create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DIR }}"
+        mv "${{ env.STANDALONE_BUILD_PATH_NO_EXT }} ${{ steps.version.outputs.content }}.dmg" "${{ env.STANDALONE_BUILD_DMG_PATH }}"
 
     - name: Notarize .DMG
       run: |
