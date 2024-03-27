@@ -165,18 +165,12 @@ jobs:
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
     - name: "Build LJ92 decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: LJ92
-        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "LJ92" clean archive -configuration release -archivePath "${{env.DECODER_LJ92_ARCHIVE_PATH}}"
         
     - name: "Build Unpack decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: Unpack
-        archive-path: ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "Unpack" clean archive -configuration release -archivePath "${{env.DECODER_UNPACK_ARCHIVE_PATH}}"
     
     - name: Prepare decoder native libraries
       working-directory: ${{env.GITHUB_WORKSPACE}}
