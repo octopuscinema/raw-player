@@ -80,7 +80,7 @@ jobs:
       working-directory: 'codesigntool'
       run: |
         New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
+        Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player.exe"
 
     - name: Sign .exe
       uses: sslcom/esigner-codesign@develop
@@ -89,7 +89,7 @@ jobs:
         username: ${{ secrets.PEARTREE_SSL_USERNAME }}
         password: ${{ secrets.PEARTREE_SSL_PASSWORD }}
         totp_secret: ${{ secrets.PEARTREE_CERT_TOTP_SECRET }}
-        file_path: ${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe
+        file_path: ${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player.exe
         output_path: ${{ env.STANDALONE_ARTIFACT_PATH }}
         malware_block: false
 
