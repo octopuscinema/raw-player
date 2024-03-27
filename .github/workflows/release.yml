@@ -68,21 +68,6 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
 
-    - name: Install code signing tool
-      shell: pwsh
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        Invoke-WebRequest -Uri 'https://www.ssl.com/download/codesigntool-for-windows/' -OutFile 'codesigntool.zip'
-        Expand-Archive -Path 'codesigntool.zip' -DestinationPath '.\codesigntool'
-
-    - name: Prepare .exe for signing
-      shell: pwsh
-      working-directory: 'codesigntool'
-      run: |
-        New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        #blah
-        #Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player.exe"
-
     - name: Sign .exe
       uses: sslcom/esigner-codesign@develop
       with:
@@ -94,14 +79,6 @@ jobs:
         malware_block: false
         override: true
 
-#    - name: Sign .exe
-#     shell: pwsh
-#      working-directory: 'codesigntool'
-      #run: |
-       # New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        #Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
-        #.\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.STANDALONE_ARTIFACT_PATH }}" -input_file_path="${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}"
-    
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
@@ -118,12 +95,16 @@ jobs:
       run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
 
     - name: Sign .msi
-      shell: pwsh
-      working-directory: 'codesigntool'
-      run: |
-        New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}"
-        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.INSTALLER_ARTIFACT_PATH }}" -input_file_path="${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}" -program_name="OCTOPUS RAW Player"
+      uses: sslcom/esigner-codesign@develop
+      with:
+        command: sign
+        username: ${{ secrets.PEARTREE_SSL_USERNAME }}
+        password: ${{ secrets.PEARTREE_SSL_PASSWORD }}
+        totp_secret: ${{ secrets.PEARTREE_CERT_TOTP_SECRET }}
+        file_path: ${{ env.INSTALLER_ARTIFACT_PATH }}OCTOPUS RAW Player.exe
+        program_name: OCTOPUS RAW Player
+        malware_block: false
+        override: true
 
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
