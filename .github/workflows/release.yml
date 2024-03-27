@@ -97,7 +97,7 @@ jobs:
     - name: Create Installer
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
-      
+
     - name: Sign .msi
       shell: pwsh
       working-directory: 'codesigntool'
