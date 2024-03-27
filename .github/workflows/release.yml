@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 20
-    
+
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
