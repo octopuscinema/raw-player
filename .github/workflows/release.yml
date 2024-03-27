@@ -80,6 +80,7 @@ jobs:
       working-directory: 'codesigntool'
       run: |
         New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
+        #blah
         #Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS-RAW-Player.exe"
 
     - name: Sign .exe
