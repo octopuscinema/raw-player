@@ -191,7 +191,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       
-     - name: Create .DMG
+    - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         brew install graphicsmagick imagemagick
