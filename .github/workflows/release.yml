@@ -77,7 +77,7 @@ jobs:
 
     - name: Sign .exe
       shell: pwsh
-      working-directory: 'codesigntool\CodeSignTool-v1.3.0-windows'
+      working-directory: 'codesigntool'
       run: |
         New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
         Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
@@ -100,7 +100,7 @@ jobs:
       
     - name: Sign .msi
       shell: pwsh
-      working-directory: 'codesigntool\CodeSignTool-v1.3.0-windows'
+      working-directory: 'codesigntool'
       run: |
         New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
         Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}"
@@ -134,6 +134,7 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_DIR:  "${{ github.workspace }}/UI/macOS/bin/Release"
       STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
       INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
 
@@ -190,11 +191,12 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild ${{env.SOLUTION_FILE_PATH}} /t:Build /p:Configuration=Release /p:CreatePackage=false
       
-    - name: Create .DMG
+     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        brew install create-dmg
-        create-dmg --volname "OCTOPUS RAW Player ${{ steps.version.outputs.content }}" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
+        brew install graphicsmagick imagemagick
+        npm install --global create-dmg
+        create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DIR }}"
 
     - name: Notarize .DMG
       run: |
