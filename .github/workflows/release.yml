@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 20
-    
+
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
@@ -68,21 +68,17 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /t:publish /p:RuntimeIdentifier=win-x64 /p:PublishDir="${{env.PUBLISH_PATH}}" /p:IncludeNativeLibrariesForSelfExtract=true /p:SelfContained=true /p:PublishSingleFile=true /p:PublishReadyToRun=true /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.PROJECT_FILE_PATH}}
 
-    - name: Install code signing tool
-      shell: pwsh
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: |
-        Invoke-WebRequest -Uri 'https://www.ssl.com/download/codesigntool-for-windows/' -OutFile 'codesigntool.zip'
-        Expand-Archive -Path 'codesigntool.zip' -DestinationPath '.\codesigntool'
-
     - name: Sign .exe
-      shell: pwsh
-      working-directory: 'codesigntool\CodeSignTool-v1.2.7-windows'
-      run: |
-        New-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        Move-Item -Path "${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe" -Destination "${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe"
-        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.STANDALONE_ARTIFACT_PATH }}" -input_file_path="${{ env.STANDALONE_ARTIFACT_PATH }}unsigned\OCTOPUS RAW Player.exe" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}"
-    
+      uses: sslcom/esigner-codesign@develop
+      with:
+        command: sign
+        username: ${{ secrets.PEARTREE_SSL_USERNAME }}
+        password: ${{ secrets.PEARTREE_SSL_PASSWORD }}
+        totp_secret: ${{ secrets.PEARTREE_CERT_TOTP_SECRET }}
+        file_path: ${{ env.STANDALONE_ARTIFACT_PATH }}OCTOPUS RAW Player.exe
+        malware_block: false
+        override: true
+
     - name: Upload standalone artifacts
       uses: actions/upload-artifact@v3.1.0
       with:
@@ -97,14 +93,18 @@ jobs:
     - name: Create Installer
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: DevEnv ${{env.INSTALLER_PROJECT_PATH}} /build ${{env.BUILD_CONFIGURATION}}
-      
+
     - name: Sign .msi
-      shell: pwsh
-      working-directory: 'codesigntool\CodeSignTool-v1.2.7-windows'
-      run: |
-        New-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned" -ItemType Directory
-        Move-Item -Path "${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}" -Destination "${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}"
-        .\CodeSignTool.bat sign -username="${{secrets.PEARTREE_SSL_USERNAME}}" -password="${{secrets.PEARTREE_SSL_PASSWORD}}" -output_dir_path="${{ env.INSTALLER_ARTIFACT_PATH }}" -input_file_path="${{ env.INSTALLER_ARTIFACT_PATH }}unsigned\${{env.BUILD_INSTALLER_NAME}}" -totp_secret="${{secrets.PEARTREE_CERT_TOTP_SECRET}}" -program_name="OCTOPUS RAW Player"
+      uses: sslcom/esigner-codesign@develop
+      with:
+        command: sign
+        username: ${{ secrets.PEARTREE_SSL_USERNAME }}
+        password: ${{ secrets.PEARTREE_SSL_PASSWORD }}
+        totp_secret: ${{ secrets.PEARTREE_CERT_TOTP_SECRET }}
+        file_path: ${{ env.INSTALLER_ARTIFACT_PATH }}${{env.BUILD_INSTALLER_NAME}}
+        program_name: OCTOPUS RAW Player
+        malware_block: false
+        override: true
 
     - name: Upload installer artifacts
       uses: actions/upload-artifact@v3.1.0
@@ -134,6 +134,8 @@ jobs:
       BUILD_STANDALONE_ARTIFACT_NAME: "Player-macOS-standalone"
       BUILD_INSTALLER_ARTIFACT_NAME: "Player-macOS-installer"
       STANDALONE_BUILD_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player.app"
+      STANDALONE_BUILD_PATH_NO_EXT: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS RAW Player"
+      STANDALONE_BUILD_DIR:  "${{ github.workspace }}/UI/macOS/bin/Release"
       STANDALONE_BUILD_DMG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
       INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
 
@@ -158,25 +160,19 @@ jobs:
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
 
     - name: "Import distribution certificate"
-      uses: devbotsxyz/import-signing-certificate@main
+      uses: apple-actions/import-codesign-certs@v2
       with:
-        certificate-data: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-        certificate-passphrase: ${{ secrets.P12_PASSWORD }}
+        p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
         keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
         
     - name: "Build LJ92 decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: LJ92
-        archive-path: ${{env.DECODER_LJ92_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "LJ92" clean archive -configuration release -archivePath "${{env.DECODER_LJ92_ARCHIVE_PATH}}"
         
     - name: "Build Unpack decoder native library"
-      uses: devbotsxyz/xcode-archive@v1
-      with:
-        workspace: ${{env.DECODER_WORKSPACE_PATH}}
-        scheme: Unpack
-        archive-path: ${{env.DECODER_UNPACK_ARCHIVE_PATH}}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: xcodebuild -workspace "${{env.DECODER_WORKSPACE_PATH}}" -scheme "Unpack" clean archive -configuration release -archivePath "${{env.DECODER_UNPACK_ARCHIVE_PATH}}"
     
     - name: Prepare decoder native libraries
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -199,8 +195,10 @@ jobs:
     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        brew install create-dmg
-        create-dmg --volname "OCTOPUS RAW Player ${{ steps.version.outputs.content }}" --icon "${{ env.STANDALONE_BUILD_PATH }}" 50 50 --app-drop-link 300 50 --hdiutil-verbose "${{ env.STANDALONE_BUILD_DMG_PATH }}" "${{ env.STANDALONE_BUILD_PATH }}"
+        brew install graphicsmagick imagemagick
+        npm install --global create-dmg
+        create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DIR }}"
+        mv "${{ env.STANDALONE_BUILD_PATH_NO_EXT }} ${{ steps.version.outputs.content }}.dmg" "${{ env.STANDALONE_BUILD_DMG_PATH }}"
 
     - name: Notarize .DMG
       run: |
