@@ -101,7 +101,7 @@ jobs:
         username: ${{ secrets.PEARTREE_SSL_USERNAME }}
         password: ${{ secrets.PEARTREE_SSL_PASSWORD }}
         totp_secret: ${{ secrets.PEARTREE_CERT_TOTP_SECRET }}
-        file_path: ${{ env.INSTALLER_ARTIFACT_PATH }}OCTOPUS RAW Player.exe
+        file_path: ${{ env.INSTALLER_ARTIFACT_PATH }}OCTOPUS RAW Player.msi
         program_name: OCTOPUS RAW Player
         malware_block: false
         override: true
