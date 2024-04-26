@@ -13,7 +13,7 @@ namespace Octopus.Player.Core.IO
 
         Maths.Rational? Framerate { get; }
         SMPTETimeCode? StartTimeCode { get; }
-        Vector4i? ActiveSensorArea { get; }
+        Vector4i? DefaultCrop { get; }
         Vector2i Dimensions { get; }
         Vector2i PaddedDimensions { get; }
         Rational AspectRatio { get; }

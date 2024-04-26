@@ -435,8 +435,8 @@ namespace Octopus.Player.Core.Playback
                 }
                 Vector2i rectPos;
                 Vector2i rectSize;
-                Vector2i clipDimensions = Clip.Metadata.ActiveSensorArea.HasValue ? Clip.Metadata.ActiveSensorArea.Value.Zw : Clip.Metadata.Dimensions;
-                Vector2 rectUvMin = Clip.Metadata.ActiveSensorArea.HasValue ? (Clip.Metadata.ActiveSensorArea.Value.Xy.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2()) : Vector2.Zero;
+                Vector2i clipDimensions = Clip.Metadata.DefaultCrop.HasValue ? Clip.Metadata.DefaultCrop.Value.Zw : Clip.Metadata.Dimensions;
+                Vector2 rectUvMin = Clip.Metadata.DefaultCrop.HasValue ? (Clip.Metadata.DefaultCrop.Value.Xy.ToVector2() / Clip.Metadata.PaddedDimensions.ToVector2()) : Vector2.Zero;
                 Vector2 rectUvMax = rectUvMin + (clipDimensions / Clip.Metadata.PaddedDimensions.ToVector2());
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 var textures = new Dictionary<string, ITexture> { { "rawImage", displayFrameGPU } };

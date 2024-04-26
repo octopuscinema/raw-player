@@ -36,10 +36,24 @@ namespace Octopus.Player.Core.Maths.Color
             if (reader.HasForwardMatrix)
                 forwardMatrix1 = reader.ForwardMatrix1;
 
-            if (reader.HasAsShotWhiteXY)
-                asShotWhiteXY = reader.AsShotWhiteXY;
-            else if (reader.HasAsShotNeutral)
+            // Swap color matrix 1/2 if dual illuminant is out of order
+            if ( isDualIlluminant && calibrationIlluminant1.ColorTemperature() > calibrationIlluminant2.ColorTemperature()) 
+            {
+                colorMatrix1 = reader.ColorMatrix2;
+                colorMatrix2 = reader.ColorMatrix1;
+                calibrationIlluminant2 = reader.CalibrationIlluminant2;
+                calibrationIlluminant1 = reader.CalibrationIlluminant1;
+                if (reader.HasForwardMatrix)
+                {
+                    forwardMatrix1 = reader.ForwardMatrix2;
+                    forwardMatrix2 = reader.ForwardMatrix1;
+                }
+            }
+
+            if (reader.HasAsShotNeutral)
                 asShotWhiteXY = NeutralToXY(reader.AsShotNeutral);
+            else if (reader.HasAsShotWhiteXY)
+                asShotWhiteXY = reader.AsShotWhiteXY;
         }
 
         public Tuple<double,double> AsShotWhiteBalance()

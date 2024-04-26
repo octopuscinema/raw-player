@@ -21,12 +21,12 @@ namespace Octopus.Player.Core.IO
     {
         public string Title { get; protected set; }
         public uint DurationFrames { get; protected set; }
-        public Vector4i? ActiveSensorArea { get; protected set; }
+        public Vector4i? DefaultCrop { get; protected set; }
         public Vector2i Dimensions { get; protected set; }
         public Vector2i PaddedDimensions { get; protected set; }
         public Maths.Rational? Framerate { get; protected set; }
         public SMPTETimeCode? StartTimeCode { get; protected set; }
-        public virtual Rational AspectRatio { get { return ActiveSensorArea.HasValue ? new Rational(ActiveSensorArea.Value.Z, ActiveSensorArea.Value.W) : new Rational(Dimensions.X, Dimensions.Y); } }
+        public virtual Rational AspectRatio { get { return DefaultCrop.HasValue ? new Rational(DefaultCrop.Value.Z, DefaultCrop.Value.W) : new Rational(Dimensions.X, Dimensions.Y); } }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
         public float ExposureValue { get; protected set; }

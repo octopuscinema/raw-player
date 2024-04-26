@@ -37,7 +37,7 @@ namespace Octopus::Player::Decoders::LJ92
 {
 	static FORCE_INLINE void ThrowBadFormat()
 	{
-		// Handle error here
+		// Note: Exceptions removed for performance
 	}
 
 	struct sHuffmanTable
@@ -418,16 +418,20 @@ namespace Octopus::Player::Decoders::LJ92
 			memset(&info, 0, sizeof(info));
 		}
 
-		void StartRead(uint32_t& imageWidth, uint32_t& imageHeight, uint32_t& imageChannels)
+		bool StartRead(uint32_t& imageWidth, uint32_t& imageHeight, uint32_t& imageChannels)
 		{
-			ReadFileHeader();
-			ReadScanHeader();
+			if (!ReadFileHeader())
+				return false;
+			if (ReadScanHeader() == -1)
+				return false;
 			DecoderStructInit();
 			HuffDecoderInit();
 
 			imageWidth = info.imageWidth;
 			imageHeight = info.imageHeight;
 			imageChannels = info.compsInScan;
+
+			return true;
 		}
 
 		void FinishRead()
@@ -459,7 +463,7 @@ namespace Octopus::Player::Decoders::LJ92
 			fStream->Skip(length);
 		}
 
-		void GetDht()
+		bool GetDht()
 		{
 			int32_t length = Get2bytes() - 2;
 
@@ -471,6 +475,7 @@ namespace Octopus::Player::Decoders::LJ92
 				if (index < 0 || index >= 4)
 				{
 					ThrowBadFormat();
+					return false;
 				}
 
 				sHuffmanTable*& htblptr = info.dcHuffTblPtrs[index];
@@ -494,6 +499,7 @@ namespace Octopus::Player::Decoders::LJ92
 				if (count > 256)
 				{
 					ThrowBadFormat();
+					return false;
 				}
 
 				for (int32_t j = 0; j < count; j++)
@@ -503,6 +509,8 @@ namespace Octopus::Player::Decoders::LJ92
 
 				length -= 1 + 16 + count;
 			}
+
+			return true;
 		}
 
 		void GetDri()
@@ -691,7 +699,8 @@ namespace Octopus::Player::Decoders::LJ92
 				case M_SOS:
 					return (JpegMarker)c;
 				case M_DHT:
-					GetDht();
+					if (!GetDht())
+						return JpegMarker::M_ERROR;
 					break;
 				case M_DQT:
 					break;
@@ -720,7 +729,7 @@ namespace Octopus::Player::Decoders::LJ92
 			return M_ERROR;
 		}
 
-		void ReadFileHeader()
+		bool ReadFileHeader()
 		{
 			// Demand an SOI marker at the start of the stream --- otherwise it's
 			// probably not a JPEG stream at all.
@@ -730,6 +739,7 @@ namespace Octopus::Player::Decoders::LJ92
 			if ((c != 0xFF) || (c2 != M_SOI))
 			{
 				ThrowBadFormat();
+				return false;
 			}
 
 			// OK, process SOI
@@ -744,10 +754,10 @@ namespace Octopus::Player::Decoders::LJ92
 			case M_SOF1:
 			case M_SOF3:
 				GetSof(c);
-				break;
+				return true;
 			default:
 				ThrowBadFormat();
-				break;
+				return false;
 			}
 		}
 
@@ -766,7 +776,7 @@ namespace Octopus::Player::Decoders::LJ92
 				return 0;
 			default:
 				ThrowBadFormat();
-				break;
+				return -1;
 			}
 
 			return 0;
@@ -1519,7 +1529,8 @@ namespace Octopus::Player::Decoders::LJ92
 		uint32_t imageWidth;
 		uint32_t imageHeight;
 		uint32_t imageChannels;
-		decoder.StartRead(imageWidth, imageHeight, imageChannels);
+		if ( !decoder.StartRead(imageWidth, imageHeight, imageChannels) )
+			return Core::eError::BadFile;
 		if (imageWidth * imageHeight * imageChannels != width * height)
 			return Core::eError::BadMetadata;
 		decoder.FinishRead();

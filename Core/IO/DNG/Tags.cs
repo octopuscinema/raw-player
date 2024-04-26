@@ -8,7 +8,8 @@ namespace Octopus.Player.Core.IO.DNG
     {
 		ForwardMatrix2 = 50965,
 		ForwardMatrix1 = 50964,
-		CalibrationIlluminant2 = 50779,
+		ActiveArea = 50829,
+        CalibrationIlluminant2 = 50779,
 		CalibrationIlluminant1 = 50778,
 		BaselineExposure = 50730,
 		AsShotWhiteXY = 50729,

@@ -58,7 +58,7 @@ namespace Octopus.Player.Core.Maths.Color
 			new ruvt( 525, 0.31320, 0.35968, -15.628),
 			new ruvt( 550, 0.32129, 0.36011, -23.325),
 			new ruvt( 575, 0.32931, 0.36038, -40.770),
-			new ruvt( 600, 0.33724, 0.36051, -116.4),
+			new ruvt( 600, 0.33724, 0.36051, -116.45),
 		};
 		public static Vector3 ChromaticityXYtoXYZ(Vector2 chromaticityXY)
 		{

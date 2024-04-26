@@ -63,6 +63,8 @@ namespace Octopus.Player.Core.IO.DNG
         private Vector2i? CachedDefaultCropSize { get; set; }
         private bool? CachedContainsDefaultCropOrigin { get; set; }
         private Vector2i? CachedDefaultCropOrigin { get; set; }
+        private bool? CachedContainsActiveArea { get; set; }
+        private Vector4i? CachedActiveArea { get; set; }
 
         public Reader(string filePath)
         {
@@ -164,7 +166,8 @@ namespace Octopus.Player.Core.IO.DNG
                     }
                     break;
 
-                // 12 or 14-bit packed, read into a temporary buffer then unpack to target buffer
+                // 10, 12 or 14-bit packed, read into a temporary buffer then unpack to target buffer
+                case 10:
                 case 12:
                 case 14:
                     var packedDataOffset = 0;
@@ -183,10 +186,18 @@ namespace Octopus.Player.Core.IO.DNG
                                 {
                                     fixed (byte* pPackedData = &packedData[inputOffset])
                                     {
-                                        if (BitDepth == 12)
-                                            Unpack.Unpack12to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
-                                        else
-                                            Unpack.Unpack14to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                        switch (BitDepth)
+                                        {
+                                            case 10:
+                                                Unpack.Unpack10to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                                break;
+                                            case 12:
+                                                Unpack.Unpack12to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                                break;
+                                            case 14:
+                                                Unpack.Unpack14to16Bit(new IntPtr(pDataOut), new IntPtr(pPackedData), (uint)segmentSizeBytes);
+                                                break;
+                                        }
                                     }
                                 }
                             }
@@ -886,6 +897,37 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedContainsDefaultCropOrigin.HasValue)
                     CachedContainsDefaultCropOrigin = Ifd.Contains((TiffTag)TiffTagDNG.DefaultCropOrigin);
                 return CachedContainsDefaultCropOrigin.Value;
+            }
+        }
+
+        public Vector4i ActiveArea
+        {
+            get
+            {
+                if (!CachedActiveArea.HasValue)
+                {
+                    try
+                    {
+                        var activeArea = TagReader.ReadShortField((TiffTag)TiffTagDNG.ActiveArea, 4);
+                        CachedActiveArea = new Vector4i(activeArea[0], activeArea[1], activeArea[2], activeArea[3]);
+                    }
+                    catch { }
+                    {
+                        var activeArea = TagReader.ReadLongField((TiffTag)TiffTagDNG.ActiveArea, 4);
+                        CachedActiveArea = new Vector4i((int)activeArea[0], (int)activeArea[1], (int)activeArea[2], (int)activeArea[3]);
+                    }
+                }
+                return CachedActiveArea.Value;
+            }
+        }
+
+        public bool ContainsActiveArea
+        {
+            get
+            {
+                if (!CachedContainsActiveArea.HasValue)
+                    CachedContainsActiveArea = Ifd.Contains((TiffTag)TiffTagDNG.ActiveArea);
+                return CachedContainsActiveArea.Value;
             }
         }
 
