@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Octopus.Player.GPU.Render;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -12,6 +13,15 @@ using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 namespace OpenTK.Graphics.OpenGL
 {
+    internal class CGL
+    {
+        internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "CGLGetShareGroup", ExactSpelling = true)]
+        internal extern static IntPtr GetShareGroup(IntPtr context);
+    }
+
     internal class GL3
     {
         internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
@@ -65,6 +75,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
         private IDictionary<TextureUnit,Texture> activeTexture;
 
         private int DefaultVertexArrayHandle { get; set; }
+        private IShader blitShader;
 
         public Context(UI.INativeWindow nativeWindow, object nativeHandle, IntPtr nativeContext, IntPtr nativeDeviceContext)
         {
@@ -99,6 +110,9 @@ namespace Octopus.Player.GPU.OpenGL.Render
             vertexFormat.AddParameter(VertexFormatParameter.Position2f, "VertexPosition");
             Vector2[] rectVerts = new Vector2[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
             Draw2DVertexBuffer = new VertexBuffer(this, vertexFormat, GPU.Render.BufferUsageHint.Static, rectVerts, (uint)rectVerts.Length);
+
+            // Create basic blit shader
+            blitShader = CreateShader(Assembly.Load("Player.Core"), "Blit");
 
             // Apply default state
             GL.Disable(EnableCap.DepthTest);
@@ -212,6 +226,16 @@ namespace Octopus.Player.GPU.OpenGL.Render
                 if (RedrawBackground == RedrawBackground.Once)
                     RedrawBackground = RedrawBackground.Off;
             }
+        }
+
+        public void Blit2D(ITexture texture, Vector2i pos, Vector2i size)
+        {
+            Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size);
+        }
+
+        public void Blit2D(ITexture texture, Vector2i pos, Vector2i size, in Vector4 uv)
+        {
+            Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, uv);
         }
 
         public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size)

@@ -20,8 +20,10 @@ namespace Octopus.Player.GPU.Compute
         string ApiVendor { get; }
 
         IProgram CreateProgram(System.Reflection.Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyCollection<string> defines = null, string name = null);
-        IImage2D CreateImage(Vector2i dimensions, GPU.Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess,
+        IImage2D CreateImage(Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess,
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
+        IImage2D CreateImage(Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess);
+
         IQueue CreateQueue(string name = null);
     }
 }

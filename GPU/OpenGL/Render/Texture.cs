@@ -10,11 +10,13 @@ namespace Octopus.Player.GPU.OpenGL.Render
 	public sealed class Texture : ITexture
 	{
         public string Name { get; private set; }
-        public bool Valid { get { return valid; } }
-        int Handle { get; set; }
-        private volatile bool valid;
+        public IntPtr NativeHandle { get { return (IntPtr)Handle; } }
+        public IntPtr NativeType { get { return (IntPtr)TextureType; } }
         private Context Context { get; set; }
         private TextureTarget TextureType { get; set; }
+        private int Handle { get; set; }
+        public bool Valid { get { return valid; } }
+        private volatile bool valid;
 
         public Texture(Context context, Vector2i dimensions, Format format, TextureFilter filter = TextureFilter.Nearest, string name = null)
             : this(context, dimensions, format, null, filter, name)

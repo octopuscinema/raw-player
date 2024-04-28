@@ -23,7 +23,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             IReadOnlyCollection<string> defines = null, string shaderVersion = "330")
         {
             Name = name;
-            Defines = new List<string>(defines);
+            Defines = defines != null ? new List<string>(defines) : new List<string>();
 
             Action buildShaderAction = () =>
             {

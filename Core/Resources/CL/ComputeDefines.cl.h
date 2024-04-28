@@ -121,6 +121,30 @@
 #define SAMPLER_NORMALIZED_CLAMP_TO_EDGE_POINT sampler(coord::normalized, address::clamp_to_edge, filter::nearest)
 #endif
 
+// Global id
+#ifdef COMPUTE_PLATFORM_OPENCL
+#define GLOBAL_ID_X get_global_id(0)
+#define GLOBAL_ID_Y get_global_id(1)
+#endif
+#ifdef COMPUTE_PLATFORM_CUDA
+#define GLOBAL_ID_X (blockIdx.x * blockDim.x + threadIdx.x)
+#define GLOBAL_ID_Y (blockIdx.y * blockDim.y + threadIdx.y)
+#endif
+
+// Cross platform kernel/local function definition
+#ifdef COMPUTE_PLATFORM_OPENCL
+#define KERNEL kernel
+#define PRIVATE inline
+#endif
+#ifdef COMPUTE_PLATFORM_METAL
+#define KERNEL kernel
+#define PRIVATE inline
+#endif
+#ifdef COMPUTE_PLATFORM_CUDA
+#define KERNEL extern "C" __global__
+#define PRIVATE __device__
+#endif
+
 // Cross platform buffer/image wrapper
 #ifdef COMPUTE_PLATFORM_OPENCL
 #define BUFFER_READ_ONLY(T) global const T* restrict

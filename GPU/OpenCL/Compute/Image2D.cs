@@ -5,6 +5,7 @@ using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
@@ -41,9 +42,23 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Debug.CheckError(result);
         }
 
-        internal Image2D(GPU.Render.ITexture texture)
+        internal Image2D(Context context, ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
         {
             Format = texture.Format;
+            Dimensions = texture.Dimensions;
+            Name = texture.Name;
+            MemoryDeviceAccess = memoryDeviceAccess;
+            MemoryHostAccess = MemoryHostAccess.NoAccess;
+            MemoryLocation = MemoryLocation.Default;
+            Context = context;
+
+            // Create CL image from GL texture
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                NativeHandle = Silk.NET.OpenCL.Extensions.APPLE.GCL.CreateImageFromTexture(texture.NativeType, (IntPtr)0, texture.NativeHandle);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                //NativeHandle = 
+            }
         }
 
         override public void Dispose()

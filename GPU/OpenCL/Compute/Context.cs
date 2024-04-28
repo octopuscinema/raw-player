@@ -9,6 +9,18 @@ using Octopus.Player.GPU.Compute;
 using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 
+namespace Silk.NET.OpenCL.Extensions.APPLE
+{
+    internal class GCL
+    {
+        internal const string Library = "/System/Library/Frameworks/OpenCL.framework/OpenCL";
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "gcl_gl_create_image_from_texture", ExactSpelling = true)]
+        internal extern static IntPtr CreateImageFromTexture(IntPtr target, IntPtr mip_level, IntPtr texture);
+    }
+}
+
 namespace Octopus.Player.GPU.OpenCL.Compute
 {
     internal static class Debug
@@ -317,6 +329,11 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
+        }
+
+        public IImage2D CreateImage(Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
+        {
+            return new Image2D(this, texture, memoryDeviceAccess);
         }
 
         public IQueue CreateQueue(string name = null)

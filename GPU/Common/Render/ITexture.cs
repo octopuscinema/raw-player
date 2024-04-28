@@ -42,9 +42,10 @@ namespace Octopus.Player.GPU.Render
 		Vector2i Dimensions { get; }
 		Format Format { get; }
         TextureFilter Filter { get; }
+        IntPtr NativeHandle { get; }
+        IntPtr NativeType { get; }
         bool Valid { get; }
         void Modify(IContext context, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
-
     }
 }
 

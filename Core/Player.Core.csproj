@@ -18,6 +18,7 @@
     <None Remove="Resources\CL\ComputeDefines.cl.h" />
     <None Remove="Resources\CL\ComputeTypes.cl.h" />
     <None Remove="Resources\CL\PipelineCinemaDNG.cl" />
+    <None Remove="Resources\GLSL\Blit.glsl" />
     <None Remove="Resources\GLSL\blit.vert" />
     <None Remove="Resources\GLSL\DebayerDraft.glsl.h" />
     <None Remove="Resources\GLSL\Gamma.glsl.h" />
@@ -40,6 +41,7 @@
     <EmbeddedResource Include="Resources\CL\ComputeDefines.cl.h" />
     <EmbeddedResource Include="Resources\CL\ComputeTypes.cl.h" />
     <EmbeddedResource Include="Resources\CL\PipelineCinemaDNG.cl" />
+    <EmbeddedResource Include="Resources\GLSL\Blit.glsl" />
     <EmbeddedResource Include="Resources\GLSL\DebayerDraft.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\Luminance.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\Gamma.glsl.h" />

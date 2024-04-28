@@ -49,5 +49,7 @@ namespace Octopus.Player.Core.Playback
 		public abstract Error Decode(IClip clip, byte[] workingBuffer = null);
 
 		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null);
+
+		//public abstract Error Process(IClip clip, IContext renderContext, ITexture output);
     }
 }
