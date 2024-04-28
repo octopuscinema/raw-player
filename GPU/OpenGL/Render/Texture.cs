@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 
 namespace Octopus.Player.GPU.OpenGL.Render
 {
-	public sealed class Texture : ITexture
-	{
+    public sealed class Texture : ITexture
+    {
         public string Name { get; private set; }
         public IntPtr NativeHandle { get { return (IntPtr)Handle; } }
         public IntPtr NativeType { get { return (IntPtr)TextureType; } }

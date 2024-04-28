@@ -37,6 +37,7 @@ namespace Octopus.Player.Core.Playback
 
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
+        GPU.Compute.IImage2D displayFrameCompute;
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext)
             : base(playerWindow, computeContext, renderContext, bufferDurationFrames)
@@ -139,11 +140,14 @@ namespace Octopus.Player.Core.Playback
             // Allocate display frame
             displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
-            // Create display texture with preview frame
+            // Create display texture/image with preview frame
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
             displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImageCpu : null, 
                 TextureFilter.Nearest, "displayFrame");
+            if (displayFrameCompute != null)
+                displayFrameCompute.Dispose();
+            displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, GPU.Compute.MemoryDeviceAccess.ReadWrite);
 
             // Tiled preview frame requires copying to GPU seperately
             Action discardPreviewFrame = () =>

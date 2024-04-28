@@ -22,7 +22,7 @@ namespace Octopus.Player.GPU.Compute
         IProgram CreateProgram(System.Reflection.Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyCollection<string> defines = null, string name = null);
         IImage2D CreateImage(Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess,
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
-        IImage2D CreateImage(Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess);
+        IImage2D CreateImage(Render.IContext renderContext, Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess);
 
         IQueue CreateQueue(string name = null);
     }

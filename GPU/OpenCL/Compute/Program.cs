@@ -1,4 +1,5 @@
 ﻿using Octopus.Player.GPU.Compute;
+using OpenTK.Mathematics;
 using Silk.NET.Core.Native;
 using Silk.NET.OpenCL;
 using System;
@@ -101,7 +102,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return defineBlock + source;
         }
 
-        string AddIncludes(string source, System.Reflection.Assembly assembly, string[] localResources, ref uint depth)
+        string AddIncludes(string source, Assembly assembly, string[] localResources, ref uint depth)
         {
             depth++;
             if (depth > 16)
@@ -142,6 +143,36 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
 
             return source;
+        }
+
+        public void SetArgument(string function, uint index, float value)
+        {
+            Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), value);
+        }
+
+        public void SetArgument(string function, uint index, in Vector2 value)
+        {
+            Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, value);
+        }
+
+        public void SetArgument(string function, uint index, in Matrix4 value)
+        {
+            Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, value);
+        }
+
+        public void SetArgument(string function, uint index, IBuffer buffer)
+        {
+            unsafe
+            {
+                switch (buffer)
+                {
+                    case Image image:
+                        Context.Handle.SetKernelArg(Kernels[function], index, (nuint)sizeof(nint), image.NativeHandle);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         public void Dispose()

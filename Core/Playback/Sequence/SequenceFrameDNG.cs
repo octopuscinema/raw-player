@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Octopus.Player.Core.Playback
 {
-    public class SequenceFrameDNG : SequenceFrame
+    public class SequenceFrameDNG : SequenceFrameRAW
     {
         private IO.DNG.Reader DNGReader { get; set; }
 
@@ -171,6 +171,14 @@ namespace Octopus.Player.Core.Playback
 
             NeedsGPUCopy = false;
             return Error.None;
+        }
+
+        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IProgram program)
+        {
+            //program.SetArgument()
+            //program.
+            //ComputeQueue.
+            return Error.NotImplmeneted;
         }
     }
 }

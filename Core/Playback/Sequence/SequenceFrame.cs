@@ -33,23 +33,26 @@ namespace Octopus.Player.Core.Playback
 		public SequenceFrame(GPU.Compute.IContext computeContext, GPU.Compute.IQueue computeQueue, IClip clip, GPU.Format format)
 		{
             ComputeQueue = computeQueue;
-            decodedImageGpu = computeContext.CreateImage(clip.Metadata.PaddedDimensions, format, GPU.Compute.MemoryDeviceAccess.ReadWrite, GPU.Compute.MemoryHostAccess.NoAccess);
+            decodedImageGpu = computeContext.CreateImage(clip.Metadata.PaddedDimensions, format, GPU.Compute.MemoryDeviceAccess.ReadOnly, GPU.Compute.MemoryHostAccess.WriteOnly);
 		}
 		
         public void Dispose()
         {
 			decodedImageCpu = null;
+			if (decodedImageGpu != null)
+			{
+				decodedImageGpu.Dispose();
+				decodedImageGpu = null;
+            }
 
 #if SEQUENCE_FRAME_DEBUG
 			count--;
 			Trace.WriteLine("Sequence frame disposed, count: " + count);
 #endif
-		}
+        }
 
 		public abstract Error Decode(IClip clip, byte[] workingBuffer = null);
 
 		public abstract Error CopyToGPU(IClip clip, IContext renderContext, ITexture gpuImage, byte[] stagingImage, bool immediate = false, Action postCopyAction = null);
-
-		//public abstract Error Process(IClip clip, IContext renderContext, ITexture output);
     }
 }

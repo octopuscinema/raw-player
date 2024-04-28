@@ -11,6 +11,11 @@ namespace Octopus.Player.GPU.Compute
         int SizeBytes { get; }
     }
 
+    public interface IImage1D : IImage
+    {
+        int Dimensions { get; }
+    }
+
     public interface IImage2D : IImage
     {
         Vector2i Dimensions { get; }

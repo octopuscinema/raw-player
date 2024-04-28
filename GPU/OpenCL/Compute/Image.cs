@@ -6,13 +6,18 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 {
     internal abstract class Image : IImage
     {
+        public nint NativeHandle { get; protected set; }
+
         public MemoryLocation MemoryLocation { get; protected set; }
         public MemoryDeviceAccess MemoryDeviceAccess { get; protected set; }
         public MemoryHostAccess MemoryHostAccess { get; protected set; }
-        public string Name { get; protected set; }
 
         public Format Format { get; protected set; }
         public abstract int SizeBytes { get; }
+
+        public string Name { get; protected set; }
+        public bool Valid { get { return valid; } }
+        protected volatile bool valid;
 
         internal static ImageFormat ImageFormat(Format format)
         {

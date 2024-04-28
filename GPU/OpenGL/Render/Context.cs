@@ -13,15 +13,6 @@ using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
 namespace OpenTK.Graphics.OpenGL
 {
-    internal class CGL
-    {
-        internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";
-
-        [System.Security.SuppressUnmanagedCodeSecurity()]
-        [DllImport(Library, EntryPoint = "CGLGetShareGroup", ExactSpelling = true)]
-        internal extern static IntPtr GetShareGroup(IntPtr context);
-    }
-
     internal class GL3
     {
         internal const string Library = "/System/Library/Frameworks/OpenGL.framework/OpenGL";

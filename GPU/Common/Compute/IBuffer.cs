@@ -32,5 +32,6 @@ namespace Octopus.Player.GPU.Compute
         MemoryDeviceAccess MemoryDeviceAccess { get; }
         MemoryHostAccess MemoryHostAccess { get; }
         string Name { get; }
+        bool Valid { get; }
     }
 }

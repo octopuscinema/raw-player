@@ -14,10 +14,15 @@ namespace Silk.NET.OpenCL.Extensions.APPLE
     internal class GCL
     {
         internal const string Library = "/System/Library/Frameworks/OpenCL.framework/OpenCL";
+        internal const nint CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE = 0x10000000;
 
         [System.Security.SuppressUnmanagedCodeSecurity()]
         [DllImport(Library, EntryPoint = "gcl_gl_create_image_from_texture", ExactSpelling = true)]
-        internal extern static IntPtr CreateImageFromTexture(IntPtr target, IntPtr mip_level, IntPtr texture);
+        internal extern static IntPtr CreateImageFromTexture(IntPtr target, Int32 mip_level, UInt32 texture);
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [DllImport(Library, EntryPoint = "gcl_gl_set_sharegroup", ExactSpelling = true)]
+        internal extern static void SetSharegroup(IntPtr share);
     }
 }
 
@@ -229,8 +234,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                     var deviceName = GetDeviceInfo(handle, device, DeviceInfo.Name);
                     var deviceVersion = GetDeviceInfo(handle, device, DeviceInfo.Version);
                     string deviceContextSharing = (DeviceExtensionSupported(handle, device, "cl_khr_gl_sharing") || DeviceExtensionSupported(handle, device, "cl_APPLE_gl_sharing"))
-                        ? ", GL/CL sharing support, " : ", no CL/GL sharing support, ";
-                    Trace.WriteLine("CL Device: " + deviceName + ", Version: " + deviceVersion );
+                        ? "GL/CL sharing support" : "no CL/GL sharing support";
+                    Trace.WriteLine("CL Device: " + deviceName + ", Version: " + deviceVersion + ", " + deviceContextSharing);
                 }
             }
 
@@ -252,9 +257,10 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 var GLSharingContextProperties = new nint[] {
-                    new IntPtr(0x10000000), // CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE
+                     Silk.NET.OpenCL.Extensions.APPLE.GCL.CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE,
                     renderContext.NativeDeviceContext, 0
                 };
+                Silk.NET.OpenCL.Extensions.APPLE.GCL.SetSharegroup(renderContext.NativeDeviceContext);
 
                 return new Context(handle, DeviceType.Gpu, supportsGLSharing, supportsGLSharing ? GLSharingContextProperties : defaultContextProperties);
             }
@@ -331,9 +337,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
         }
 
-        public IImage2D CreateImage(Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
+        public IImage2D CreateImage(Render.IContext renderContext, Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
         {
-            return new Image2D(this, texture, memoryDeviceAccess);
+            return new Image2D(this, renderContext, texture, memoryDeviceAccess);
         }
 
         public IQueue CreateQueue(string name = null)

@@ -2,6 +2,7 @@
 using Octopus.Player.GPU.Compute;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
+using Silk.NET.Core.Native;
 using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,6 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public Vector2i Dimensions { get; private set; }
 
         Context Context { get; set; }
-
-        internal nint NativeHandle { get; private set; }
 
         public override int SizeBytes { get { return Dimensions.Area() * Format.BytesPerPixel(); } }
 
@@ -42,7 +41,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Debug.CheckError(result);
         }
 
-        internal Image2D(Context context, ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
+        internal Image2D(Context context, Render.IContext renderContext, ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
         {
             Format = texture.Format;
             Dimensions = texture.Dimensions;
@@ -53,12 +52,24 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Context = context;
 
             // Create CL image from GL texture
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                NativeHandle = Silk.NET.OpenCL.Extensions.APPLE.GCL.CreateImageFromTexture(texture.NativeType, (IntPtr)0, texture.NativeHandle);
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Action createImageFromTextureAction = () =>
             {
-                //NativeHandle = 
-            }
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    NativeHandle = Silk.NET.OpenCL.Extensions.APPLE.GCL.CreateImageFromTexture(texture.NativeType, 0, (uint)texture.NativeHandle);
+                    System.Diagnostics.Debug.Assert(NativeHandle != 0);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
+                    int error;
+                    NativeHandle = sharingExtension.CreateFromGltexture2D(Context.NativeHandle, MemFlags.None, (uint)texture.NativeType, 0, (uint)texture.NativeHandle, out error);
+                    Debug.CheckError(error);
+                }
+                valid = (NativeHandle != 0);
+            };
+
+            renderContext.EnqueueRenderAction(createImageFromTextureAction);
         }
 
         override public void Dispose()
