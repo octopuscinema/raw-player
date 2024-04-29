@@ -15,6 +15,6 @@
 
 		}
 
-        public abstract Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IProgram program);
+        public abstract Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program);
     }
 }

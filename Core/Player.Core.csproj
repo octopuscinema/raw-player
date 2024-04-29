@@ -52,7 +52,7 @@
     <EmbeddedResource Include="Resources\License.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="OpenTK.Mathematics" Version="4.8.1" />
+    <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />
     <PackageReference Include="TiffLibrary" Version="0.6.65" />
     <PackageReference Include="Unclassified.NetRevisionTask" Version="0.4.3">
       <PrivateAssets>all</PrivateAssets>

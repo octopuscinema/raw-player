@@ -173,12 +173,45 @@ namespace Octopus.Player.Core.Playback
             return Error.None;
         }
 
-        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IProgram program)
+        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program)
         {
-            //program.SetArgument()
-            //program.
-            //ComputeQueue.
+            Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
+            var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
+            Debug.Assert(metadata != null);
+
+            var kernel = ComputeKernelForClip(metadata);
+            program.SetArgument(kernel, 0u, decodedImageGpu);
+
+            // Calculate and apply black/white levels
+            var blackWhiteLevel = new Vector2(metadata.BlackLevel, metadata.WhiteLevel);
+            var decodedMaxlevel = (1 << (int)metadata.DecodedBitDepth) - 1;
+            var linearMaxLevel = decodedMaxlevel;
+            if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
+                linearMaxLevel = (1 << (linearizeTable.Format.BytesPerPixel() * 8)) - 1;
+            program.SetArgument(kernel, 1u, blackWhiteLevel / linearMaxLevel);
+
+            // Calculate and apply exposure
+            var exposure = Math.Pow(2.0, clip.RawParameters.Value.exposure.HasValue ? clip.RawParameters.Value.exposure.Value : metadata.ExposureValue);
+            program.SetArgument(kernel, 2u, (float)exposure);
+
+            // Apply log to display LUT
+            //program.SetArgument(kernel, 3u, logToDisplayLUT);
+
+            // Set output
+            program.SetArgument(kernel, 4u, output);
+
+
             return Error.NotImplmeneted;
+        }
+
+        private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata)
+        {
+            string kernel = "Process";
+            if (metadata.CFAPattern != IO.CFAPattern.None)
+                kernel += "Bayer";
+            kernel += (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0) ? "NonLinear" : "Linear";
+
+            return kernel;
         }
     }
 }

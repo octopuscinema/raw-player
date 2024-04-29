@@ -33,8 +33,8 @@ PRIVATE half4 LineariseMono4(half4 input, __read_only image1d_t linearizeTable, 
 	return input;
 }
 
-KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, __read_only image1d_t linearizeTable, float linearizeTableRange,
-	float exposure, Matrix4x4 cameraToLog, __read_only image3d_t logToDisplay, __write_only image2d_t output)
+KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output,
+	Matrix4x4 cameraToLog, __read_only image1d_t linearizeTable, float linearizeTableRange)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -50,8 +50,8 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 	//Writeimage(displayRGB);
 }
 
-KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, Matrix4x4 cameraToLog, __read_only image3d_t logToDisplay,
-	__write_only image2d_t output)
+KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output,
+	Matrix4x4 cameraToLog)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -66,8 +66,8 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 	//Writeimage(displayRGB);
 }
 
-KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, __read_only image1d_t linearizeTable, float linearizeTableRange,
-	float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output)
+KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output,
+	__read_only image1d_t linearizeTable, float linearizeTableRange)
 {
 	//half4 camera = readImage();
 	//half4 display = ProcessMono4(LineariseMono4(camera));

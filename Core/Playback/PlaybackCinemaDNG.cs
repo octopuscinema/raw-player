@@ -10,11 +10,12 @@ using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.Playback
 {
-	public class PlaybackCinemaDNG : Playback
-	{
+    public class PlaybackCinemaDNG : Playback
+    {
         private static readonly uint nativeMemoryBufferSize = 0;
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
+        private static readonly List<string> pipelineKernels = new List<string> { "ProcessBayerNonLinear", "ProcessBayerLinear", "ProcessNonLinear", "ProcessLinear" };
 
         private Worker<Error> SeekWork { get; set; }
         private SequenceFrameDNG SeekFrame { get; set; }
@@ -119,19 +120,14 @@ namespace Octopus.Player.Core.Playback
 
             // Rebuild the shader if the defines have changed
             var requiredShaderDefines = ShaderDefinesForClip(clip);
-            var requiredKernel = ComputeKernelForClip(clip);
             if ( GpuPipelineProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
             {
                 if (GpuPipelineProgram != null)
                     GpuPipelineProgram.Dispose();
                 GpuPipelineProgram = RenderContext.CreateShader(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
             }
-            if (GpuPipelineComputeProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineComputeProgram.Defines) || !GpuPipelineComputeProgram.Functions.Contains(requiredKernel))
-            {
-                if (GpuPipelineComputeProgram != null)
-                    GpuPipelineComputeProgram.Dispose();
-                GpuPipelineComputeProgram = ComputeContext.CreateProgram(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", new List<string>() { requiredKernel }, requiredShaderDefines, "PipelineCinemaDNG");
-            }
+            if (GpuPipelineComputeProgram == null)
+                GpuPipelineComputeProgram = ComputeContext.CreateProgram(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", pipelineKernels, null, "PipelineCinemaDNG");
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
@@ -292,20 +288,6 @@ namespace Octopus.Player.Core.Playback
             base.Pause();
             SequenceStream.CancelAllRequests();
             SequenceStream.ReclaimReadyFrames();
-        }
-
-        private string ComputeKernelForClip(IClip clip)
-        {
-            Debug.Assert(SupportsClip(clip));
-            var dngMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
-            Debug.Assert(dngMetadata != null);
-
-            string kernel = "Process";
-            if (dngMetadata.CFAPattern != IO.CFAPattern.None)
-                kernel += "Bayer";
-            kernel += (dngMetadata.LinearizationTable != null && dngMetadata.LinearizationTable.Length > 0) ? "NonLinear" : "Linear";
-
-            return kernel;
         }
 
         private IReadOnlyCollection<string> ShaderDefinesForClip(IClip clip)
