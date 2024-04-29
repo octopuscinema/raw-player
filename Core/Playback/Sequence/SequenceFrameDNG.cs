@@ -173,7 +173,7 @@ namespace Octopus.Player.Core.Playback
             return Error.None;
         }
 
-        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program)
+        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program, GPU.Compute.IQueue queue)
         {
             Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
             var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
@@ -200,8 +200,13 @@ namespace Octopus.Player.Core.Playback
             // Set output
             program.SetArgument(kernel, 4u, output);
 
-
-            return Error.NotImplmeneted;
+            // Run the kernel 4 pixels at a time
+            var launchDimensions = output.Dimensions / 2;
+            var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
+            Debug.Assert(clipDisplayDimensions == launchDimensions);
+            program.Run2D(queue, kernel, launchDimensions);
+         
+            return Error.None;
         }
 
         private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata)

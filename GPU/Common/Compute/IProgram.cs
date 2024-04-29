@@ -11,6 +11,8 @@ namespace Octopus.Player.GPU.Compute
         IReadOnlyCollection<string> Defines { get; }
         IReadOnlyList<string> Functions { get; }
 
+        void Run2D(IQueue queue, string function, in Vector2i dimensions);
+
         void SetArgument(string function, uint index, float value);
         void SetArgument(string function, uint index, in Vector2 value);
         void SetArgument(string function, uint index, in Matrix4 value);

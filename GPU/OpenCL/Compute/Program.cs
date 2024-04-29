@@ -145,19 +145,32 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return source;
         }
 
+        public void Run2D(IQueue queue, string function, in Vector2i dimensions)
+        {
+            var queueCL = (Queue)queue;
+            nuint[] globalDimensions = new nuint[2] { (nuint)dimensions.X, (nuint)dimensions.Y };
+            unsafe
+            {
+                fixed (nuint* p = globalDimensions)
+                {
+                    Debug.CheckError(Context.Handle.EnqueueNdrangeKernel(queueCL.NativeHandle, Kernels[function], 2u, null, p, null, 0, null, null));
+                }
+            }
+        }
+
         public void SetArgument(string function, uint index, float value)
         {
-            Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), value);
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), value));
         }
 
         public void SetArgument(string function, uint index, in Vector2 value)
         {
-            Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, value);
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, value));
         }
 
         public void SetArgument(string function, uint index, in Matrix4 value)
         {
-            Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, value);
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, value));
         }
 
         public void SetArgument(string function, uint index, IBuffer buffer)
@@ -167,7 +180,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 switch (buffer)
                 {
                     case Image image:
-                        Context.Handle.SetKernelArg(Kernels[function], index, (nuint)sizeof(nint), image.NativeHandle);
+                        Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)sizeof(nint), image.NativeHandle));
                         break;
                     default:
                         break;

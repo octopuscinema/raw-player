@@ -6,6 +6,7 @@ using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
@@ -13,14 +14,14 @@ namespace Octopus.Player.GPU.OpenCL.Compute
     internal class Queue : IQueue
     {
         public string Name { get; private set; }
-        private nint NativeHandle { get; set; }
+        public nint NativeHandle { get; private set; }
         private Context Context { get; set; }
 
         internal Queue(Context context, string name = null)
         {
             Context = context;
             Name = name;
-            
+
             int result;
             NativeHandle = Context.Handle.CreateCommandQueueWithProperties(Context.NativeHandle, Context.NativeDevice, (QueueProperties)0, out result);
             Debug.CheckError(result);
@@ -39,7 +40,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public void AsyncWaitForComplete()
         {
-           Debug.CheckError(Context.Handle.EnqueueBarrier(NativeHandle));
+            Debug.CheckError(Context.Handle.EnqueueBarrier(NativeHandle));
         }
 
         public void Flush()
@@ -70,6 +71,20 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                     }
                 }
             }
+        }
+
+        public void AcquireTextureObject(Render.ITexture texture)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
+                //sharingExtension. .EnqueueAcquireGlobjects()
+            }
+        }
+
+        public void ReleaseTextureObject(Render.ITexture texture)
+        {
+
         }
     }
 }
