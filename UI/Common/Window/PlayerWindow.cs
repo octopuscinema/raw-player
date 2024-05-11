@@ -569,12 +569,8 @@ namespace Octopus.Player.UI
                     {
                         if (Playback.State == Core.Playback.State.Stopped || ( Playback.IsPaused && (Playback.FirstFrame==Playback.LastFrame || playhead == 0.0f) ) )
                         {
-                            var previousClip = Playback.Clip.PreviousClip;
-                            if (previousClip != null)
-                            {
-                                if (previousClip.GetType() == typeof(ClipCinemaDNG))
-                                    OpenClip<Core.Playback.PlaybackCinemaDNG>(previousClip);
-                            }
+                            if (Playback.Clip.PreviousClip != null)
+                                OpenClip(Playback.Clip.PreviousClip);
                         }
                         else
                         {
@@ -590,12 +586,8 @@ namespace Octopus.Player.UI
                 case "nextButton":
                     if (Playback != null && Playback.State != Core.Playback.State.Empty)
                     {
-                        var nextClip = Playback.Clip.NextClip;
-                        if (nextClip != null)
-                        {
-                            if (nextClip.GetType() == typeof(ClipCinemaDNG))
-                                OpenClip<Core.Playback.PlaybackCinemaDNG>(nextClip);
-                        }
+                        if (Playback.Clip.NextClip != null)
+                            OpenClip(Playback.Clip.NextClip);
                     }
                     break;
                 case "fastRewindButton":
@@ -723,17 +715,16 @@ namespace Octopus.Player.UI
 
         private Error OpenCinemaDNG(string dngPath)
         {
-            var dngSequenceClip = new ClipCinemaDNG(dngPath);
-            return OpenClip<Core.Playback.PlaybackCinemaDNG>(dngSequenceClip);
+            return OpenClip(new ClipCinemaDNG(dngPath));
         }
 
-        private Error OpenClip<T>(IClip clip) where T : Core.Playback.Playback
+        private Error OpenClip(IClip clip)
         {
             var dngValidity = clip.Validate();
             if (dngValidity != Error.None)
                 return dngValidity;
 
-            // Current playback doesn't support this clip, shut it down
+            // Current playback instance doesn't support this clip, shut it down
             if (Playback != null && !Playback.SupportsClip(clip))
             {
                 Playback.Close();
@@ -750,10 +741,19 @@ namespace Octopus.Player.UI
                 Playback = null;
             }
 
-            // Create the playback if necessary
+            // Create the playback instance if necessary
             if (Playback == null)
             {
-                Playback = Activator.CreateInstance(typeof(T), this, ComputeContext, RenderContext) as T;
+                switch (clip)
+                {
+                    case ClipCinemaDNG dngSequenceClip:
+                        Playback = new Core.Playback.PlaybackCinemaDNG(this, ComputeContext, RenderContext);
+                        break;
+                    default:
+                        Debug.Assert(false);
+                        return Error.NotImplmeneted;
+                }
+
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;
