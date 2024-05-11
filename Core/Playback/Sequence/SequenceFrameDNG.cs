@@ -200,12 +200,18 @@ namespace Octopus.Player.Core.Playback
             // Set output
             program.SetArgument(kernel, 4u, output);
 
+            // Lock GL texture output
+            queue.AcquireTextureObject(output);
+
             // Run the kernel 4 pixels at a time
             var launchDimensions = output.Dimensions / 2;
             var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
             Debug.Assert(clipDisplayDimensions == launchDimensions);
             program.Run2D(queue, kernel, launchDimensions);
-         
+
+            // Release access to GL texture
+            queue.ReleaseTextureObject(output);
+
             return Error.None;
         }
 

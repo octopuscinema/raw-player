@@ -73,18 +73,36 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
-        public void AcquireTextureObject(Render.ITexture texture)
+        public void AcquireTextureObject(IImage image)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
+            switch (image)
             {
-                var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
-                //sharingExtension. .EnqueueAcquireGlobjects()
+                case Image2D image2D:
+                    unsafe
+                    {
+                        Debug.CheckError(sharingExtension.EnqueueAcquireGlobjects(NativeHandle, 1, image2D.NativeHandle, 0, 0, null));
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
-        public void ReleaseTextureObject(Render.ITexture texture)
+        public void ReleaseTextureObject(IImage image)
         {
-
+            var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
+            switch (image)
+            {
+                case Image2D image2D:
+                    unsafe
+                    {
+                        Debug.CheckError(sharingExtension.EnqueueReleaseGlobjects(NativeHandle, 1, image2D.NativeHandle, 0, 0, null));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

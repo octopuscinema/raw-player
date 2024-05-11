@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 
 namespace Octopus.Player.GPU.Compute
@@ -12,8 +13,8 @@ namespace Octopus.Player.GPU.Compute
 
         void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
 
-        void AcquireTextureObject(Render.ITexture texture);
-        void ReleaseTextureObject(Render.ITexture texture);
+        void AcquireTextureObject(IImage image);
+        void ReleaseTextureObject(IImage image);
 
         void WaitForComplete();
         void AsyncWaitForComplete();
