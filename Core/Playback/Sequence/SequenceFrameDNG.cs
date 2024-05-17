@@ -10,19 +10,19 @@ namespace Octopus.Player.Core.Playback
     public class SequenceFrameDNG : SequenceFrameRAW
     {
         private IO.DNG.Reader DNGReader { get; set; }
-
+#if !COMPUTE_PIPELINE
         public SequenceFrameDNG(IClip clip, GPU.Format format)
             : base(clip, format)
         {
 
         }
-
+#else
         public SequenceFrameDNG(GPU.Compute.IContext computeContext, GPU.Compute.IQueue computeQueue, IClip clip, GPU.Format format)
             : base(computeContext, computeQueue, clip, format)
         {
 
         }
-
+#endif
         Error TryDecode(IClip clip, byte[] workingBuffer = null)
         {
             // Cast to DNG clip/metadata

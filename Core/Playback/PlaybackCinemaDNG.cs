@@ -105,7 +105,12 @@ namespace Octopus.Player.Core.Playback
 
             // Attempt to decode first frame as preview, if that fails bail out
             var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Format.R8 : GPU.Format.R16;
+            var gpuDisplayFormat = GPU.Format.RGBX8;
+#if COMPUTE_PIPELINE
+            var previewFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, clip, gpuFormat);
+#else
             var previewFrame = new SequenceFrameDNG(clip, gpuFormat);
+#endif
             previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
             var decodeError = previewFrame.Decode(clip);
             if (decodeError != Error.None)
@@ -131,19 +136,25 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            SequenceStream = new SequenceStream<SequenceFrameDNG>((ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
+            SequenceStream = new SequenceStream<SequenceFrameDNG>(ComputeContext, (ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
+
+            // Create display texture/image with preview frame
+#if COMPUTE_PIPELINE
+            if (displayFrameGPU != null)
+                displayFrameGPU.Dispose();
+            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuDisplayFormat, null, TextureFilter.Linear, "displayFrame");
+            if (displayFrameCompute != null)
+                displayFrameCompute.Dispose();
+            displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, GPU.Compute.MemoryDeviceAccess.ReadWrite);
+#else
 
             // Allocate display frame
             displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
 
-            // Create display texture/image with preview frame
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
             displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImageCpu : null, 
                 TextureFilter.Nearest, "displayFrame");
-            if (displayFrameCompute != null)
-                displayFrameCompute.Dispose();
-            displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, GPU.Compute.MemoryDeviceAccess.ReadWrite);
 
             // Tiled preview frame requires copying to GPU seperately
             Action discardPreviewFrame = () =>
@@ -155,6 +166,7 @@ namespace Octopus.Player.Core.Playback
                 previewFrame.CopyToGPU(clip, RenderContext, displayFrameGPU, null, false, discardPreviewFrame);
             else
                 discardPreviewFrame();
+#endif
 
             // Create linearization table texture
             if ( cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
@@ -178,8 +190,11 @@ namespace Octopus.Player.Core.Playback
 
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
+#if COMPUTE_PIPELINE
+                SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, displayFrameGPU.Format);
+#else
                 SeekFrame = new SequenceFrameDNG(Clip, displayFrameGPU.Format);
-
+#endif
             // Decode seek frame processing
             Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>
             {

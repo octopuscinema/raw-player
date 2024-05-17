@@ -21,7 +21,7 @@ namespace Octopus.Player.Core.Playback
 
         List<Worker<FrameRequestResult>> Workers { get; set; }
 
-        public SequenceStream(IClip clip, GPU.Format format, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
+        public SequenceStream(GPU.Compute.IContext computeContext, IClip clip, GPU.Format format, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
@@ -79,7 +79,11 @@ namespace Octopus.Player.Core.Playback
 
             // Allocate frame pool
             for (int i = 0; i < bufferDurationFrames; i++)
+#if COMPUTE_PIPELINE
+                Pool.Add(Activator.CreateInstance(typeof(T), computeContext, computeContext.DefaultQueue, clip, format) as T);
+#else
                 Pool.Add(Activator.CreateInstance(typeof(T), clip, format) as T);
+#endif
         }
 
         public virtual void Dispose()

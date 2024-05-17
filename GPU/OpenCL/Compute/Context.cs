@@ -45,6 +45,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public string ApiName{ get; private set; }
 
         public string ApiVendor { get; private set; }
+
+        public IQueue DefaultQueue { get { return defaultQueue; } }
+
         internal CL Handle { get; private set; }
         internal nint NativeHandle { get; set; }
         internal nint NativeDevice { get; set; }
@@ -53,6 +56,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         private bool SupportsAutoGLSync { get; set; }
 
         private List<Program> programs;
+        private IQueue defaultQueue;
 
         private Context(CL handle, DeviceType deviceType, bool supportsGLSharing, nint[] contextProperties)
         {
@@ -116,6 +120,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             ApiVendor = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Vendor);
             ApiVersion = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Version);
             Trace.WriteLine("Created OpenCL context for device: " + ApiName);
+
+            defaultQueue = CreateQueue("defaultQueue");
         }
 
         private unsafe void CallbackHandler(byte* errinfo, void* privateInfo, nuint cb, void* userData)
@@ -305,6 +311,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public void Dispose()
         {
+            if ( defaultQueue != null)
+            {
+                defaultQueue.Dispose();
+                defaultQueue = null;
+            }
+
             if (NativeHandle != 0)
             {
                 Debug.CheckError(Handle.ReleaseContext(NativeHandle));
