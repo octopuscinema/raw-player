@@ -40,6 +40,6 @@ out lowp vec4 fragColor;
 
 void main() 
 {
-	fragColor = vec4(texture(image, normalisedCoordinates).rgb, 1.0);
+	fragColor = vec4(texture(image, normalisedCoordinates).rg, 1.0, 1.0);
 }
 #endif

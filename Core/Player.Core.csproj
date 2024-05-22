@@ -7,6 +7,13 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD;NETSTANDARD2_1;COMPUTE_PIPELINE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>TRACE;RELEASE;NETSTANDARD;NETSTANDARD2_1; COMPUTE_PIPELINE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Decode\**" />
     <EmbeddedResource Remove="Decode\**" />

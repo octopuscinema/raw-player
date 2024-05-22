@@ -173,44 +173,54 @@ namespace Octopus.Player.Core.Playback
             return Error.None;
         }
 
-        public override Error Process(IClip clip, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program, GPU.Compute.IQueue queue)
+        public override Error Process(IClip clip, IContext renderContext, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program,
+            GPU.Compute.IQueue queue, bool immediate = false)
         {
             Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
             var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
             Debug.Assert(metadata != null);
-
             var kernel = ComputeKernelForClip(metadata);
-            program.SetArgument(kernel, 0u, decodedImageGpu);
 
-            // Calculate and apply black/white levels
-            var blackWhiteLevel = new Vector2(metadata.BlackLevel, metadata.WhiteLevel);
-            var decodedMaxlevel = (1 << (int)metadata.DecodedBitDepth) - 1;
-            var linearMaxLevel = decodedMaxlevel;
-            if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
-                linearMaxLevel = (1 << (linearizeTable.Format.BytesPerPixel() * 8)) - 1;
-            program.SetArgument(kernel, 1u, blackWhiteLevel / linearMaxLevel);
+            Action renderAction = () =>
+            {
+                program.SetArgument(kernel, 0u, decodedImageGpu);
 
-            // Calculate and apply exposure
-            var exposure = Math.Pow(2.0, clip.RawParameters.Value.exposure.HasValue ? clip.RawParameters.Value.exposure.Value : metadata.ExposureValue);
-            program.SetArgument(kernel, 2u, (float)exposure);
+                // Calculate and apply black/white levels
+                var blackWhiteLevel = new Vector2(metadata.BlackLevel, metadata.WhiteLevel);
+                var decodedMaxlevel = (1 << (int)metadata.DecodedBitDepth) - 1;
+                var linearMaxLevel = decodedMaxlevel;
+                if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
+                    linearMaxLevel = (1 << (linearizeTable.Format.BytesPerPixel() * 8)) - 1;
+                program.SetArgument(kernel, 1u, blackWhiteLevel / linearMaxLevel);
 
-            // Apply log to display LUT
-            //program.SetArgument(kernel, 3u, logToDisplayLUT);
+                // Calculate and apply exposure
+                var exposure = Math.Pow(2.0, clip.RawParameters.Value.exposure.HasValue ? clip.RawParameters.Value.exposure.Value : metadata.ExposureValue);
+                program.SetArgument(kernel, 2u, (float)exposure);
 
-            // Set output
-            program.SetArgument(kernel, 4u, output);
+                // Apply log to display LUT
+                //program.SetArgument(kernel, 3u, logToDisplayLUT);
 
-            // Lock GL texture output
-            queue.AcquireTextureObject(output);
+                // Set output
+                program.SetArgument(kernel, 4u, output);
 
-            // Run the kernel 4 pixels at a time
-            var launchDimensions = output.Dimensions / 2;
-            var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
-            Debug.Assert(clipDisplayDimensions == launchDimensions);
-            program.Run2D(queue, kernel, launchDimensions);
+                // Lock GL texture output
+                queue.AcquireTextureObject(output);
 
-            // Release access to GL texture
-            queue.ReleaseTextureObject(output);
+                // Run the kernel 4 pixels at a time
+                var launchDimensions = output.Dimensions / 2;
+                var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
+                Debug.Assert(clipDisplayDimensions == launchDimensions);
+                program.Run2D(queue, kernel, launchDimensions);
+
+                // Release access to GL texture
+                queue.ReleaseTextureObject(output);
+            };
+
+            if (immediate)
+                renderAction.Invoke();
+            else
+                renderContext.EnqueueRenderAction(renderAction);
+
 
             return Error.None;
         }

@@ -354,6 +354,15 @@ namespace Octopus.Player.Core.Playback
 
         public override void OnRenderFrame(double timeInterval)
         {
+#if COMPUTE_PIPELINE
+            if ( GpuPipelineComputeProgram != null && displayFrameGPU != null && displayFrameGPU.Valid && displayFrameCompute != null && displayFrameCompute.Valid && Clip != null)
+            {
+                Vector2i rectPos;
+                Vector2i rectSize;
+                RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
+                RenderContext.Blit2D(displayFrameGPU, rectPos, rectSize);
+            }
+#else
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && displayFrameGPU != null && displayFrameGPU.Valid && Clip != null)
             {
                 // Seek frame needs uploading to GPU
@@ -445,6 +454,7 @@ namespace Octopus.Player.Core.Playback
                     textures["linearizeTable"] = LinearizeTable;
                 RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(rectUvMin.X, rectUvMin.Y, rectUvMax.X, rectUvMax.Y));
             }
+#endif
         }
 
         public override Error RequestFrame(uint frameNumber)
@@ -488,11 +498,20 @@ namespace Octopus.Player.Core.Playback
                 ret = Error.FrameNotReady;
             }
 
-            // We got a frame, 'display' it
+            // We got a frame, run it through the GPU
             if (frame != null)
             {
+
+#if COMPUTE_PIPELINE
+                if (displayFrameCompute != null && displayFrameCompute.Valid && displayFrameGPU != null)
+                {
+                    var frameRAW = (SequenceFrameRAW)frame;
+                    frameRAW.Process(Clip, RenderContext, displayFrameCompute, null, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+                }
+#else
                 if (displayFrameGPU != null)
                     frame.CopyToGPU(Clip, RenderContext, displayFrameGPU, displayFrameStaging);
+#endif
                 RenderContext.RequestRender();
                 actualFrameNumber = frame.frameNumber;
                 actualTimeCode = frame.timeCode;

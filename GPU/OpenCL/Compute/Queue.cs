@@ -23,7 +23,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Name = name;
 
             int result;
-            NativeHandle = Context.Handle.CreateCommandQueueWithProperties(Context.NativeHandle, Context.NativeDevice, (QueueProperties)0, out result);
+            NativeHandle = Context.Handle.CreateCommandQueue(Context.NativeHandle, Context.NativeDevice, CommandQueueProperties.None, out result);
+
             Debug.CheckError(result);
         }
 
@@ -54,8 +55,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             if (imageCL == null)
                 throw new ArgumentException("Invalid image object");
 
-            var originArray = new Vector3i(origin, 0).ToArray().Cast<nuint>().ToArray();
-            var sizeArray = new Vector3i(size, 0).ToArray().Cast<nuint>().ToArray();
+            var originArray = new nuint[] { (nuint)origin.X, (nuint)origin.Y, 0};
+            var sizeArray = new nuint[] { (nuint)size.X, (nuint)size.Y, 0 };
 
             nuint stride = (nuint)image.Dimensions.X * (nuint)image.Format.BytesPerPixel();
             unsafe
