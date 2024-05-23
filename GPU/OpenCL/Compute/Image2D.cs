@@ -42,7 +42,6 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             unsafe
             {
                 NativeHandle = context.Handle.CreateImage(context.NativeHandle, memFlags, in imageFormat, in imageDesc, null, out result);
-                    //CreateImage2D(context.NativeHandle, memFlags, in imageFormat, (nuint)dimensions.X, (nuint)dimensions.Y, 0, null, out result);
             }
             Debug.CheckError(result);
         }
@@ -59,19 +58,11 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
             // Create CL image from GL texture
             Action createImageFromTextureAction = () =>
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    NativeHandle = Silk.NET.OpenCL.Extensions.APPLE.GCL.CreateImageFromTexture(texture.NativeType, 0, (uint)texture.NativeHandle);
-                    System.Diagnostics.Debug.Assert(NativeHandle != 0);
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
-                    int error;
-                    NativeHandle = sharingExtension.CreateFromGltexture2D(Context.NativeHandle, MemFlags.None, (uint)texture.NativeType, 0, (uint)texture.NativeHandle, out error);
-                    Debug.CheckError(error);
-                }
+            {   
+                var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
+                int error;
+                NativeHandle = sharingExtension.CreateFromGltexture2D(Context.NativeHandle, MemFlags.None, (uint)texture.NativeType, 0, (uint)texture.NativeHandle, out error);
+                Debug.CheckError(error);
                 valid = (NativeHandle != 0);
             };
 

@@ -4,11 +4,6 @@ using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
 {

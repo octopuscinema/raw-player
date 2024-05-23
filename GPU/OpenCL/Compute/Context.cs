@@ -32,7 +32,15 @@ namespace Octopus.Player.GPU.OpenCL.Compute
     {
         static internal void CheckError(int returnValue)
         {
-            System.Diagnostics.Debug.Assert((ErrorCodes)returnValue == ErrorCodes.Success, "OpenCL Error: " + ((ErrorCodes)returnValue).ToString());
+#if DEBUG
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                if ((ErrorCodes)returnValue != ErrorCodes.Success)
+                    throw new Exception("OpenCL Error: " + ((ErrorCodes)returnValue).ToString());
+            }
+            else
+                System.Diagnostics.Debug.Assert((ErrorCodes)returnValue == ErrorCodes.Success, "OpenCL Error: " + ((ErrorCodes)returnValue).ToString());
+#endif
         }
     }
 
