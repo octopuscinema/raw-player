@@ -57,14 +57,11 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             nuint stride = (nuint)image.Dimensions.X * (nuint)image.Format.BytesPerPixel();
             unsafe
             {
-                fixed (nuint* pOrigin = originArray)
+                fixed (nuint* pOrigin = originArray, pSize = sizeArray)
                 {
-                    fixed (nuint* pSize = sizeArray)
+                    fixed (byte* pImageData = imageData)
                     {
-                        fixed (byte* pImageData = imageData)
-                        {
-                            Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, 0, 0, pImageData + imageDataOffset, 0, null, null));
-                        }
+                        Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, 0, 0, pImageData + imageDataOffset, 0, null, null));
                     }
                 }
             }
