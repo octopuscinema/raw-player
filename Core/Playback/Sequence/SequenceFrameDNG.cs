@@ -116,7 +116,10 @@ namespace Octopus.Player.Core.Playback
         {
             var result = TryDecode(clip, workingBuffer);
             if (result != Error.None)
-                System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImageCpu[0], 0, (uint)decodedImageCpu.Length);
+            {
+                if (decodedImageCpu != null)
+                    System.Runtime.CompilerServices.Unsafe.InitBlock(ref decodedImageCpu[0], 0, (uint)decodedImageCpu.Length);
+            }
             LastError = result;
             NeedsGPUCopy = true;
             return result;
@@ -201,15 +204,15 @@ namespace Octopus.Player.Core.Playback
                 //program.SetArgument(kernel, 3u, logToDisplayLUT);
 
                 // Set output
-                program.SetArgument(kernel, 4u, output);
+                program.SetArgument(kernel, 3u, output);
 
                 // Lock GL texture output
-                queue.AcquireTextureObject(output);
+                queue.AcquireTextureObject(renderContext, output);
 
                 // Run the kernel 4 pixels at a time
                 var launchDimensions = output.Dimensions / 2;
                 var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
-                Debug.Assert(clipDisplayDimensions == launchDimensions);
+                //Debug.Assert(clipDisplayDimensions == (launchDimensions * 2));
                 program.Run2D(queue, kernel, launchDimensions);
 
                 // Release access to GL texture

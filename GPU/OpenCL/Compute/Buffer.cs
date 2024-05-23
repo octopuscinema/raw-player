@@ -30,7 +30,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             switch (access)
             {
                 case MemoryDeviceAccess.ReadWrite:
-                    return MemFlags.None;
+                    return MemFlags.ReadWrite;
                 case MemoryDeviceAccess.WriteOnly:
                     return MemFlags.WriteOnly;
                 case MemoryDeviceAccess.ReadOnly:

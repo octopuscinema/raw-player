@@ -34,9 +34,15 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             var memFlags = Buffer.MemFlag(memoryDeviceAccess) | Buffer.MemFlag(memoryHostAccess) | Buffer.MemFlag(memoryLocation);
             int result;
             var imageFormat = ImageFormat(Format);
+            ImageDesc imageDesc = new ImageDesc();
+            imageDesc.ImageType = MemObjectType.Image2D;
+            imageDesc.ImageWidth = (nuint)dimensions.X;
+            imageDesc.ImageHeight = (nuint)dimensions.Y;
+            imageDesc.ImageDepth = 1;
             unsafe
             {
-                NativeHandle = context.Handle.CreateImage2D(context.NativeHandle, memFlags, in imageFormat, (nuint)dimensions.X, (nuint)dimensions.Y, 0, null, out result);
+                NativeHandle = context.Handle.CreateImage(context.NativeHandle, memFlags, in imageFormat, in imageDesc, null, out result);
+                    //CreateImage2D(context.NativeHandle, memFlags, in imageFormat, (nuint)dimensions.X, (nuint)dimensions.Y, 0, null, out result);
             }
             Debug.CheckError(result);
         }

@@ -33,25 +33,8 @@ PRIVATE half4 LineariseMono4(half4 input, __read_only image1d_t linearizeTable, 
 	return input;
 }
 
-KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output,
-	Matrix4x4 cameraToLog, __read_only image1d_t linearizeTable, float linearizeTableRange)
-{
-	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
-	int2 inputCoord = workCoord * 2;
-
-	int2 outputCoord = inputCoord;
-	write_imagef(output, outputCoord, make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-
-	//RGBHalf4 cameraRGB = DebayerQuad();
-	//RGBHalf4 displayRGB = ProcessRGB4(LineariseRGB4(cameraRGB));
-	//Writeimage(displayRGB);
-}
-
-KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, __read_only image3d_t logToDisplay, __write_only image2d_t output,
-	Matrix4x4 cameraToLog)
+KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, /*__read_only image3d_t logToDisplay, */ __write_only image2d_t output/*,
+	Matrix4x4 cameraToLog, __read_only image1d_t linearizeTable, float linearizeTableRange*/)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -61,6 +44,25 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
 	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
 	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	
+	//RGBHalf4 cameraRGB = DebayerQuad();
+	//RGBHalf4 displayRGB = ProcessRGB4(LineariseRGB4(cameraRGB));
+	//Writeimage(displayRGB);
+}
+
+KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, /*__read_only image3d_t logToDisplay, */__write_only image2d_t output/*,
+	Matrix4x4 cameraToLog*/)
+{
+	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
+	int2 inputCoord = workCoord * 2;
+	
+	int2 outputCoord = inputCoord;
+	
+	write_imagef(output, outputCoord, make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	
 	//RGBHalf4 cameraRGB = DebayerQuad();
 	//RGBHalf4 displayRGB = ProcessRGB4(cameraRGB);
 	//Writeimage(displayRGB);

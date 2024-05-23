@@ -160,17 +160,17 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public void SetArgument(string function, uint index, float value)
         {
-            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), value));
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), in value));
         }
 
         public void SetArgument(string function, uint index, in Vector2 value)
         {
-            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, value));
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, in value));
         }
 
         public void SetArgument(string function, uint index, in Matrix4 value)
         {
-            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, value));
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, in value));
         }
 
         public void SetArgument(string function, uint index, IBuffer buffer)
@@ -180,7 +180,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 switch (buffer)
                 {
                     case Image image:
-                        Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)sizeof(nint), image.NativeHandle));
+                        var imageHandle = image.NativeHandle;
+                        Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)sizeof(nint), in imageHandle));
                         break;
                     default:
                         break;

@@ -6,6 +6,7 @@ using Silk.NET.OpenCL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -56,7 +57,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 throw new ArgumentException("Invalid image object");
 
             var originArray = new nuint[] { (nuint)origin.X, (nuint)origin.Y, 0};
-            var sizeArray = new nuint[] { (nuint)size.X, (nuint)size.Y, 0 };
+            var sizeArray = new nuint[] { (nuint)size.X, (nuint)size.Y, 1 };
 
             nuint stride = (nuint)image.Dimensions.X * (nuint)image.Format.BytesPerPixel();
             unsafe
@@ -67,14 +68,14 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                     {
                         fixed (byte* pImageData = imageData)
                         {
-                            Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, stride, 0, pImageData + imageDataOffset, 0, null, null));
+                            Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, 0, 0, pImageData + imageDataOffset, 0, null, null));
                         }
                     }
                 }
             }
         }
 
-        public void AcquireTextureObject(IImage image)
+        public void AcquireTextureObject(Render.IContext renderContext, IImage image)
         {
             var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);
             switch (image)
@@ -82,7 +83,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 case Image2D image2D:
                     unsafe
                     {
-                        Debug.CheckError(sharingExtension.EnqueueAcquireGlobjects(NativeHandle, 1, image2D.NativeHandle, 0, 0, null));
+                        var imageHandle = image2D.NativeHandle;
+                        renderContext.Finish();
+                        Debug.CheckError(sharingExtension.EnqueueAcquireGlobjects(NativeHandle, 1, in imageHandle, 0, null, null));
                     }
                     break;
                 default:
@@ -98,7 +101,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 case Image2D image2D:
                     unsafe
                     {
-                        Debug.CheckError(sharingExtension.EnqueueReleaseGlobjects(NativeHandle, 1, image2D.NativeHandle, 0, 0, null));
+                        var imageHandle = image2D.NativeHandle;
+                        Debug.CheckError(sharingExtension.EnqueueReleaseGlobjects(NativeHandle, 1, in imageHandle, 0, null, null));
+                        Context.Handle.Finish(NativeHandle);
                     }
                     break;
                 default:

@@ -335,6 +335,11 @@ namespace Octopus.Player.GPU.OpenGL.Render
             RedrawBackground = GPU.Render.RedrawBackground.Once;
 #endif
         }
+
+        public void Finish()
+        {
+            GL.Finish();
+        }
     }
 }
 
