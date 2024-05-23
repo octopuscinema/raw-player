@@ -63,19 +63,18 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         private bool SupportsGLSharing { get; set; }
         private bool SupportsAutoGLSync { get; set; }
 
-        private List<Program> programs;
+        private IList<Program> programs;
         private IQueue defaultQueue;
 
         private Context(CL handle, DeviceType deviceType, bool supportsGLSharing, nint[] contextProperties)
         {
             Handle = handle;
             SupportsGLSharing = supportsGLSharing;
-            int returnValue;
             unsafe
             {
                 fixed (nint* properties = contextProperties)
                 {
-                    NativeHandle = Handle.CreateContextFromType(properties, deviceType, CallbackHandler, null, out returnValue);
+                    NativeHandle = Handle.CreateContextFromType(properties, deviceType, CallbackHandler, null, out int returnValue);
                     Debug.CheckError(returnValue);
                 }
             }
@@ -96,7 +95,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             {
                 fixed (nint* properties = contextProperties)
                 {
-                    NativeHandle = Handle.CreateContext(properties, 1, device, CallbackHandler, null, out returnValue);
+                    NativeHandle = Handle.CreateContext(properties, 1, in device, CallbackHandler, null, out returnValue);
                     Debug.CheckError(returnValue);
                 }
             }
