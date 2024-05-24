@@ -7,13 +7,6 @@
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD;NETSTANDARD2_1;COMPUTE_PIPELINE</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>TRACE;RELEASE;NETSTANDARD;NETSTANDARD2_1; COMPUTE_PIPELINE</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Decode\**" />
     <EmbeddedResource Remove="Decode\**" />
@@ -23,7 +16,9 @@
     <None Remove="IO\DNG\" />
     <None Remove="Playback\Item\" />
     <None Remove="Resources\CL\ComputeDefines.cl.h" />
+    <None Remove="Resources\CL\ComputeMaths.cl.h" />
     <None Remove="Resources\CL\ComputeTypes.cl.h" />
+    <None Remove="Resources\CL\Debayer.cl.h" />
     <None Remove="Resources\CL\PipelineCinemaDNG.cl" />
     <None Remove="Resources\GLSL\Blit.glsl" />
     <None Remove="Resources\GLSL\blit.vert" />
@@ -46,7 +41,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CL\ComputeDefines.cl.h" />
+    <EmbeddedResource Include="Resources\CL\ComputeMaths.cl.h" />
     <EmbeddedResource Include="Resources\CL\ComputeTypes.cl.h" />
+    <EmbeddedResource Include="Resources\CL\Debayer.cl.h" />
     <EmbeddedResource Include="Resources\CL\PipelineCinemaDNG.cl" />
     <EmbeddedResource Include="Resources\GLSL\Blit.glsl" />
     <EmbeddedResource Include="Resources\GLSL\DebayerDraft.glsl.h" />

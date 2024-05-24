@@ -82,11 +82,7 @@ namespace Octopus.Player.Core.Playback
 
             // Allocate frame pool
             for (int i = 0; i < bufferDurationFrames; i++)
-#if COMPUTE_PIPELINE
                 Pool.Add(Activator.CreateInstance(typeof(T), computeContext, computeContext.DefaultQueue, clip, format) as T);
-#else
-                Pool.Add(Activator.CreateInstance(typeof(T), clip, format) as T);
-#endif
         }
 
         public virtual void Dispose()

@@ -161,4 +161,27 @@
 #define IMAGE2D_WRITE_ONLY(T) texture2d<T, access::write>
 #endif
 
+// Cross platform swizzle
+#ifdef COMPUTE_PLATFORM_CUDA
+#define GET_WZYX(t, vec) make_ ## t ## 4(vec.w, vec.z, vec.y, vec.x)
+#define GET_ZYX(t, vec) make_ ## t ## 3(vec.z, vec.y, vec.x)
+#define GET_YZW(t, vec) make_ ## t ## 3(vec.y, vec.z, vec.w)
+#define GET_XYZ(t, vec) make_ ## t ## 3(vec.x, vec.y, vec.z)
+#define GET_XY(t, vec) make_ ## t ## 2(vec.x, vec.y)
+#define GET_ZW(t, vec) make_ ## t ## 2(vec.z, vec.w)
+#define GET_ZX(t, vec) make_ ## t ## 2(vec.z, vec.x)
+#define GET_WY(t, vec) make_ ## t ## 2(vec.w, vec.y)
+#define GET_YW(t, vec) make_ ## t ## 2(vec.y, vec.w)
+#define GET_XZ(t, vec) make_ ## t ## 2(vec.x, vec.z)
+#else
+#define GET_ZYX(t, vec) vec.zyx
+#define GET_YZW(t, vec) vec.yzw
+#define GET_WZYX(t, vec) vec.wzyx
+#define GET_XYZ(t, vec) vec.xyz
+#define GET_ZX(t, vec) vec.zx
+#define GET_WY(t, vec) vec.wy
+#define GET_YW(t, vec) vec.yw
+#define GET_XZ(t, vec) vec.xz
+#endif
+
 #endif

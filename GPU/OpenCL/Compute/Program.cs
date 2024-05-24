@@ -42,7 +42,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             // Create program
             int result;
             nuint stringLengths = (nuint)source[0].Length;
-            NativeHandle = context.Handle.CreateProgramWithSource(context.NativeHandle, 1, source, stringLengths, out result);
+            NativeHandle = context.Handle.CreateProgramWithSource(context.NativeHandle, 1, source, in stringLengths, out result);
             Debug.CheckError(result);
 
             // Build program

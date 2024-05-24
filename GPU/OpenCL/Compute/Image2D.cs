@@ -19,7 +19,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public override int SizeBytes { get { return Dimensions.Area() * Format.BytesPerPixel(); } }
 
-        internal Image2D(Context context, Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
+        internal Image2D(Context context, in Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
             Dimensions = dimensions;

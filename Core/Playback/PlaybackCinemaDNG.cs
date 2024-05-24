@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU.Compute;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 
@@ -23,8 +24,9 @@ namespace Octopus.Player.Core.Playback
 
         private ISequenceStream SequenceStream { get; set; }
         private IShader GpuPipelineProgram { get; set; }
-        private GPU.Compute.IProgram GpuPipelineComputeProgram { get; set; }
-        private ITexture LinearizeTable { get; set; }
+        private IProgram GpuPipelineComputeProgram { get; set; }
+
+        private IImage1D LinearizeTable { get; set; }
 
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
@@ -106,11 +108,7 @@ namespace Octopus.Player.Core.Playback
             // Attempt to decode first frame as preview, if that fails bail out
             var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Format.R8 : GPU.Format.R16;
             var gpuDisplayFormat = GPU.Format.RGBX8;
-#if COMPUTE_PIPELINE
             var previewFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, clip, gpuFormat);
-#else
-            var previewFrame = new SequenceFrameDNG(clip, gpuFormat);
-#endif
             previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
             var decodeError = previewFrame.Decode(clip);
             if (decodeError != Error.None)
@@ -138,45 +136,33 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(SequenceStream == null);
             SequenceStream = new SequenceStream<SequenceFrameDNG>(ComputeContext, (ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
 
-            // Create display texture/image with preview frame
-#if COMPUTE_PIPELINE
+            // Create linearization table texture
+            if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0)
+            {
+                if (LinearizeTable != null)
+                    LinearizeTable.Dispose();
+                Span<byte> tableData = System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, byte>(cinemaDNGMetadata.LinearizationTable);
+
+                LinearizeTable = ComputeContext.CreateImage(cinemaDNGMetadata.LinearizationTable.Length, GPU.Format.R16, MemoryDeviceAccess.ReadOnly,
+                    MemoryHostAccess.WriteOnly, tableData.ToArray());
+            }
+
+            // Create display frame compute and render image
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
             displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuDisplayFormat, null, TextureFilter.Linear, "displayFrame");
             if (displayFrameCompute != null)
                 displayFrameCompute.Dispose();
-            displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, GPU.Compute.MemoryDeviceAccess.ReadWrite);
-#else
+            displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, MemoryDeviceAccess.ReadWrite);
 
-            // Allocate display frame
-            displayFrameStaging = new byte[gpuFormat.BytesPerPixel() * clip.Metadata.PaddedDimensions.Area()];
-
-            if (displayFrameGPU != null)
-                displayFrameGPU.Dispose();
-            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuFormat, cinemaDNGMetadata.TileCount == 0 ? previewFrame.decodedImageCpu : null, 
-                TextureFilter.Nearest, "displayFrame");
-
-            // Tiled preview frame requires copying to GPU seperately
+            // Process preview frame, discarding frame afterwards
             Action discardPreviewFrame = () =>
             {
                 previewFrame.Dispose();
                 previewFrame = null;
             };
-            if (cinemaDNGMetadata.TileCount > 0)
-                previewFrame.CopyToGPU(clip, RenderContext, displayFrameGPU, null, false, discardPreviewFrame);
-            else
-                discardPreviewFrame();
-#endif
+            previewFrame.Process(clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, false, discardPreviewFrame);
 
-            // Create linearization table texture
-            if ( cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0 )
-            {
-                if (LinearizeTable != null)
-                    LinearizeTable.Dispose();
-                Span<byte> tableData = System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, byte>(cinemaDNGMetadata.LinearizationTable);
-                LinearizeTable = RenderContext.CreateTexture((uint)cinemaDNGMetadata.LinearizationTable.Length, GPU.Format.R16, tableData.ToArray());
-            }
-            
             return Error.None;
         }
 
@@ -190,11 +176,8 @@ namespace Octopus.Player.Core.Playback
 
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
-#if COMPUTE_PIPELINE
                 SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
-#else
-                SeekFrame = new SequenceFrameDNG(Clip, displayFrameGPU.Format);
-#endif
+
             // Decode seek frame processing
             Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>
             {
@@ -354,19 +337,18 @@ namespace Octopus.Player.Core.Playback
 
         public override void OnRenderFrame(double timeInterval)
         {
-#if COMPUTE_PIPELINE
             if ( GpuPipelineComputeProgram != null && displayFrameGPU != null && displayFrameGPU.Valid && displayFrameCompute != null && displayFrameCompute.Valid && Clip != null)
             {
-                // Seek frame needs uploading to GPU
-                if (SeekFrame != null && SeekFrame.NeedsGPUCopy)
+                // Seek frame needs processing
+                if (SeekFrame != null && !SeekFrame.Processed)
                 {
                     try
                     {
                         SeekFrameMutex.WaitOne();
 #if SEEK_TRACE
-                        Trace.WriteLine("Copying seek frame: " + SeekFrame.frameNumber + " to GPU");
+                        Trace.WriteLine("Processing seek frame: " + SeekFrame.frameNumber + " on GPU");
 #endif
-                        SeekFrame.Process(Clip, RenderContext, displayFrameCompute, null, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+                        SeekFrame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
                         if (!IsPlaying)
                         {
                             displayFrame = SeekFrame.frameNumber;
@@ -385,7 +367,7 @@ namespace Octopus.Player.Core.Playback
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 RenderContext.Blit2D(displayFrameGPU, rectPos, rectSize);
             }
-#else
+/*
             if (GpuPipelineProgram != null && GpuPipelineProgram.Valid && displayFrameGPU != null && displayFrameGPU.Valid && Clip != null)
             {
                 // Seek frame needs uploading to GPU
@@ -477,7 +459,7 @@ namespace Octopus.Player.Core.Playback
                     textures["linearizeTable"] = LinearizeTable;
                 RenderContext.Draw2D(GpuPipelineProgram, textures, rectPos, rectSize, new Vector4(rectUvMin.X, rectUvMin.Y, rectUvMax.X, rectUvMax.Y));
             }
-#endif
+*/
         }
 
         public override Error RequestFrame(uint frameNumber)
@@ -524,17 +506,9 @@ namespace Octopus.Player.Core.Playback
             // We got a frame, run it through the GPU
             if (frame != null)
             {
-
-#if COMPUTE_PIPELINE
                 if (displayFrameCompute != null && displayFrameCompute.Valid && displayFrameGPU != null)
-                {
-                    var frameRAW = (SequenceFrameRAW)frame;
-                    frameRAW.Process(Clip, RenderContext, displayFrameCompute, null, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
-                }
-#else
-                if (displayFrameGPU != null)
-                    frame.CopyToGPU(Clip, RenderContext, displayFrameGPU, displayFrameStaging);
-#endif
+                    ((SequenceFrameRAW)frame).Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+
                 RenderContext.RequestRender();
                 actualFrameNumber = frame.frameNumber;
                 actualTimeCode = frame.timeCode;

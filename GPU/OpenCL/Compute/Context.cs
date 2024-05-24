@@ -350,7 +350,13 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             throw new Exception("Error locating OpenCL program resource: " + resourceName);
         }
 
-        public IImage2D CreateImage(Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
+        public IImage1D CreateImage(int dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, byte[] imageData,
+            MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
+        {
+            return new Image1D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name, imageData);
+        }
+
+        public IImage2D CreateImage(in Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, 
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
         {
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
