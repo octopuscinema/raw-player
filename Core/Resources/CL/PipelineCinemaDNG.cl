@@ -38,12 +38,25 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
-	
+
+	// Placeholder debayer
+	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+	float topLeft = read_imagef(rawImage, rawSampler, inputCoord).x;
+	float topRight = read_imagef(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x;
+	float bottomLeft = read_imagef(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x;
+	float bottomRight = read_imagef(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x;
+	float3 cameraRgb = make_float3(topLeft, (topRight + bottomLeft) * 0.5f, bottomRight);
+
+	// Apply black and white level
+	cameraRgb -= make_float3(blackWhiteLevel.x);
+	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
+
+	// Write out image data
 	int2 outputCoord = inputCoord;
-	write_imagef(output, outputCoord, make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
+	write_imagef(output, outputCoord, make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(cameraRgb, 0.0f));
 	
 	//RGBHalf4 cameraRGB = DebayerQuad();
 	//RGBHalf4 displayRGB = ProcessRGB4(LineariseRGB4(cameraRGB));
@@ -56,13 +69,25 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
 	
+	// Placeholder debayer
+	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+	float topLeft = read_imagef(rawImage, rawSampler, inputCoord).x;
+	float topRight = read_imagef(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x;
+	float bottomLeft = read_imagef(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x;
+	float bottomRight = read_imagef(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x;
+	float3 cameraRgb = make_float3(topLeft, (topRight + bottomLeft) * 0.5f, bottomRight);
+
+	// Apply black and white level
+	cameraRgb -= make_float3(blackWhiteLevel.x);
+	cameraRgb /= (blackWhiteLevel.y-blackWhiteLevel.x);
+
+	// Write out image data
 	int2 outputCoord = inputCoord;
-	
-	write_imagef(output, outputCoord, make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(1.0f, 0.0f, 0.0f, 0.0f));
-	
+	write_imagef(output, outputCoord, make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 0), make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(0, 1), make_float4(cameraRgb, 0.0f));
+	write_imagef(output, outputCoord + make_int2(1, 1), make_float4(cameraRgb, 0.0f));
+
 	//RGBHalf4 cameraRGB = DebayerQuad();
 	//RGBHalf4 displayRGB = ProcessRGB4(cameraRGB);
 	//Writeimage(displayRGB);

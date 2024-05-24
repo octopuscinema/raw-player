@@ -223,8 +223,7 @@ namespace Octopus.Player.Core.Playback
                 renderAction.Invoke();
             else
                 renderContext.EnqueueRenderAction(renderAction);
-
-
+            
             return Error.None;
         }
 

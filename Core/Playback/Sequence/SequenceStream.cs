@@ -12,6 +12,8 @@ namespace Octopus.Player.Core.Playback
     {
         public IClip Clip { get; protected set; }
 
+        public GPU.Format Format { get; protected set; }
+
         ConcurrentBag<SequenceFrame> Pool { get; set; }
         ConcurrentDictionary<uint,SequenceFrame> DisplayFrames { get; set; }
         List<uint> FrameRequests { get; set; }
@@ -25,6 +27,7 @@ namespace Octopus.Player.Core.Playback
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
+            Format = format;
             BufferDurationFrames = bufferDurationFrames;
 
             Pool = new ConcurrentBag<SequenceFrame>();

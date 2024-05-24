@@ -191,7 +191,7 @@ namespace Octopus.Player.Core.Playback
             // Allocate seek frame if it is not allocated
             if (SeekFrame == null)
 #if COMPUTE_PIPELINE
-                SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, displayFrameGPU.Format);
+                SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
 #else
                 SeekFrame = new SequenceFrameDNG(Clip, displayFrameGPU.Format);
 #endif
@@ -357,6 +357,29 @@ namespace Octopus.Player.Core.Playback
 #if COMPUTE_PIPELINE
             if ( GpuPipelineComputeProgram != null && displayFrameGPU != null && displayFrameGPU.Valid && displayFrameCompute != null && displayFrameCompute.Valid && Clip != null)
             {
+                // Seek frame needs uploading to GPU
+                if (SeekFrame != null && SeekFrame.NeedsGPUCopy)
+                {
+                    try
+                    {
+                        SeekFrameMutex.WaitOne();
+#if SEEK_TRACE
+                        Trace.WriteLine("Copying seek frame: " + SeekFrame.frameNumber + " to GPU");
+#endif
+                        SeekFrame.Process(Clip, RenderContext, displayFrameCompute, null, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+                        if (!IsPlaying)
+                        {
+                            displayFrame = SeekFrame.frameNumber;
+                            requestFrame = SeekFrame.frameNumber;
+                            OnSeekFrameDisplay(SeekFrame.LastError, SeekFrame.timeCode);
+                        }
+                    }
+                    finally
+                    {
+                        SeekFrameMutex.ReleaseMutex();
+                    }
+                }
+
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);

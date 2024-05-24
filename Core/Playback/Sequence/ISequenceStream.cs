@@ -26,6 +26,8 @@ namespace Octopus.Player.Core.Playback
 
     public interface ISequenceStream : IDisposable
     {
+        GPU.Format Format { get; }
+
         FrameRequestResult RequestFrame(uint frameNumber);
         bool CancelRequest(uint frameNumber);
         void CancelRequestsFrom(uint fromFrame);
