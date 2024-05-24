@@ -5,8 +5,14 @@
 #include "ComputeTypes.cl.h"
 #include "ComputeMaths.cl.h"
 
-
 #define DEBAYER_DIFF_EPSILON ((half)0.0001f)
+
+// Weird fix for fmax not working on Apple's OpenCL implementation
+PRIVATE half4 hmax(half4 x, half4 y)
+{
+	return select(y, x, isgreater(x, y));
+}
+
 PRIVATE half SynthesiseGreen(half4 greenAboveBelowLeftRight, half centre, half4 adjacentAboveBelowLeftRight)
 {
 	// Calculate adjcent diffs
@@ -41,9 +47,8 @@ PRIVATE half2 SynthesiseGreenAndRed(half4 tile, half4 tileAboveLeft, half4 tileA
 		greenAboveBelowLeftRight.y + greenAboveBelowLeftRight.z,
 		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
 
-
 	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
-	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half4 greenCornerWeights = make_half4((half)1.0f) / hmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
 	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
 	greenCornerWeights /= maxWeight;
 	half4 redWeights = redTopLeftRightBottomLeftRight * greenCornerWeights;
@@ -71,7 +76,7 @@ PRIVATE half2 SynthesiseGreenAndBlue(half4 tile, half4 tileAbove, half4 tileLeft
 		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
 
 	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
-	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half4 greenCornerWeights = make_half4((half)1.0f) / hmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
 	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
 	greenCornerWeights /= maxWeight;
 	half4 blueWeights = blueTopLeftRightBottomLeftRight * greenCornerWeights;
@@ -115,13 +120,13 @@ PRIVATE half4 LineariseBayerTile(__read_only image2d_t rawImage, int2 inputCoord
 	half4 nonLinear = make_half4(read_imageh(rawImage, rawSampler, inputCoord).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x,
-		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x) / linearizeTableRange;
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x) / (half)linearizeTableRange;
 
 	const sampler_t lineariseSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
-	return make_half4(read_imageh(linearizeTable, lineariseSampler, nonLinear.x).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinear.y).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinear.z).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinear.w).x);
+	return make_half4(read_imageh(linearizeTable, lineariseSampler, (float)nonLinear.x).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinear.y).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinear.z).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinear.w).x);
 }
 
 PRIVATE RGBHalf4 LineariseDebayerGRBG(__read_only image2d_t rawImage, int2 inputCoord, __read_only image1d_t linearizeTable, float linearizeTableRange)

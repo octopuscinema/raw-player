@@ -9,7 +9,7 @@
 PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, float exposure/*, Matrix4x4 cameraToLog, __read_only image3d_t logToDisplay*/)
 {
 	// Apply black and white level
-	float blackWhiteRange = blackWhiteLevel.y - blackWhiteLevel.x;
+	half blackWhiteRange = (half)(blackWhiteLevel.y - blackWhiteLevel.x);
 	half3 blackLevel = make_half3(blackWhiteLevel.x);
 	for (int i = 0; i < 4; i++) {
 		linearRgb.RGB[i] -= blackLevel;
@@ -25,7 +25,7 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, float ex
 
 	// Apply exposure
 	for (int i = 0; i < 4; i++)
-		displayRgb.RGB[i] *= exposure;
+		displayRgb.RGB[i] *= (half)exposure;
 
 	return displayRgb;
 }
@@ -33,8 +33,8 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, float ex
 PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure/*, __read_only image3d_t logToDisplay*/)
 {
 	// Apply black and white level
-	linearIn -= make_half4(blackWhiteLevel.x);
-	linearIn /= (blackWhiteLevel.y - blackWhiteLevel.x);
+	linearIn -= make_half4((half)blackWhiteLevel.x);
+	linearIn /= (half)(blackWhiteLevel.y - blackWhiteLevel.x);
 
 	// Prepare for display
 	half4 display = linearIn;
@@ -42,7 +42,7 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 	// Apply tone mapping
 
 	// Apply exposure
-	display *= exposure;
+	display *= (half)exposure;
 
 	return display;
 }
@@ -106,14 +106,14 @@ KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLe
 	half4 nonLinearMono = make_half4(read_imageh(rawImage, rawSampler, inputCoord).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x,
-		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x) / linearizeTableRange;
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x) / (half)linearizeTableRange;
 
 	// Linearise mono 2x2 tile
 	const sampler_t lineariseSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
-	half4 cameraMono = make_half4(read_imageh(linearizeTable, lineariseSampler, nonLinearMono.x).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinearMono.y).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinearMono.z).x,
-		read_imageh(linearizeTable, lineariseSampler, nonLinearMono.w).x);
+	half4 cameraMono = make_half4(read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.x).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.y).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.z).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.w).x);
 
 	// Process
 	half4 displayMono = ProcessMono(cameraMono, blackWhiteLevel, exposure);
