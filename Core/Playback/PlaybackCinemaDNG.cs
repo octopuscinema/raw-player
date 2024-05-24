@@ -23,7 +23,6 @@ namespace Octopus.Player.Core.Playback
         private Mutex SeekFrameMutex { get; set; }
 
         private ISequenceStream SequenceStream { get; set; }
-        private IShader GpuPipelineProgram { get; set; }
         private IProgram GpuPipelineComputeProgram { get; set; }
 
         private IImage1D LinearizeTable { get; set; }
@@ -121,16 +120,14 @@ namespace Octopus.Player.Core.Playback
             State = State.Stopped;
             ClipOpened?.Invoke(this, new EventArgs());
 
-            // Rebuild the shader if the defines have changed
-            var requiredShaderDefines = ShaderDefinesForClip(clip);
-            if ( GpuPipelineProgram == null || !requiredShaderDefines.ToHashSet().SetEquals(GpuPipelineProgram.Defines) )
+            // Rebuild the compute program if the defines have changed
+            var requiredGpuDefines = GpuDefinesForClip(clip);
+            if (GpuPipelineComputeProgram == null || !requiredGpuDefines.ToHashSet().SetEquals(GpuPipelineComputeProgram.Defines))
             {
-                if (GpuPipelineProgram != null)
-                    GpuPipelineProgram.Dispose();
-                GpuPipelineProgram = RenderContext.CreateShader(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", "PipelineCinemaDNG", requiredShaderDefines);
+                if (GpuPipelineComputeProgram != null)
+                    GpuPipelineComputeProgram.Dispose();
+                GpuPipelineComputeProgram = ComputeContext.CreateProgram(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", pipelineKernels, requiredGpuDefines, "PipelineCinemaDNG");
             }
-            if (GpuPipelineComputeProgram == null)
-                GpuPipelineComputeProgram = ComputeContext.CreateProgram(Assembly.GetExecutingAssembly(), "PipelineCinemaDNG", pipelineKernels, null, "PipelineCinemaDNG");
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
@@ -288,7 +285,7 @@ namespace Octopus.Player.Core.Playback
             SequenceStream.ReclaimReadyFrames();
         }
 
-        private IReadOnlyCollection<string> ShaderDefinesForClip(IClip clip)
+        private IReadOnlyCollection<string> GpuDefinesForClip(IClip clip)
         {
             Debug.Assert(SupportsClip(clip));
             var dngMetadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
