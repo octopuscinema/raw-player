@@ -88,6 +88,14 @@ typedef struct
 	float4 B_RGB;
 } RGB444Quad;
 
+typedef struct
+{
+	half UnderLevel;
+    half OverLevel;
+    half Power;
+    half Strength;
+} RollOffParams;
+
 // Needs to match enum values in host c# code
 typedef enum
 {

@@ -5,6 +5,7 @@
     <RootNamespace>Octopus.Player.Core</RootNamespace>
 	<NrtRevisionFormat>{semvertag+chash}</NrtRevisionFormat>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<ReleaseVersion>1.0.2</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,10 @@
     <None Remove="Resources\GLSL\RollOff.glsl.h" />
     <None Remove="Resources\GLSL\ToneMap.glsl.h" />
     <None Remove="Resources\License.txt" />
+    <None Remove="Resources\CL\HighlightRecovery.cl.h" />
+    <None Remove="Resources\CL\ComputeFunctions.cl.h" />
+    <None Remove="Resources\CL\ComputeRollOff.cl.h" />
+    <None Remove="Resources\CL\ComputeToneMapOperator.cl.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,6 +59,10 @@
     <EmbeddedResource Include="Resources\GLSL\RollOff.glsl.h" />
     <EmbeddedResource Include="Resources\GLSL\ToneMap.glsl.h" />
     <EmbeddedResource Include="Resources\License.txt" />
+    <EmbeddedResource Include="Resources\CL\HighlightRecovery.cl.h" />
+    <EmbeddedResource Include="Resources\CL\ComputeFunctions.cl.h" />
+    <EmbeddedResource Include="Resources\CL\RollOff.cl.h" />
+    <EmbeddedResource Include="Resources\CL\ToneMapOperator.cl.h" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />

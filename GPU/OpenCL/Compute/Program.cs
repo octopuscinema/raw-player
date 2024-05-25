@@ -89,6 +89,9 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         string Preprocess(string source, Assembly assembly, IReadOnlyCollection<string> defines)
         {
+            if (Context.SupportsFp16)
+                source = "#define COMPUTE_ALLOW_FP16\n" + source;
+
             uint includeDepth = 0;
             var localResources = assembly.GetManifestResourceNames();
             return AddIncludes(defines == null ? source : AddDefines(source, defines), assembly, localResources, ref includeDepth);
@@ -105,8 +108,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         string AddIncludes(string source, Assembly assembly, string[] localResources, ref uint depth)
         {
             depth++;
-            if (depth > 16)
-                throw new Exception("OpenCL include depth maximum of 16 reached, check for cycling header dependancy");
+            if (depth > 32)
+                throw new Exception("OpenCL include depth maximum of 32 reached, check for cycling header dependancy");
 
             const string includeToken = "#include ";
 
@@ -163,9 +166,25 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, sizeof(float), in value));
         }
 
+        public void SetArgument(string function, uint index, int value)
+        { 
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, sizeof(int), in value));
+        }
+
         public void SetArgument(string function, uint index, in Vector2 value)
         {
             Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector2.SizeInBytes, in value));
+        }
+
+        public void SetArgument(string function, uint index, in Vector3 value)
+        {
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector3.SizeInBytes, in value));
+        }
+
+        public void SetArgument(string function, uint index, in Matrix3 value)
+        {
+            Matrix4 matrix4 = new Matrix4(value);
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes * 4, in matrix4));
         }
 
         public void SetArgument(string function, uint index, in Matrix4 value)

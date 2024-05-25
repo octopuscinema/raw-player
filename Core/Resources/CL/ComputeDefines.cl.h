@@ -10,7 +10,7 @@
 #define COMPUTE_PLATFORM_METAL
 #endif
 
-#if defined(cl_khr_fp16) || defined(COMPUTE_PLATFORM_METAL)
+#if (defined(cl_khr_fp16) && defined(COMPUTE_ALLOW_FP16)) || defined(COMPUTE_PLATFORM_METAL)
 #define SUPPORTS_NATIVE_HALF_PRECISION
 #endif
 
@@ -26,7 +26,7 @@
 
 // OpenCL 'half' precision
 #ifdef COMPUTE_PLATFORM_OPENCL
-#ifdef cl_khr_fp16
+#if defined(cl_khr_fp16) && defined(COMPUTE_ALLOW_FP16)
 #pragma OPENCL EXTENSION cl_khr_fp16 : enable
 #else
 #define half float
@@ -34,6 +34,7 @@
 #define half3 float3
 #define half4 float4
 #define half8 float8
+#define convert_half convert_float
 #define convert_half2 convert_float2
 #define convert_half3 convert_float3
 #define convert_half4 convert_float4

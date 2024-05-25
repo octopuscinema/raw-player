@@ -138,7 +138,8 @@ namespace Octopus.Player.Core.Playback
 
             Action renderAction = () =>
             {
-                program.SetArgument(kernel, 0u, decodedImageGpu);
+                uint argumentIndex = 0;
+                program.SetArgument(kernel, argumentIndex++, decodedImageGpu);
 
                 // Calculate and apply black/white levels
                 var blackWhiteLevel = new Vector2(metadata.BlackLevel, metadata.WhiteLevel);
@@ -146,24 +147,51 @@ namespace Octopus.Player.Core.Playback
                 var linearMaxLevel = decodedMaxlevel;
                 if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
                     linearMaxLevel = (1 << (linearizeTable.Format.BytesPerPixel() * 8)) - 1;
-                program.SetArgument(kernel, 1u, blackWhiteLevel / linearMaxLevel);
+                program.SetArgument(kernel, argumentIndex++, blackWhiteLevel / linearMaxLevel);
 
                 // Calculate and apply exposure
                 var exposure = Math.Pow(2.0, clip.RawParameters.Value.exposure.HasValue ? clip.RawParameters.Value.exposure.Value : metadata.ExposureValue);
-                program.SetArgument(kernel, 2u, (float)exposure);
+                program.SetArgument(kernel, argumentIndex++, (float)exposure);
+
+                // Tone mapping operator
+                program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
 
                 // Apply log to display LUT
-                //program.SetArgument(kernel, 3u, logToDisplayLUT);
+                //program.SetArgument(kernel, argumentIndex++, logToDisplayLUT);
 
                 // Set output
-                program.SetArgument(kernel, 3u, output);
+                program.SetArgument(kernel, argumentIndex++, output);
 
+                // Colour only options
+                if (metadata.ColorProfile.HasValue)
+                {
+                    program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.highlightRecovery.GetValueOrDefault(HighlightRecovery.On));
+
+                    // Combine camera to xyz/xyz to display colour matrices
+                    var cameraToXYZD50Matrix = metadata.ColorProfile.Value.CalculateCameraToXYZD50(clip.RawParameters.Value.whiteBalance);
+                    var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();
+                    var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
+
+                    // Calculate camera white in RAW space
+                    var cameraToDisplayInv = Matrix3.Invert(cameraToDisplayColourMatrix);
+                    var whiteLevelCamera = cameraToDisplayInv * Vector3.One;
+                    var cameraWhiteMin = Math.Min(Math.Min(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
+                    var cameraWhiteMax = Math.Max(Math.Max(whiteLevelCamera.X, whiteLevelCamera.Y), whiteLevelCamera.Z);
+                    Vector3 cameraWhite = whiteLevelCamera / cameraWhiteMin;
+                    Vector3 cameraWhiteNormalised = whiteLevelCamera / cameraWhiteMax;
+                    program.SetArgument(kernel, argumentIndex++, cameraWhite);
+                    program.SetArgument(kernel, argumentIndex++, cameraWhiteNormalised);
+
+                    // Set raw to display
+                    program.SetArgument(kernel, argumentIndex++, cameraToDisplayColourMatrix);
+                }
+                
                 // Set linearise table+range
                 if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
                 {
-                    program.SetArgument(kernel, 4u, linearizeTable);
+                    program.SetArgument(kernel, argumentIndex++, linearizeTable);
                     var tableInputRange = (1 << (int)metadata.BitDepth) - 1;
-                    program.SetArgument(kernel, 5u, (float)tableInputRange / (float)decodedMaxlevel);
+                    program.SetArgument(kernel, argumentIndex++, (float)tableInputRange / (float)decodedMaxlevel);
                 }
 
                 // Lock GL texture output
@@ -194,7 +222,7 @@ namespace Octopus.Player.Core.Playback
         private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata)
         {
             string kernel = "Process";
-            if (metadata.CFAPattern != IO.CFAPattern.None)
+            if (metadata.ColorProfile.HasValue)
                 kernel += "Bayer";
             kernel += (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0) ? "NonLinear" : "Linear";
 

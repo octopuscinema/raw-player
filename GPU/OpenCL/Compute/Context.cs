@@ -56,6 +56,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public IQueue DefaultQueue { get { return defaultQueue; } }
 
+        public bool SupportsFp16 { get; set; }
+
         internal CL Handle { get; private set; }
         internal nint NativeHandle { get; set; }
         internal nint NativeDevice { get; set; }
@@ -123,6 +125,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
 
             SupportsAutoGLSync = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_gl_event");
+            SupportsFp16 = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_fp16");
             ApiName = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Name);
             ApiVendor = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Vendor);
             ApiVersion = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Version);

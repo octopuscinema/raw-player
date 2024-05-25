@@ -1,17 +1,11 @@
-#ifndef DEBAYER_H
-#define DEBAYER_H
+#ifndef DEBAYER_CL_H
+#define DEBAYER_CL_H
 
 #include "ComputeDefines.cl.h"
 #include "ComputeTypes.cl.h"
 #include "ComputeMaths.cl.h"
 
 #define DEBAYER_DIFF_EPSILON ((half)0.0001f)
-
-// Weird fix for fmax not working on Apple's OpenCL implementation
-PRIVATE half4 hmax(half4 x, half4 y)
-{
-	return select(y, x, isgreater(x, y));
-}
 
 PRIVATE half SynthesiseGreen(half4 greenAboveBelowLeftRight, half centre, half4 adjacentAboveBelowLeftRight)
 {
@@ -48,7 +42,7 @@ PRIVATE half2 SynthesiseGreenAndRed(half4 tile, half4 tileAboveLeft, half4 tileA
 		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
 
 	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
-	half4 greenCornerWeights = make_half4((half)1.0f) / hmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
 	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
 	greenCornerWeights /= maxWeight;
 	half4 redWeights = redTopLeftRightBottomLeftRight * greenCornerWeights;
@@ -76,7 +70,7 @@ PRIVATE half2 SynthesiseGreenAndBlue(half4 tile, half4 tileAbove, half4 tileLeft
 		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
 
 	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
-	half4 greenCornerWeights = make_half4((half)1.0f) / hmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
 	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
 	greenCornerWeights /= maxWeight;
 	half4 blueWeights = blueTopLeftRightBottomLeftRight * greenCornerWeights;
