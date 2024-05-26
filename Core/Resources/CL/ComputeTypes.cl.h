@@ -96,12 +96,12 @@ typedef struct
     half Strength;
 } RollOffParams;
 
-// Needs to match enum values in host c# code
 typedef enum
 {
-	COLOUR_SPACE_REC709 = 0,
-	COLOUR_SPACE_REC2020 = 1
-} eColourSpace;
+	GAMMA_REC709 = 0,
+	GAMMA_SRGB = 1,
+	GAMMA_LOGC = 2
+} eGamma;
 
 typedef enum
 {
@@ -118,9 +118,10 @@ typedef enum
 
 typedef enum
 {
-    ROLL_OFF_LOW = 0,
-    ROLL_OFF_MEDIUM = 1,
-    ROLL_OFF_HIGH = 2
+	ROLL_OFF_NONE = 0,
+    ROLL_OFF_LOW = 1,
+    ROLL_OFF_MEDIUM = 2,
+    ROLL_OFF_HIGH = 3
 } eRollOff;
 
 typedef enum

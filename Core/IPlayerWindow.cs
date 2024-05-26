@@ -10,6 +10,9 @@ namespace Octopus.Player.Core
 
         public delegate void ClipOpenedEventHandler(IClip clip);
         event ClipOpenedEventHandler ClipOpened;
+
+        public delegate void RawParameterChangedEventHandler();
+        event RawParameterChangedEventHandler RawParameterChanged;
     }
 }
 

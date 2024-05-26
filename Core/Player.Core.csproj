@@ -35,6 +35,7 @@
     <None Remove="Resources\CL\ComputeFunctions.cl.h" />
     <None Remove="Resources\CL\ComputeRollOff.cl.h" />
     <None Remove="Resources\CL\ComputeToneMapOperator.cl.h" />
+    <None Remove="Resources\CL\Gamma.cl.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +64,7 @@
     <EmbeddedResource Include="Resources\CL\ComputeFunctions.cl.h" />
     <EmbeddedResource Include="Resources\CL\RollOff.cl.h" />
     <EmbeddedResource Include="Resources\CL\ToneMapOperator.cl.h" />
+    <EmbeddedResource Include="Resources\CL\Gamma.cl.h" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />

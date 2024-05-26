@@ -108,7 +108,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         string AddIncludes(string source, Assembly assembly, string[] localResources, ref uint depth)
         {
             depth++;
-            if (depth > 32)
+            if (depth > 64)
                 throw new Exception("OpenCL include depth maximum of 32 reached, check for cycling header dependancy");
 
             const string includeToken = "#include ";

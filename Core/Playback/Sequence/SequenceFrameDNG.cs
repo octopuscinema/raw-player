@@ -184,6 +184,9 @@ namespace Octopus.Player.Core.Playback
 
                     // Set raw to display
                     program.SetArgument(kernel, argumentIndex++, cameraToDisplayColourMatrix);
+
+                    // Highlight roll off
+                    program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.highlightRollOff.GetValueOrDefault(HighlightRollOff.Medium));
                 }
                 
                 // Set linearise table+range

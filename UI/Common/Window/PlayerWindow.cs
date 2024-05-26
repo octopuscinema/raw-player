@@ -35,6 +35,7 @@ namespace Octopus.Player.UI
         private DateTime lastInteraction;
         private float playhead;
         public event IPlayerWindow.ClipOpenedEventHandler ClipOpened;
+        public event IPlayerWindow.RawParameterChangedEventHandler RawParameterChanged;
 
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
@@ -308,6 +309,7 @@ namespace Octopus.Player.UI
                 rawParameters.whiteBalance = whiteBalancePresets[whiteBalanceMenuId];
                 Playback.Clip.RawParameters = rawParameters;
                 NativeWindow.CheckMenuItem(whiteBalanceMenuId);
+                RawParameterChanged?.Invoke();
                 RenderContext.RequestRender();
             }
         }
@@ -332,6 +334,7 @@ namespace Octopus.Player.UI
                 rawParameters.exposure = exposurePresets[exposureMenuId];
                 Playback.Clip.RawParameters = rawParameters;
                 NativeWindow.CheckMenuItem(exposureMenuId);
+                RawParameterChanged?.Invoke();
                 RenderContext.RequestRender();
             }
         }
@@ -360,6 +363,7 @@ namespace Octopus.Player.UI
                     return;
             }
             Playback.Clip.RawParameters = rawParameters;
+            RawParameterChanged?.Invoke();
             RenderContext.RequestRender();
         }
 
@@ -377,8 +381,11 @@ namespace Octopus.Player.UI
                 case "highlightRollOffLow":
                     rawParameters.highlightRollOff = HighlightRollOff.Low;
                     break;
-                case "highlightRollOffHigh":
+                case "highlightRollOffMedium":
                     rawParameters.highlightRollOff = HighlightRollOff.Medium;
+                    break;
+                case "highlightRollOffHigh":
+                    rawParameters.highlightRollOff = HighlightRollOff.High;
                     break;
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
@@ -386,6 +393,7 @@ namespace Octopus.Player.UI
             }
             NativeWindow.CheckMenuItem(id, true);
             Playback.Clip.RawParameters = rawParameters;
+            RawParameterChanged?.Invoke();
             RenderContext.RequestRender();
         }
 
@@ -407,6 +415,7 @@ namespace Octopus.Player.UI
                 // Highlight Roll Off
                 case "highlightRollOffNone":
                 case "highlightRollOffLow":
+                case "highlightRollOffMedium":
                 case "highlightRollOffHigh":
                     if (!NativeWindow.MenuItemIsChecked(id))
                         MenuHighlightRollOffClick(id);
@@ -528,10 +537,6 @@ namespace Octopus.Player.UI
                     Debug.Assert(Playback != null && Playback.Clip != null);
                     if (Playback != null && Playback.Clip != null)
                         NativeWindow.Alert(AlertType.Blank, Playback.Clip.Metadata.ToString() + "\n", "Metadata for '" + Playback.Clip.Metadata.Title + "'");
-                    break;
-
-                // Debayer
-                case "debayerQualityDraft":
                     break;
 
                 // Show frame in folder
@@ -946,12 +951,11 @@ namespace Octopus.Player.UI
 
             NativeWindow.EnableMenuItem("whiteBalance", isColour);
             NativeWindow.EnableMenuItem("colorSpace", isColour);
-            NativeWindow.EnableMenuItem("debayerQuality", isColour);
             NativeWindow.EnableMenuItem("highlightRecovery", isColour);
             NativeWindow.EnableMenuItem("gamutCompression", isColour);
             NativeWindow.EnableMenuItem("highlightRollOff", isColour);
             NativeWindow.CheckMenuItem("highlightRecovery", isColour, false);
-            NativeWindow.CheckMenuItem("highlightRollOffLow", isColour);
+            NativeWindow.CheckMenuItem("highlightRollOffMedium", isColour);
             NativeWindow.CheckMenuItem("gamutCompression", isColour, false);
 
             RenderContext.BackgroundColor = Theme.ClipBackground;

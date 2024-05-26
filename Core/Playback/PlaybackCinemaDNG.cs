@@ -45,10 +45,14 @@ namespace Octopus.Player.Core.Playback
             : base(playerWindow, computeContext, renderContext, bufferDurationFrames)
         {
             SeekFrameMutex = new Mutex();
+
+            PlayerWindow.RawParameterChanged += OnRawParameterChanged;
         }
 
         public override void Dispose()
         {
+            PlayerWindow.RawParameterChanged -= OnRawParameterChanged;
+
             base.Dispose();
             SeekFrameMutex.Dispose();
             SeekFrameMutex = null;
@@ -285,6 +289,26 @@ namespace Octopus.Player.Core.Playback
             SequenceStream.ReclaimReadyFrames();
         }
 
+        public void OnRawParameterChanged()
+        {
+            // If raw parameters changed while not playing, reprocess the frame
+            if ( !IsPlaying && State != State.Empty && IsOpen() )
+            {
+                // TODO: maybe cache this frame as 'pauseFrame' or something
+                var frame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
+                frame.frameNumber = LastDisplayedFrame.Value;// displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
+                frame.Decode(Clip);
+
+                Action discardFrame = () =>
+                {
+                    frame.Dispose();
+                    frame = null;
+                };
+
+                frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, false, discardFrame);
+            }
+        }
+
         private IReadOnlyCollection<string> GpuDefinesForClip(IClip clip)
         {
             Debug.Assert(SupportsClip(clip));
@@ -292,9 +316,6 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(dngMetadata != null);
 
             var defines = new List<string>();
-
-            // Always output Rec709 for now
-            defines.Add("GAMMA_REC709");
 
             switch (dngMetadata.CFAPattern)
             {
@@ -320,9 +341,6 @@ namespace Octopus.Player.Core.Playback
                 default:
                     throw new Exception("Unsupported DNG CFA pattern");
             }
-
-            if ( dngMetadata.LinearizationTable != null && dngMetadata.LinearizationTable.Length > 0 )
-                defines.Add("LINEARIZE");
 
             return defines;
         }

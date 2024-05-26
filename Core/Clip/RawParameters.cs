@@ -13,7 +13,7 @@ namespace Octopus.Player.Core
 
     public enum HighlightRollOff
     {
-        Off = -1,
+        Off,
         Low,
         Medium,
         High
@@ -31,10 +31,18 @@ namespace Octopus.Player.Core
         Rec709
     }
 
+    public enum GammaSpace
+    {
+        Rec709,
+        sRGB,
+        LogC
+    }
+
     public struct RawParameters
     {
         public float? exposure;
         public ToneMappingOperator? toneMappingOperator;
+        public GammaSpace? gammaSpace;
 
         // Colour only
         public Tuple<float, float> whiteBalance;

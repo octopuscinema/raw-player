@@ -12,23 +12,23 @@
 PRIVATE RollOffParams HighlightRollOffParams(eRollOff rollOff)
 {
     RollOffParams params;
-    switch(rolloff) {
+    switch(rollOff) {
     case ROLL_OFF_LOW:
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25f);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.5f);
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-1.5f);
         params.Power = 0.4f;
         params.Strength = 1.0f;
         return params;
     case ROLL_OFF_HIGH:
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25f);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-4.5f);
-        params.Power = 0.2f;
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-3.5f);
+        params.Power = 0.25f;
         params.Strength = 1.0f;
         return params;
     default:
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25f);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-3.5f);
-        params.Power = 0.25f;
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.5f);
+        params.Power = 0.4f;
         params.Strength = 1.0f;
 	    return params;
     }
@@ -37,7 +37,7 @@ PRIVATE RollOffParams HighlightRollOffParams(eRollOff rollOff)
 PRIVATE RollOffParams ShadowRollOffParams(eRollOff rollOff)
 {
     RollOffParams params;
-    switch(rolloff) {
+    switch(rollOff) {
     case ROLL_OFF_LOW: // Low, bottom 2 stops of 12 stop range
         params.OverLevel = 2.0f / 4095.0f;
         params.UnderLevel = 0.0f / 4095.0f;
@@ -70,7 +70,7 @@ PRIVATE RGBHalf4 HighlightRolloff709(RGBHalf4 toneMapped, half4 luminance, eRoll
     {
 	    half rolloff = smoothstep(rollOffParams.UnderLevel, rollOffParams.OverLevel, luminance4[i]);
         half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, 0.0f, 1.0f);
-	    out.RGB[i] = mix(toneMapped, make_half3(luminance4[i]), rolloffMixer);
+	    out.RGB[i] = mix(toneMapped.RGB[i], make_half3(luminance4[i]), rolloffMixer);
     }
 
     return out;

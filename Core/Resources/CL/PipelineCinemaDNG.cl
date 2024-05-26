@@ -1,11 +1,13 @@
 #include "ComputeDefines.cl.h"
 #include "ComputeTypes.cl.h"
 #include "Debayer.cl.h"
+#include "Gamma.cl.h"
 #include "HighlightRecovery.cl.h"
-//#include "ToneMapOperator.cl.h"
+#include "ToneMapOperator.cl.h"
 
 PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlightRecovery highlightRecovery, float3 cameraWhite,
-	float3 cameraWhiteNormalised, float exposure, Matrix4x4 rawToDisplay, eToneMappingOperator toneMappingOperator/*, __read_only image3d_t logToDisplay*/)
+	float3 cameraWhiteNormalised, float exposure, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eToneMappingOperator toneMappingOperator
+	/*, __read_only image3d_t logToDisplay*/)
 {
 	// Apply black and white level
 	half blackWhiteRange = (half)(blackWhiteLevel.y - blackWhiteLevel.x);
@@ -31,8 +33,11 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 		displayRgb.RGB[i] = Matrix3x3MulHalf3(linearRgb.RGB[i], rawToDisplay);
 
 	// Apply tone mapping
-	//if (toneMappingOperator != ToneMappingOperatorNone)
-		//displayRgb = ToneMap(displayRgb, toneMappingOperator);
+	if (toneMappingOperator != TONE_MAP_NONE)
+		displayRgb = ToneMapAndHighlightRollOff(displayRgb, toneMappingOperator, highlightRollOff);
+
+	// Apply gamma
+	displayRgb = ApplyGamma709(displayRgb);
 
 	return displayRgb;
 }
@@ -51,14 +56,18 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 	half4 display = linearIn;
 
 	// Apply tone mapping
+	if (toneMappingOperator != TONE_MAP_NONE)
+		display = ToneMapMono(display, toneMappingOperator);
 
+	// Apply gamma
+	display = ApplyGamma709Mono(display);
 
 	return display;
 }
 
 KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator,
 	/*__read_only image3d_t logToDisplay, */ __write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, __read_only image1d_t linearizeTable, float linearizeTableRange)
+	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, __read_only image1d_t linearizeTable, float linearizeTableRange)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -71,7 +80,8 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 #endif
 
 	// Process
-	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, toneMappingOperator);
+	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay,
+		highlightRollOff, toneMappingOperator);
 
 	// Write out image data
 	int2 outputCoord = inputCoord;
@@ -83,7 +93,7 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 
 KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator,
 	/*__read_only image3d_t logToDisplay, */__write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay)
+	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -96,7 +106,8 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 #endif
 
 	// Process
-	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, toneMappingOperator);
+	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, highlightRollOff,
+		toneMappingOperator);
 
 	// Write out image data
 	int2 outputCoord = inputCoord;
