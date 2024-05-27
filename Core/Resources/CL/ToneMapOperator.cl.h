@@ -96,7 +96,7 @@ PRIVATE GamutCompressParams GetGamut709CompressParams()
 	return params;
 }
 
-PRIVATE RGBHalf4 Gamut709Compression4(RGBHalf4 rgb)
+PRIVATE RGBHalf4 Gamut709Compression(RGBHalf4 rgb)
 {
 	const GamutCompressParams params = GetGamut709CompressParams();
 
@@ -109,7 +109,7 @@ PRIVATE RGBHalf4 Gamut709Compression4(RGBHalf4 rgb)
 	// Calculate scale so compression function passes through distance limit: (x=dl, y=1)
 	float3 s = (make_float3(1.0f) - th) / sqrt(fmax(make_float3(1.001f), dl) - make_float3(1.0f));
 
-	for (uint i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 
 		// Achromatic axis
 		float ac = convert_float(fmax(rgb.RGB[i].x, fmax(rgb.RGB[i].y, rgb.RGB[i].z)));

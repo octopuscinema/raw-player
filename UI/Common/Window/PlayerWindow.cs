@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading;
 
 namespace Octopus.Player.UI
@@ -397,6 +398,59 @@ namespace Octopus.Player.UI
             RenderContext.RequestRender();
         }
 
+        private void OnGammaChanged(GammaSpace? previousGamma, GammaSpace gamma)
+        {
+            if (Playback == null || Playback.Clip == null )
+                return;
+
+            bool isColour = Playback.Clip.Metadata.ColorProfile.HasValue;
+
+            // Disable tone-map, gamut compression, rolloff for log gamma 
+            if (!previousGamma.HasValue || (previousGamma.Value.IsLog() != gamma.IsLog()) )
+            {
+                if ( isColour )
+                {
+                    NativeWindow.EnableMenuItem("gamutCompression", !gamma.IsLog());
+                    NativeWindow.EnableMenuItem("highlightRollOff", !gamma.IsLog());
+                }
+                NativeWindow.EnableMenuItem("toneMapping", !gamma.IsLog());
+            }
+        }
+
+        private void MenuGammaClick(string id)
+        {
+            if (Playback == null || Playback.Clip == null || !Playback.Clip.RawParameters.HasValue)
+                return;
+
+            var rawParameters = Playback.Clip.RawParameters.Value;
+            switch (id)
+            {
+                case "gammaRec709":
+                    rawParameters.gammaSpace = GammaSpace.Rec709;
+                    break;
+                case "gammaSRGB":
+                    rawParameters.gammaSpace = GammaSpace.sRGB;
+                    break;
+                case "gammaLogC3":
+                    rawParameters.gammaSpace = GammaSpace.LogC3;
+                    break;
+                case "gammaLog3G10":
+                    rawParameters.gammaSpace = GammaSpace.Log3G10;
+                    break;
+                case "gammaBMFilmG5":
+                    rawParameters.gammaSpace = GammaSpace.FilmGen5;
+                    break;
+                default:
+                    Debug.Assert(false, "Unhandled menu item: " + id);
+                    return;
+            }
+            NativeWindow.CheckMenuItem(id, true);
+            OnGammaChanged(Playback.Clip.RawParameters.Value.gammaSpace, rawParameters.gammaSpace.Value);
+            Playback.Clip.RawParameters = rawParameters;
+            RawParameterChanged?.Invoke();
+            RenderContext.RequestRender();
+        }
+
         public void MenuItemClick(string id)
         {
             lastInteraction = DateTime.Now;
@@ -443,14 +497,14 @@ namespace Octopus.Player.UI
                         MenuExposureClick(id);
                     break;
 
-                // Colour space
-                case "colorSpaceRec709":
-                    NativeWindow.CheckMenuItem(id);
-                    break;
-
-                // Gamma space
-                case "gammaSpaceRec709":
-                    NativeWindow.CheckMenuItem(id);
+                // Gamma
+                case "gammaRec709":
+                case "gammaSRGB":
+                case "gammaLogC3":
+                case "gammaLog3G10":
+                case "gammaBMFilmG5":
+                    if (!NativeWindow.MenuItemIsChecked(id))
+                        MenuGammaClick(id);
                     break;
 
                 // Help

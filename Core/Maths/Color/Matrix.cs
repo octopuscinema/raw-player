@@ -139,7 +139,7 @@ namespace Octopus.Player.Core.Maths.Color
             return BradfordChromaticAdaptationD50toD65(XYZtoBMDFilmD50());
         }
 
-        public static Matrix3 XYZtoAlexaWideGamutD50()
+        public static Matrix3 XYZtoAlexaWideGamutD65()
         {
             var ConversionMatrix = new Matrix3(
                 new Vector3(1.789066f, -0.482534f, -0.200076f),
@@ -149,9 +149,9 @@ namespace Octopus.Player.Core.Maths.Color
             return ConversionMatrix;
         }
 
-        public static Matrix3 XYZtoAlexaWideGamutD65()
+        public static Matrix3 XYZtoAlexaWideGamutD50()
         {
-            return BradfordChromaticAdaptationD50toD65(XYZtoAlexaWideGamutD50());
+            return BradfordChromaticAdaptationD50toD65(XYZtoAlexaWideGamutD65());
         }
 
         public static Matrix3 XYZtoWideGamutD50()

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Octopus.Player.Core.Maths.Color;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core
 {
@@ -35,7 +37,39 @@ namespace Octopus.Player.Core
     {
         Rec709,
         sRGB,
-        LogC
+        LogC3,
+        Log3G10,
+        FilmGen5
+    }
+
+    public static partial class Extensions
+    {
+        public static bool IsLog(this GammaSpace gamma)
+        {
+            switch (gamma)
+            {
+                case GammaSpace.LogC3:
+                case GammaSpace.sRGB:
+                case GammaSpace.FilmGen5:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static Matrix3 ColourSpaceTransformD50(this GammaSpace gamma)
+        {
+            switch (gamma)
+            {
+                case GammaSpace.Rec709:
+                case GammaSpace.sRGB:
+                    return Matrix.XYZToRec709D50();
+                case GammaSpace.LogC3:
+                    return Matrix.XYZtoAlexaWideGamutD50();
+                default:
+                    return Matrix.XYZToRec709D50();
+            }
+        }
     }
 
     public struct RawParameters

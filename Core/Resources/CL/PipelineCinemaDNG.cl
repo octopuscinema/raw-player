@@ -6,8 +6,8 @@
 #include "ToneMapOperator.cl.h"
 
 PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlightRecovery highlightRecovery, float3 cameraWhite,
-	float3 cameraWhiteNormalised, float exposure, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eToneMappingOperator toneMappingOperator, eGamma gamma
-	/*, __read_only image3d_t logToDisplay*/)
+	float3 cameraWhiteNormalised, float exposure, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression,
+	eToneMappingOperator toneMappingOperator, eGamma gamma /*, __read_only image3d_t logToDisplay*/)
 {
 	// Apply black and white level
 	half blackWhiteRange = (half)(blackWhiteLevel.y - blackWhiteLevel.x);
@@ -32,11 +32,19 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 	for(int i = 0; i < 4; i++)
 		displayRgb.RGB[i] = Matrix3x3MulHalf3(linearRgb.RGB[i], rawToDisplay);
 
-	// Apply tone mapping and rolloff
-	if (toneMappingOperator == TONE_MAP_NONE)
-		displayRgb = HighlightRollOff709(displayRgb, Luminance4(displayRgb), highlightRollOff);
-	else
-		displayRgb = ToneMapAndHighlightRollOff(displayRgb, toneMappingOperator, highlightRollOff);
+	// Tone mapping, roll-off and gamut compression for Rec709/sRGB only
+	if ( gamma == GAMMA_REC709 || gamma == GAMMA_SRGB ) {
+
+		// Apply tone mapping and rolloff
+		if (toneMappingOperator == TONE_MAP_NONE)
+			displayRgb = HighlightRollOff709(displayRgb, Luminance4(displayRgb), highlightRollOff);
+		else
+			displayRgb = ToneMapAndHighlightRollOff(displayRgb, toneMappingOperator, highlightRollOff);
+
+		// Apply gamut compression
+		if ( gamutCompression == GAMUT_COMPRESSION_ON )
+			displayRgb = Gamut709Compression(displayRgb);
+	}
 
 	// Apply gamma
 	switch(gamma) {
@@ -45,6 +53,9 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 		break;
 	case GAMMA_SRGB:
 		displayRgb = ApplyGammaSRGB(displayRgb);
+		break;
+	case GAMMA_LOGC3:
+		displayRgb = ApplyGammaLogC4(displayRgb);
 		break;
 	default:
 		break;
@@ -66,8 +77,8 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 	// Prepare for display
 	half4 display = linearIn;
 
-	// Apply tone mapping
-	if (toneMappingOperator != TONE_MAP_NONE)
+	// Apply tone mapping for Rec709/sRGB only
+	if ( (gamma == GAMMA_REC709 || gamma == GAMMA_SRGB) && toneMappingOperator != TONE_MAP_NONE)
 		display = ToneMapMono(display, toneMappingOperator);
 
 	// Apply gamma
@@ -87,7 +98,8 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 
 KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
 	/*__read_only image3d_t logToDisplay, */ __write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, __read_only image1d_t linearizeTable, float linearizeTableRange)
+	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression,
+	__read_only image1d_t linearizeTable, float linearizeTableRange)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -101,7 +113,7 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 
 	// Process
 	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay,
-		highlightRollOff, toneMappingOperator, gamma);
+		highlightRollOff, gamutCompression, toneMappingOperator, gamma);
 
 	// Write out image data
 	int2 outputCoord = inputCoord;
@@ -113,7 +125,7 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 
 KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
 	/*__read_only image3d_t logToDisplay, */__write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff)
+	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
@@ -126,7 +138,7 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 #endif
 
 	// Process
-	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, highlightRollOff,
+	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, highlightRollOff, gamutCompression,
 		toneMappingOperator, gamma);
 
 	// Write out image data

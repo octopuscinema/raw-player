@@ -100,14 +100,15 @@ typedef enum
 {
 	GAMMA_REC709 = 0,
 	GAMMA_SRGB = 1,
-	GAMMA_LOGC = 2
+	GAMMA_LOGC3 = 2,
+	GAMMA_LOG3G10 = 3,
+	GAMMA_FILMGEN5 = 4
 } eGamma;
 
 typedef enum
 {
 	TONE_MAP_NONE = 0,
-	TONE_MAP_SDR = 1,
-	TONE_MAP_LOG = 2
+	TONE_MAP_SDR = 1
 } eToneMappingOperator;
 
 typedef enum

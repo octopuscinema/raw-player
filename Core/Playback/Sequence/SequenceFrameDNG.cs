@@ -157,7 +157,8 @@ namespace Octopus.Player.Core.Playback
                 program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
 
                 // Gamma
-                program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.gammaSpace.GetValueOrDefault(GammaSpace.Rec709));
+                var gammaSpace = clip.RawParameters.Value.gammaSpace.GetValueOrDefault(GammaSpace.Rec709);
+                program.SetArgument(kernel, argumentIndex++, (int)gammaSpace);
 
                 // Apply log to display LUT
                 //program.SetArgument(kernel, argumentIndex++, logToDisplayLUT);
@@ -172,7 +173,7 @@ namespace Octopus.Player.Core.Playback
 
                     // Combine camera to xyz/xyz to display colour matrices
                     var cameraToXYZD50Matrix = metadata.ColorProfile.Value.CalculateCameraToXYZD50(clip.RawParameters.Value.whiteBalance);
-                    var xyzToDisplayColourMatrix = Maths.Color.Matrix.XYZToRec709D50();
+                    var xyzToDisplayColourMatrix = gammaSpace.ColourSpaceTransformD50();
                     var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
 
                     // Calculate camera white in RAW space
@@ -190,6 +191,9 @@ namespace Octopus.Player.Core.Playback
 
                     // Highlight roll off
                     program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.highlightRollOff.GetValueOrDefault(HighlightRollOff.Medium));
+
+                    // Gamut compression
+                    program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.gamutCompression.GetValueOrDefault(GamutCompression.Rec709));
                 }
                 
                 // Set linearise table+range
