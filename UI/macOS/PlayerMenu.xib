@@ -181,6 +181,45 @@
                                 </menu>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="14H-78-4wj"/>
+                            <menuItem title="Gamma" id="fzd-aC-qTf">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Gamma" autoenablesItems="NO" id="EUI-dm-rDn">
+                                    <items>
+                                        <menuItem title="Rec. 709" state="on" identifier="gammaRec709" id="AB4-5t-Ttm">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="mrH-vs-zRV"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="sRGB" identifier="gammaSRGB" id="bno-te-XeD">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="u86-2x-N47"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="sIN-58-rG9"/>
+                                        <menuItem title="ARRI LogC3" identifier="gammaLogC3" id="6sZ-wA-orP">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="M32-PR-GC8"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="RED LOG3G10" identifier="gammaLog3G10" id="mUi-oj-Too">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="M8g-wL-WTC"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Blackmagic Film Gen. 5" identifier="gammaBMFilmG5" id="vtu-aN-12Q">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="P8Y-Mm-l3b"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="5lW-pJ-xD9"/>
                             <menuItem title="Advanced" id="U2t-Ra-MCz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Advanced" autoenablesItems="NO" id="Hq3-64-8Xz">
@@ -236,49 +275,10 @@
                                                 <action selector="doClick:" target="-1" id="RV7-Xp-YVs"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="Pi5-6R-WX8"/>
-                                        <menuItem title="Gamma" id="fzd-aC-qTf">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <menu key="submenu" title="Gamma" autoenablesItems="NO" id="EUI-dm-rDn">
-                                                <items>
-                                                    <menuItem title="Rec. 709" state="on" identifier="gammaRec709" id="AB4-5t-Ttm">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="doClick:" target="-1" id="mrH-vs-zRV"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="sRGB" identifier="gammaSRGB" id="bno-te-XeD">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="doClick:" target="-1" id="u86-2x-N47"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem isSeparatorItem="YES" id="sIN-58-rG9"/>
-                                                    <menuItem title="ARRI LogC3" identifier="gammaLogC3" id="6sZ-wA-orP">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="doClick:" target="-1" id="M32-PR-GC8"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="RED LOG3G10" identifier="gammaLog3G10" id="mUi-oj-Too">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="doClick:" target="-1" id="M8g-wL-WTC"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                    <menuItem title="Blackmagic Film Gen. 5" identifier="gammaBMFilmG5" id="vtu-aN-12Q">
-                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                        <connections>
-                                                            <action selector="doClick:" target="-1" id="P8Y-Mm-l3b"/>
-                                                        </connections>
-                                                    </menuItem>
-                                                </items>
-                                            </menu>
-                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="5lW-pJ-xD9"/>
+                            <menuItem isSeparatorItem="YES" id="Pi5-6R-WX8"/>
                             <menuItem title="Metadata..." identifier="metadata" id="4L7-2y-W5k">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>

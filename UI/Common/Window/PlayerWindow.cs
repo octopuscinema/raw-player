@@ -942,8 +942,10 @@ namespace Octopus.Player.UI
             NativeWindow.SetSliderEnabled("seekBar", true);
             NativeWindow.SetSliderValue("seekBar", playhead);
             NativeWindow.EnableMenuItem("clip", true);
+            NativeWindow.EnableMenuItem("toneMapping", true);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
+            NativeWindow.CheckMenuItem("gammaRec709");
             NativeWindow.DropAreaVisible = false;
 
             bool isColour = false;

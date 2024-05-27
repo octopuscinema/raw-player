@@ -55,7 +55,7 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 		displayRgb = ApplyGammaSRGB(displayRgb);
 		break;
 	case GAMMA_LOGC3:
-		displayRgb = ApplyGammaLogC4(displayRgb);
+		displayRgb = ApplyGammaLogC3(displayRgb);
 		break;
 	default:
 		break;
@@ -88,6 +88,9 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 		break;
 	case GAMMA_SRGB:
 		display = ApplyGammaSRGBMono(display);
+		break;
+	case GAMMA_LOGC3:
+		display = ApplyGammaLogC3Mono(display);
 		break;
 	default:
 		break;

@@ -49,7 +49,7 @@ namespace Octopus.Player.Core
             switch (gamma)
             {
                 case GammaSpace.LogC3:
-                case GammaSpace.sRGB:
+                case GammaSpace.Log3G10:
                 case GammaSpace.FilmGen5:
                     return true;
                 default:

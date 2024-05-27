@@ -13,12 +13,10 @@ PRIVATE RGBHalf4 ApplyGamma709(RGBHalf4 linearRgb)
     RGBHalf4 out;
     for(int i = 0; i < 4; i++)
     {
-        half3 Path1 = linearRgb.RGB[i] * 4.5f;
-        half3 Path2 = make_half3(a) * pow(linearRgb.RGB[i], make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
+        half3 path1 = linearRgb.RGB[i] * 4.5f;
+        half3 path2 = make_half3(a) * pow(linearRgb.RGB[i], make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
 
-        out.RGB[i] = make_half3(linearRgb.RGB[i].x < b ? Path1.x : Path2.x,
-            linearRgb.RGB[i].y < b ? Path1.y : Path2.y,
-            linearRgb.RGB[i].z < b ? Path1.z : Path2.z);
+        out.RGB[i] = select(path2, path1, isgreater(make_half3(b),linearRgb.RGB[i]));
     }
     return out;
 }
@@ -44,12 +42,10 @@ PRIVATE RGBHalf4 ApplyGammaSRGB(RGBHalf4 linearRgb)
     RGBHalf4 out;
     for(int i = 0; i < 4; i++)
     {
-        half3 Path1 = linearRgb.RGB[i] * 12.92f;
-        half3 Path2 = make_half3(a) * pow(linearRgb.RGB[i], make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
+        half3 path1 = linearRgb.RGB[i] * 12.92f;
+        half3 path2 = make_half3(a) * pow(linearRgb.RGB[i], make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
 
-        out.RGB[i] = make_half3(linearRgb.RGB[i].x < b ? Path1.x : Path2.x,
-            linearRgb.RGB[i].y < b ? Path1.y : Path2.y,
-            linearRgb.RGB[i].z < b ? Path1.z : Path2.z);
+        out.RGB[i] = select(path2, path1, isgreater(make_half3(b),linearRgb.RGB[i]));
     }
     return out;
 }
@@ -66,28 +62,46 @@ PRIVATE half4 ApplyGammaSRGBMono(half4 linearMono)
     return select(Path2, Path1, isgreater(make_half4(b), linearMono));
 }
 
-PRIVATE RGBHalf4 ApplyGammaLogC4(RGBHalf4 linearRgb)
+PRIVATE RGBHalf4 ApplyGammaLogC3(RGBHalf4 linearRgb)
 {
     // Constants
-    half a = (pow(2.0f, 18.0f) - 16.0f) / 117.45f;
-    half b = (1023.0f - 95.0f) / 1023.0f;
-    half c = 95.0f / 1023.0f;
-    half s = (7.0f * log(2.0f) * pow(2.0f, 7.0f - 14.0f * c / b)) / (a * b);
-    half t = (pow(2.0f, 14.0f * (-c / b) + 6.0f) - 64.0f) / a;
+    half cut = 0.010591f;
+    half a = 5.555556f;
+    half b = 0.052272f;
+    half c = 0.247190f;
+    half d = 0.385537f;
+    half e = 5.367655f;
+    half f = 0.092809f;
 
     RGBHalf4 out;
     for(int i = 0; i < 4; i++)
     {
         half3 x = linearRgb.RGB[i];
-        half3 path1 = (x - make_half3(t)) / s;
-        half3 path2 = (log2(make_half3(a) * x + make_half3(64.0f)) - make_half3(6.0f)) / 14.0f * b + c;
 
-        out.RGB[i] = make_half3(x.x < t ? path1.x : path2.x,
-            x.y < t ? path1.y : path2.y,
-            x.z < t ? path1.z : path2.z);
+        half3 path1 = e * x + make_half3(f);
+        half3 path2 = c * log10(a * x + make_half3(b)) + make_half3(d);
+
+        out.RGB[i] = select(path1, path2, isgreater(x, make_half3(cut)));
     }
 
     return out;
+}
+
+PRIVATE half4 ApplyGammaLogC3Mono(half4 linearMono)
+{
+    // Constants
+    half cut = 0.010591f;
+    half a = 5.555556f;
+    half b = 0.052272f;
+    half c = 0.247190f;
+    half d = 0.385537f;
+    half e = 5.367655f;
+    half f = 0.092809f;
+
+    half4 path1 = e * linearMono + make_half4(f);
+    half4 path2 = c * log10(a * linearMono + make_half4(b)) + make_half4(d);
+
+    return select(path1, path2, isgreater(linearMono, make_half4(cut)));
 }
 
 #endif
