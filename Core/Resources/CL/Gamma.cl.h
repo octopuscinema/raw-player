@@ -35,18 +35,23 @@ PRIVATE half4 ApplyGamma709Mono(half4 linearMono)
     return select(Path2, Path1, isgreater(make_half4(b), linearMono));
 }
 
-PRIVATE half3 ApplyGammaSRGB(half3 linearRgb)
+PRIVATE RGBHalf4 ApplyGammaSRGB(RGBHalf4 linearRgb)
 {
     half a = 1.055f;
     half b = 0.0031308f;
     half gammaPower = 1.0f / 2.4f;
 
-    half3 Path1 = linearRgb * 12.92f;
-    half3 Path2 = make_half3(a) * pow(linearRgb, make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
+    RGBHalf4 out;
+    for(int i = 0; i < 4; i++)
+    {
+        half3 Path1 = linearRgb.RGB[i] * 12.92f;
+        half3 Path2 = make_half3(a) * pow(linearRgb.RGB[i], make_half3(gammaPower)) - (make_half3(a) - make_half3(1.0f));
 
-    return make_half3(linearRgb.x < b ? Path1.x : Path2.x,
-        linearRgb.y < b ? Path1.y : Path2.y,
-        linearRgb.z < b ? Path1.z : Path2.z);
+        out.RGB[i] = make_half3(linearRgb.RGB[i].x < b ? Path1.x : Path2.x,
+            linearRgb.RGB[i].y < b ? Path1.y : Path2.y,
+            linearRgb.RGB[i].z < b ? Path1.z : Path2.z);
+    }
+    return out;
 }
 
 PRIVATE half4 ApplyGammaSRGBMono(half4 linearMono)

@@ -52,7 +52,7 @@ RGBHalf4 ToneMapSDRAndHighlightRollOff(RGBHalf4 rgbLinearIn, half latitudeBoostS
  	half4 limiterStrength4 = make_half4(1.0f);
 	half4 luminance4 = Luminance4(exposed);
 	half4 newLuminance4 = luminance4 / (luminance4+limiterStrength4);
-	return HighlightRolloff709(ModifyLuminance4(exposed, luminance4, newLuminance4), newLuminance4, rollOff);
+	return HighlightRollOff709(ModifyLuminance4(exposed, luminance4, newLuminance4), newLuminance4, rollOff);
 }
 
 half4 ToneMapMono(half4 monoLinearIn, eToneMappingOperator toneMapOperator)

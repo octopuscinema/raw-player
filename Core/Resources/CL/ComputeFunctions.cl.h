@@ -34,4 +34,16 @@ PRIVATE half LuminanceWeight(half3 rgbLinear, half3 weights)
 	return dot(rgbLinear, weights);
 }
 
+PRIVATE half IndexHalf3(half3 vec, int index)
+{
+	half array[3] = { vec.x, vec.y, vec.z };
+	return array[index];
+}
+
+PRIVATE half IndexHalf4(half4 vec, int index)
+{
+	half array[4] = { vec.x, vec.y, vec.z, vec.w };
+	return array[index];
+}
+
 #endif

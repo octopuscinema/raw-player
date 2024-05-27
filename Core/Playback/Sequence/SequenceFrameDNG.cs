@@ -156,6 +156,9 @@ namespace Octopus.Player.Core.Playback
                 // Tone mapping operator
                 program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.toneMappingOperator.GetValueOrDefault(ToneMappingOperator.SDR));
 
+                // Gamma
+                program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.gammaSpace.GetValueOrDefault(GammaSpace.Rec709));
+
                 // Apply log to display LUT
                 //program.SetArgument(kernel, argumentIndex++, logToDisplayLUT);
 

@@ -15,14 +15,14 @@ PRIVATE RollOffParams HighlightRollOffParams(eRollOff rollOff)
     switch(rollOff) {
     case ROLL_OFF_LOW:
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25f);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-1.5f);
-        params.Power = 0.4f;
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.0f);
+        params.Power = 0.5f;
         params.Strength = 1.0f;
         return params;
     case ROLL_OFF_HIGH:
         params.OverLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(0.25f);
-        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-3.5f);
-        params.Power = 0.25f;
+        params.UnderLevel = WHITE_CLIP_LEVEL_NORMALISED * STOPS_TO_LIN(-2.5f);
+        params.Power = 0.3f;
         params.Strength = 1.0f;
         return params;
     default:
@@ -59,24 +59,23 @@ PRIVATE RollOffParams ShadowRollOffParams(eRollOff rollOff)
     }
 }
 
-PRIVATE RGBHalf4 HighlightRolloff709(RGBHalf4 toneMapped, half4 luminance, eRollOff rollOff)
+PRIVATE RGBHalf4 HighlightRollOff709(RGBHalf4 toneMapped, half4 luminance, eRollOff rollOff)
 {
 	RollOffParams rollOffParams = HighlightRollOffParams(rollOff);
 
 	// Create a saturation roll-off towards the highlights by blending towards neutral
-    half luminance4[4] = { luminance.x, luminance.y, luminance.z, luminance.w };
     RGBHalf4 out;
     for(int i = 0; i < 4; i++)
     {
-	    half rolloff = smoothstep(rollOffParams.UnderLevel, rollOffParams.OverLevel, luminance4[i]);
+	    half rolloff = smoothstep(rollOffParams.UnderLevel, rollOffParams.OverLevel, IndexHalf4(luminance,i));
         half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, 0.0f, 1.0f);
-	    out.RGB[i] = mix(toneMapped.RGB[i], make_half3(luminance4[i]), rolloffMixer);
+	    out.RGB[i] = mix(toneMapped.RGB[i], make_half3(IndexHalf4(luminance,i)), rolloffMixer);
     }
 
     return out;
 }
 
-PRIVATE half3 ShadowRolloff(half3 rgbLinear, half3 cameraWhiteNormalised, half rgbLuminance, half3 rawLuminanceWeight, eRollOff rollOff)
+PRIVATE half3 ShadowRollOff(half3 rgbLinear, half3 cameraWhiteNormalised, half rgbLuminance, half3 rawLuminanceWeight, eRollOff rollOff)
 {
     RollOffParams rollOffParams = ShadowRollOffParams(rollOff);
 
