@@ -44,6 +44,21 @@ namespace Octopus.Player.Core
 
     public static partial class Extensions
     {
+        public static string DefaultLutName(this GammaSpace gamma)
+        {
+            switch (gamma)
+            {
+                case GammaSpace.LogC3:
+                    return "ARRI LogC3 to Rec. 709";
+                case GammaSpace.Log3G10:
+                    return "RED Log3G10 to Rec. 709";
+                case GammaSpace.FilmGen5:
+                    return "Blackmagic Film Gen. 5 to Rec. 709";
+                default:
+                    return null;
+            }
+        }
+
         public static bool IsLog(this GammaSpace gamma)
         {
             switch (gamma)

@@ -405,7 +405,8 @@ namespace Octopus.Player.UI
 
             bool isColour = Playback.Clip.Metadata.ColorProfile.HasValue;
 
-            // Disable tone-map, gamut compression, rolloff for log gamma 
+            // Disable tone-map, gamut compression, rolloff for log gamma
+            // Enable LUTs for log gamma
             if (!previousGamma.HasValue || (previousGamma.Value.IsLog() != gamma.IsLog()) )
             {
                 if ( isColour )
@@ -414,7 +415,12 @@ namespace Octopus.Player.UI
                     NativeWindow.EnableMenuItem("highlightRollOff", !gamma.IsLog());
                 }
                 NativeWindow.EnableMenuItem("toneMapping", !gamma.IsLog());
+                NativeWindow.EnableMenuItem("lut", gamma.IsLog());
             }
+
+            // Set the 709 lut name
+            if (gamma.IsLog())
+                NativeWindow.SetMenuItemTitle("lut709", gamma.DefaultLutName());
         }
 
         private void MenuGammaClick(string id)
