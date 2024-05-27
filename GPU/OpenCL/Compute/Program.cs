@@ -178,7 +178,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         public void SetArgument(string function, uint index, in Vector3 value)
         {
-            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector3.SizeInBytes, in value));
+            Vector4 vector4 = new Vector4(value);
+            Debug.CheckError(Context.Handle.SetKernelArg(Kernels[function], index, (nuint)Vector4.SizeInBytes, in vector4));
         }
 
         public void SetArgument(string function, uint index, in Matrix3 value)
