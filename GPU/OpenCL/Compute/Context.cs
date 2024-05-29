@@ -365,6 +365,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return new Image2D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name);
         }
 
+        public IImage3D CreateImage(in Vector3i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, byte[] imageData,
+           MemoryLocation memoryLocation = MemoryLocation.Default, string name = null)
+        {
+            return new Image3D(this, dimensions, format, memoryDeviceAccess, memoryHostAccess, memoryLocation, name, imageData);
+        }
+
         public IImage2D CreateImage(Render.IContext renderContext, Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess)
         {
             return new Image2D(this, renderContext, texture, memoryDeviceAccess);

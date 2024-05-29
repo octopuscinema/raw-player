@@ -34,7 +34,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
             // Load and preprocess source
             var sourceStream = assembly.GetManifestResourceStream(resourceName);
-            StreamReader reader = new StreamReader(sourceStream);
+            var reader = new StreamReader(sourceStream);
             string[] source = new string[] { Preprocess(reader.ReadToEnd(), assembly, defines) };
             reader.Dispose();
             sourceStream.Dispose();

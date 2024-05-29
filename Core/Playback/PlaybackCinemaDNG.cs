@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -27,6 +28,8 @@ namespace Octopus.Player.Core.Playback
 
         private IImage1D LinearizeTable { get; set; }
 
+        private IO.LUT.LUT3D LUT { get; set; }
+
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
@@ -39,7 +42,7 @@ namespace Octopus.Player.Core.Playback
 
         byte[] displayFrameStaging;
         ITexture displayFrameGPU;
-        GPU.Compute.IImage2D displayFrameCompute;
+        IImage2D displayFrameCompute;
 
         public PlaybackCinemaDNG(IPlayerWindow playerWindow, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext)
             : base(playerWindow, computeContext, renderContext, bufferDurationFrames)
@@ -546,6 +549,63 @@ namespace Octopus.Player.Core.Playback
             }
 
             return ret;
+        }
+
+        public override void RemoveLUT()
+        {
+            if ( LUT != null )
+            {
+                LUT.Dispose();
+                LUT = null;
+            }
+        }
+
+        public override Error ApplyLUT(string resourceName)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resources = assembly.GetManifestResourceNames();
+            foreach (string resource in resources)
+            {
+                if (resource.Contains(resourceName))
+                {
+                    if (LUT != null)
+                    {
+                        LUT.Dispose();
+                        LUT = null;
+                    }
+
+                    try
+                    {
+                        LUT = new IO.LUT.LUT3D(ComputeContext, assembly, resource);
+                        return Error.None;
+                    }
+                    catch
+                    {
+                        return Error.InvalidLutFile;
+                    }
+                }
+            }
+
+            return Error.LutNotFound;
+        }
+
+        public override Error ApplyLUT(Uri path)
+        {
+            LUT.Dispose();
+            LUT = null;
+
+            if (!File.Exists(path.AbsolutePath))
+                return Error.LutNotFound;
+
+            try
+            {
+                LUT = new IO.LUT.LUT3D(ComputeContext, path.AbsolutePath);
+                return Error.None;
+            }
+            catch
+            {
+                return Error.InvalidLutFile;
+            }
         }
     }
 }

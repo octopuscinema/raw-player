@@ -83,6 +83,7 @@ namespace Octopus.Player.Core.Playback
             Velocity = PlaybackVelocity.Forward1x;
         }
 
+
         public abstract void Close();
         public abstract Error Open(IClip clip);
         public bool IsOpen()
@@ -342,6 +343,9 @@ namespace Octopus.Player.Core.Playback
             if (IsOpen())
                 Close();
         }
+
+        public abstract Error ApplyLUT(string resourceName);
+        public abstract Error ApplyLUT(Uri path);
+        public abstract void RemoveLUT();
     }
 }
-

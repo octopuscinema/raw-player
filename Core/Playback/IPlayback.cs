@@ -73,6 +73,11 @@ namespace Octopus.Player.Core.Playback
         event FrameDisplayedEventHandler SeekFrameDisplayed;
         event FrameMissingEventHandler SeekFrameMissing;
 
+        // LUT
+        Error ApplyLUT(string resourceName);
+        Error ApplyLUT(Uri path);
+		void RemoveLUT();
+
         // Clip control
         Error Open(IClip clip);
 		bool IsOpen();

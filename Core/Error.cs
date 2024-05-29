@@ -18,6 +18,8 @@ namespace Octopus.Player.Core
         FrameRequestError,
         NotImplmeneted,
         SeekRequestAlreadyActive,
-        ComputeError
+        ComputeError,
+        InvalidLutFile,
+        LutNotFound
     }
 }

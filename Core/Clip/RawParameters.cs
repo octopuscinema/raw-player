@@ -59,6 +59,21 @@ namespace Octopus.Player.Core
             }
         }
 
+        public static string DefaultLutResource(this GammaSpace gamma)
+        {
+            switch (gamma)
+            {
+                case GammaSpace.LogC3:
+                    return "Arri Alexa LogC3 to Rec709.dat";
+                case GammaSpace.Log3G10:
+                    return "RWG_Log3G10_to_REC709_BT1886_with_LOW_CONTRAST_and_R_3_Soft_size_33.cube";
+                case GammaSpace.FilmGen5:
+                    return "Blackmagic Gen 5 Film to Video.cube";
+                default:
+                    return null;
+            }
+        }
+
         public static bool IsLog(this GammaSpace gamma)
         {
             switch (gamma)

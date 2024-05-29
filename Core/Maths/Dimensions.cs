@@ -15,6 +15,11 @@ namespace Octopus.Player.Core.Maths
             return vector.X * vector.Y;
         }
 
+        public static int Volume(this Vector3i vector)
+        {
+            return vector.X * vector.Y * vector.Z;
+        }
+
         public static void FitAspectRatio(this Vector2i vector, Rational aspectRatio, out Vector2i position, out Vector2i size)
         {
             var aspectRatioFlt = aspectRatio.ToSingle();

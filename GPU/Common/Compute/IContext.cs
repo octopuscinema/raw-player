@@ -25,8 +25,13 @@ namespace Octopus.Player.GPU.Compute
 
         IImage1D CreateImage(int dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, byte[] imageData,
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
+
         IImage2D CreateImage(in Vector2i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess,
             MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
+
+        IImage3D CreateImage(in Vector3i dimensions, Format format, MemoryDeviceAccess memoryDeviceAccess, MemoryHostAccess memoryHostAccess, byte[] imageData,
+            MemoryLocation memoryLocation = MemoryLocation.Default, string name = null);
+
         IImage2D CreateImage(Render.IContext renderContext, Render.ITexture texture, MemoryDeviceAccess memoryDeviceAccess);
 
         IQueue CreateQueue(string name = null);

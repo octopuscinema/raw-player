@@ -11,4 +11,30 @@ namespace Octopus.Player.GPU
         RGB16,
         R16
     }
+
+    public static partial class Extensions
+    {
+        public static int SizeBytes(this Format format)
+        {
+            switch (format)
+            {
+                case Format.RGBA8:
+                case Format.RGBX8:
+                    return 4;
+                case Format.RGB8:
+                    return 3;
+                case Format.RGBA16:
+                case Format.RGBX16:
+                    return 8;
+                case Format.R8:
+                    return 1;
+                case Format.R16:
+                    return 2;
+                case Format.RGB16:
+                    return 6;
+                default:
+                    throw new System.Exception("Unhandled GPU format");
+            }
+        }
+    }
 }

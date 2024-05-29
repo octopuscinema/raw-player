@@ -392,7 +392,7 @@ namespace Octopus.Player.UI
                     Debug.Assert(false, "Unhandled menu item: " + id);
                     return;
             }
-            NativeWindow.CheckMenuItem(id, true);
+            NativeWindow.CheckMenuItem(id);
             Playback.Clip.RawParameters = rawParameters;
             RawParameterChanged?.Invoke();
             RenderContext.RequestRender();
@@ -418,9 +418,12 @@ namespace Octopus.Player.UI
                 NativeWindow.EnableMenuItem("lut", gamma.IsLog());
             }
 
-            // Set the 709 lut name
             if (gamma.IsLog())
+            {
+                Playback.RemoveLUT();
+                NativeWindow.CheckMenuItem("lutNone");
                 NativeWindow.SetMenuItemTitle("lut709", gamma.DefaultLutName());
+            }
         }
 
         private void MenuGammaClick(string id)
@@ -455,6 +458,30 @@ namespace Octopus.Player.UI
             Playback.Clip.RawParameters = rawParameters;
             RawParameterChanged?.Invoke();
             RenderContext.RequestRender();
+        }
+
+        private void MenuLUTClick(string id)
+        {
+            if (Playback == null || Playback.Clip == null || !Playback.Clip.RawParameters.HasValue)
+                return;
+
+            switch (id)
+            {
+                case "lutNone":
+                    Playback.RemoveLUT();
+                    NativeWindow.CheckMenuItem(id, true);
+                    break;
+                case "lut709":
+                    if (Playback.Clip.RawParameters.Value.gammaSpace.HasValue && Playback.Clip.RawParameters.Value.gammaSpace.Value.IsLog())
+                    {
+                        if ( Playback.ApplyLUT(Playback.Clip.RawParameters.Value.gammaSpace.Value.DefaultLutResource()) == Error.None)
+                            NativeWindow.CheckMenuItem(id, true);
+                    }
+                    break;
+                default:
+                    Debug.Assert(false, "Unhandled menu item: " + id);
+                    break;
+            }
         }
 
         public void MenuItemClick(string id)
@@ -511,6 +538,13 @@ namespace Octopus.Player.UI
                 case "gammaBMFilmG5":
                     if (!NativeWindow.MenuItemIsChecked(id))
                         MenuGammaClick(id);
+                    break;
+
+                // LUT
+                case "lut709":
+                case "lutNone":
+                    if (!NativeWindow.MenuItemIsChecked(id))
+                        MenuLUTClick(id);
                     break;
 
                 // Help
@@ -949,6 +983,7 @@ namespace Octopus.Player.UI
             NativeWindow.SetSliderValue("seekBar", playhead);
             NativeWindow.EnableMenuItem("clip", true);
             NativeWindow.EnableMenuItem("toneMapping", true);
+            NativeWindow.EnableMenuItem("lut", false);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
             NativeWindow.CheckMenuItem("gammaRec709");
