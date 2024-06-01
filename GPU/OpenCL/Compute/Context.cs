@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -49,21 +50,20 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public Api Api { get { return Api.OpenCL; } }
 
         public string ApiVersion { get; private set; }
-
         public string ApiName{ get; private set; }
-
         public string ApiVendor { get; private set; }
 
-        public IQueue DefaultQueue { get { return defaultQueue; } }
+        public Vector3i ApiMaxImageDimensions3D { get; private set; }
+        public bool ApiSupportsFp16 { get; set; }
 
-        public bool SupportsFp16 { get; set; }
+        public IQueue DefaultQueue { get { return defaultQueue; } }
 
         internal CL Handle { get; private set; }
         internal nint NativeHandle { get; set; }
         internal nint NativeDevice { get; set; }
 
         private bool SupportsGLSharing { get; set; }
-        private bool SupportsAutoGLSync { get; set; }
+        private bool ApiSupportsAutoGLSync { get; set; }
 
         private IList<Program> programs;
         private IQueue defaultQueue;
@@ -124,12 +124,16 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 NativeDevice = devices[0];
             }
 
-            SupportsAutoGLSync = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_gl_event");
-            SupportsFp16 = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_fp16");
+            ApiSupportsAutoGLSync = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_gl_event");
+            ApiSupportsFp16 = DeviceExtensionSupported(Handle, NativeDevice, "cl_khr_fp16");
             ApiName = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Name);
             ApiVendor = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Vendor);
             ApiVersion = GetDeviceInfo(Handle, NativeDevice, DeviceInfo.Version);
             Trace.WriteLine("Created OpenCL context for device: " + ApiName);
+
+            ApiMaxImageDimensions3D = new Vector3i((int)GetDeviceInfoInt(Handle, NativeDevice, DeviceInfo.Image3DMaxWidth),
+                (int)GetDeviceInfoInt(Handle, NativeDevice, DeviceInfo.Image3DMaxHeight),
+                (int)GetDeviceInfoInt(Handle, NativeDevice, DeviceInfo.Image3DMaxDepth));
 
             defaultQueue = CreateQueue("defaultQueue");
         }
@@ -144,7 +148,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             nuint parameterSize;
             unsafe
             {
-                handle.GetDeviceInfo(device, deviceInfo, 0, null, out parameterSize);
+                Debug.CheckError(handle.GetDeviceInfo(device, deviceInfo, 0, null, out parameterSize));
             }
 
             byte[] parameter = new byte[parameterSize];
@@ -152,7 +156,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             {
                 fixed (byte* p = parameter)
                 {
-                    handle.GetDeviceInfo(device, deviceInfo, parameterSize, p, null);
+                    Debug.CheckError(handle.GetDeviceInfo(device, deviceInfo, parameterSize, p, null));
                 }
             }
             if (parameter.Length > 0 && parameter.Last() == 0)
@@ -160,12 +164,21 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return System.Text.Encoding.ASCII.GetString(parameter);
         }
 
+        static private nint GetDeviceInfoInt(CL handle, nint device, DeviceInfo deviceInfo)
+        {
+            unsafe
+            {
+                Debug.CheckError(handle.GetDeviceInfo(device, deviceInfo, (nuint)sizeof(nint), out nint parameter, null));
+                return parameter;
+            }
+        }
+
         static private string GetPlatformInfo(CL handle, nint platform, PlatformInfo platformInfo)
         {
             nuint parameterSize;
             unsafe
             {
-                handle.GetPlatformInfo(platform, platformInfo, 0, null, out parameterSize);
+                Debug.CheckError(handle.GetPlatformInfo(platform, platformInfo, 0, null, out parameterSize));
             }
 
             byte[] parameter = new byte[parameterSize];
@@ -173,7 +186,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             {
                 fixed (byte* p = parameter)
                 {
-                    handle.GetPlatformInfo(platform, platformInfo, parameterSize, p, null);
+                    Debug.CheckError(handle.GetPlatformInfo(platform, platformInfo, parameterSize, p, null));
                 }
             }
             if (parameter.Length > 0 && parameter.Last() == 0)
@@ -198,12 +211,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             unsafe
             {
                 uint numDevices;
-                handle.GetDeviceIDs(platform, DeviceType.Gpu, 0, null, out numDevices);
+                Debug.CheckError(handle.GetDeviceIDs(platform, DeviceType.Gpu, 0, null, out numDevices));
 
                 var devices = new nint[numDevices];
                 fixed (nint* p = devices)
                 {
-                    handle.GetDeviceIDs(platform, DeviceType.Gpu, numDevices, p, null);
+                    Debug.CheckError(handle.GetDeviceIDs(platform, DeviceType.Gpu, numDevices, p, null));
                 }
                 return devices;
             }
@@ -217,12 +230,12 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             nint[] platforms;
             unsafe
             {
-                handle.GetPlatformIDs(0, null, out numPlatforms);
+                Debug.CheckError(handle.GetPlatformIDs(0, null, out numPlatforms));
 
                 platforms = new nint[numPlatforms];
                 fixed (nint* p = platforms)
                 {
-                    handle.GetPlatformIDs(numPlatforms, p, (uint*)null);
+                    Debug.CheckError(handle.GetPlatformIDs(numPlatforms, p, (uint*)null));
                 }
                 Trace.WriteLine("Discovered " + numPlatforms + " OpenCL platform(s)");
             }

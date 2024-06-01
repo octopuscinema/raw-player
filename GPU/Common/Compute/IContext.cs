@@ -19,6 +19,9 @@ namespace Octopus.Player.GPU.Compute
         string ApiName { get; }
         string ApiVendor { get; }
 
+        bool ApiSupportsFp16 { get; }
+        Vector3i ApiMaxImageDimensions3D { get; }
+
         IQueue DefaultQueue { get; }
 
         IProgram CreateProgram(System.Reflection.Assembly assembly, string resourceName, IReadOnlyList<string> functions, IReadOnlyCollection<string> defines = null, string name = null);

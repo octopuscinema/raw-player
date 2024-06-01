@@ -7,7 +7,7 @@
 
 PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlightRecovery highlightRecovery, float3 cameraWhite,
 	float3 cameraWhiteNormalised, float exposure, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression,
-	eToneMappingOperator toneMappingOperator, eGamma gamma /*, __read_only image3d_t logToDisplay*/)
+	eToneMappingOperator toneMappingOperator, eGamma gamma)
 {
 	// Apply black and white level
 	half blackWhiteRange = (half)(blackWhiteLevel.y - blackWhiteLevel.x);
@@ -29,8 +29,10 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 
 	// Transform to display colour space
 	RGBHalf4 displayRgb;
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 4; i++) {
 		displayRgb.RGB[i] = Matrix3x3MulHalf3(linearRgb.RGB[i], rawToDisplay);
+		displayRgb.RGB[i] = max(make_half3(0.0f), displayRgb.RGB[i]);
+	}
 
 	// Tone mapping, roll-off and gamut compression for Rec709/sRGB only
 	if ( gamma == GAMMA_REC709 || gamma == GAMMA_SRGB ) {
@@ -57,6 +59,9 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 	case GAMMA_LOGC3:
 		displayRgb = ApplyGammaLogC3(displayRgb);
 		break;
+	case GAMMA_LOG3G10:
+		displayRgb = ApplyGammaLog3G10(displayRgb);
+		break;
 	default:
 		break;
 	}
@@ -64,8 +69,7 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 	return displayRgb;
 }
 
-PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma
-	/*, __read_only image3d_t logToDisplay*/)
+PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma)
 {
 	// Apply black and white level
 	linearIn -= make_half4((half)blackWhiteLevel.x);
@@ -91,6 +95,9 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 		break;
 	case GAMMA_LOGC3:
 		display = ApplyGammaLogC3Mono(display);
+		break;
+	case GAMMA_LOG3G10:
+		display = ApplyGammaLog3G10Mono(display);
 		break;
 	default:
 		break;

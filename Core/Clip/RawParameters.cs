@@ -64,9 +64,9 @@ namespace Octopus.Player.Core
             switch (gamma)
             {
                 case GammaSpace.LogC3:
-                    return "Arri Alexa LogC3 to Rec709.dat";
+                    return "ARRI_LogC2Video_709_adobe3d_33.cube";
                 case GammaSpace.Log3G10:
-                    return "RWG_Log3G10_to_REC709_BT1886_with_LOW_CONTRAST_and_R_3_Soft_size_33.cube";
+                    return "RWG_Log3G10 to REC709_BT1886 with LOW_CONTRAST and R_3_Soft size_33 v1.13.cube";
                 case GammaSpace.FilmGen5:
                     return "Blackmagic Gen 5 Film to Video.cube";
                 default:
@@ -96,6 +96,8 @@ namespace Octopus.Player.Core
                     return Matrix.XYZToRec709D50();
                 case GammaSpace.LogC3:
                     return Matrix.XYZtoAlexaWideGamutD50();
+                case GammaSpace.Log3G10:
+                    return Matrix.XYZtoRedWideGamutD50();
                 default:
                     return Matrix.XYZToRec709D50();
             }

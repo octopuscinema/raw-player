@@ -126,17 +126,32 @@ namespace Octopus.Player.Core.Maths.Color
 
         public static Matrix3 XYZtoBMDFilmD50()
         {
-            var ConversionMatrix = new Matrix3(
+            var conversionMatrix = new Matrix3(
                 new Vector3(1.693614f, -0.459157f, -0.138632f),
                 new Vector3(-0.489970f, 1.344410f, 0.111740f),
                 new Vector3(-0.074796f, 0.385269f, 0.629528f));
 
-            return ConversionMatrix;
+            return conversionMatrix;
         }
 
         public static Matrix3 XYZtoBMDFilmD65()
         {
             return BradfordChromaticAdaptationD50toD65(XYZtoBMDFilmD50());
+        }
+
+        public static Matrix3 XYZtoRedWideGamutD65()
+        {
+            var conversionMatrix = new Matrix3(
+                new Vector3(1.412807f, -0.177523f, -0.151771f),
+                new Vector3(-0.486203f, 1.290697f, 0.157401f),
+                new Vector3(-0.037139f, 0.286376f, 0.687680f));
+
+            return conversionMatrix;
+        }
+
+        public static Matrix3 XYZtoRedWideGamutD50()
+        {
+            return BradfordChromaticAdaptationD50toD65(XYZtoRedWideGamutD65());
         }
 
         public static Matrix3 XYZtoAlexaWideGamutD65()

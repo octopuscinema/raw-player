@@ -89,7 +89,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         string Preprocess(string source, Assembly assembly, IReadOnlyCollection<string> defines)
         {
-            if (Context.SupportsFp16)
+            if (Context.ApiSupportsFp16)
                 source = "#define COMPUTE_ALLOW_FP16\n" + source;
 
             uint includeDepth = 0;

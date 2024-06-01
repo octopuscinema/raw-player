@@ -570,6 +570,20 @@ namespace Octopus.Player.UI
                             break;
                     }
                     break;
+                case "openclInfo":
+                    string computeApiInfo = "Version: " + ComputeContext.ApiVersion;
+                    computeApiInfo += "\nDevice: " + ComputeContext.ApiName;
+                    computeApiInfo += "\nVendor: " + ComputeContext.ApiVendor;
+                    switch (ComputeContext.Api)
+                    {
+                        case GPU.Compute.Api.OpenCL:
+                            computeApiInfo += "\n\n";
+                            computeApiInfo += "\nFP16 Support: " + ComputeContext.ApiSupportsFp16;
+                            computeApiInfo += "\nMax 3D Image size: " + ComputeContext.ApiMaxImageDimensions3D;
+                            NativeWindow.Alert(AlertType.Information, computeApiInfo, "OpenCL information");
+                            break;
+                    }
+                    break;
                 case "viewLog":
                     if (NativeWindow.PlayerApplication.LogPath != null)
                         NativeWindow.OpenTextEditor(NativeWindow.PlayerApplication.LogPath);

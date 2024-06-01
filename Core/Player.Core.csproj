@@ -37,9 +37,9 @@
     <None Remove="Resources\CL\ComputeToneMapOperator.cl.h" />
     <None Remove="Resources\CL\Gamma.cl.h" />
     <None Remove="IO\LUT\" />
-    <None Remove="Resources\LUT\Arri Alexa LogC3 to Rec709.dat" />
     <None Remove="Resources\LUT\Blackmagic Gen 5 Film to Video.cube" />
-    <None Remove="Resources\LUT\RWG_Log3G10_to_REC709_BT1886_with_LOW_CONTRAST_and_R_3_Soft_size_33.cube" />
+    <None Remove="Resources\LUT\ARRI_LogC2Video_709_adobe3d_33.cube" />
+    <None Remove="Resources\LUT\RWG_Log3G10 to REC709_BT1886 with LOW_CONTRAST and R_3_Soft size_33 v1.13.cube" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,9 +62,9 @@
     <EmbeddedResource Include="Resources\CL\RollOff.cl.h" />
     <EmbeddedResource Include="Resources\CL\ToneMapOperator.cl.h" />
     <EmbeddedResource Include="Resources\CL\Gamma.cl.h" />
-    <EmbeddedResource Include="Resources\LUT\Arri Alexa LogC3 to Rec709.dat" />
     <EmbeddedResource Include="Resources\LUT\Blackmagic Gen 5 Film to Video.cube" />
-    <EmbeddedResource Include="Resources\LUT\RWG_Log3G10_to_REC709_BT1886_with_LOW_CONTRAST_and_R_3_Soft_size_33.cube" />
+    <EmbeddedResource Include="Resources\LUT\ARRI_LogC2Video_709_adobe3d_33.cube" />
+    <EmbeddedResource Include="Resources\LUT\RWG_Log3G10 to REC709_BT1886 with LOW_CONTRAST and R_3_Soft size_33 v1.13.cube" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTK.Mathematics" Version="4.8.2" />

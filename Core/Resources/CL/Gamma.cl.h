@@ -104,23 +104,66 @@ PRIVATE half4 ApplyGammaLogC3Mono(half4 linearMono)
     return select(path1, path2, isgreater(linearMono, make_half4(cut)));
 }
 
+PRIVATE RGBHalf4 ApplyGammaLog3G10(RGBHalf4 linearRgb)
+{
+    // Constants
+    half a = 0.224282f;
+    half b = 155.975327f;
+    half c = 0.01f;
+    half g = 15.1927f;
+
+    RGBHalf4 out;
+    for(int i = 0; i < 4; i++)
+    {
+        half3 x = linearRgb.RGB[i] + make_half3(c);
+
+        half3 path1 = x*g;
+        half3 path2 = log10((x * b) + make_half3(1.0f)) * a;
+
+        out.RGB[i] = select(path2, path1, isless(x, make_half3(0.0f)));
+    }
+
+    return out;
+}
+
+PRIVATE half4 ApplyGammaLog3G10Mono(half4 linearMono)
+{
+    // Constants
+    half a = 0.224282f;
+    half b = 155.975327f;
+    half c = 0.01f;
+    half g = 15.1927f;
+    
+    half4 x = linearMono + make_half4(c);
+
+    half4 path1 = x*g;
+    half4 path2 = log10((x * b) + make_half4(1.0f)) * a;
+
+    return select(path2, path1, isless(x, make_half4(0.0f)));
+}
+
 PRIVATE RGBHalf4 ApplyLUT(RGBHalf4 rgbLog, __read_only image3d_t logToDisplay)
 {
     const sampler_t lutSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
     RGBHalf4 out;
 
     for(int i = 0; i < 4; i++)
-        out.RGB[i] = read_imageh(logToDisplay, lutSampler, make_float4(rgbLog.RGB[i].zyx, 0.0f)).xyz;
+        out.RGB[i] = read_imageh(logToDisplay, lutSampler, make_float4(rgbLog.RGB[i].xyz, 0.0f)).xyz;
 
     return out;
 }
 
-PRIVATE half4 ApplyLUTMono(half4 monoLog, __read_only image3d_t logToDisplay)
+PRIVATE RGBHalf4 ApplyLUTMono(half4 monoLog, __read_only image3d_t logToDisplay)
 {
-    return monoLog;
-    //half4 out;
-    //out.x = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.xxx, 0.0f)).xyz;
-    //return out;
+    const sampler_t lutSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+    RGBHalf4 out;
+
+    out.RGB[0] = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.xxx, 0.0f)).xyz;
+    out.RGB[1] = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.yyy, 0.0f)).xyz;
+    out.RGB[2] = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.zzz, 0.0f)).xyz;
+    out.RGB[3] = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.www, 0.0f)).xyz;
+
+    return out;
 }
 
 #endif

@@ -185,6 +185,12 @@ namespace Octopus.Player.Core.Maths.Color
                 CalculateCameraToXYZD50();
         }
 
+        public Matrix3 CalculateCameraToXYZD65(Tuple<float, float> whiteBalance)
+        {
+            return (whiteBalance != null) ? CalculateCameraToXYZD65(Temperature.ColourTemperatureToChromaticity(whiteBalance.Item1, whiteBalance.Item2)) :
+                CalculateCameraToXYZD65();
+        }
+
         public Matrix3 CalculateCameraToXYZD50(Vector2? whiteXY = null)
         {
             Debug.Assert(whiteXY != null || asShotWhiteXY.HasValue);
@@ -224,9 +230,11 @@ namespace Octopus.Player.Core.Maths.Color
             }
         }
 
-        public Matrix3 CalculateCameraToXYZD65()
+        public Matrix3 CalculateCameraToXYZD65(Vector2? whiteXY = null)
         {
             Debug.Assert(asShotWhiteXY.HasValue);
+            if (!whiteXY.HasValue)
+                whiteXY = asShotWhiteXY.Value;
 
             // If there are forward matrices use camera to xyz based approach (forward matrices)
             var AsShotWhiteXYZ = Temperature.ChromaticityXYtoXYZ(asShotWhiteXY.Value);
