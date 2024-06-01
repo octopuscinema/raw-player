@@ -17,7 +17,7 @@ namespace Octopus.Player.Core.Playback
         private static readonly uint nativeMemoryBufferSize = 0;
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
-        private static readonly List<string> pipelineKernels = new List<string> { "ProcessBayerNonLinear", "ProcessBayerLinear", "ProcessNonLinear", "ProcessLinear" };
+        private static readonly List<string> pipelineKernels = new List<string> { "ProcessBayer", "ProcessBayerLUT", "Process", "ProcessLUT" };
 
         private Worker<Error> SeekWork { get; set; }
         private SequenceFrameDNG SeekFrame { get; set; }
@@ -165,7 +165,8 @@ namespace Octopus.Player.Core.Playback
                 previewFrame.Dispose();
                 previewFrame = null;
             };
-            previewFrame.Process(clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, false, discardPreviewFrame);
+            previewFrame.Process(clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue,
+               LUT, false, discardPreviewFrame);
 
             return Error.None;
         }
@@ -308,7 +309,7 @@ namespace Octopus.Player.Core.Playback
                     frame = null;
                 };
 
-                frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, false, discardFrame);
+                frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, false, discardFrame);
             }
         }
 
@@ -345,6 +346,9 @@ namespace Octopus.Player.Core.Playback
                     throw new Exception("Unsupported DNG CFA pattern");
             }
 
+            if (dngMetadata.LinearizationTable != null && dngMetadata.LinearizationTable.Length > 0)
+                defines.Add("LINEARIZE");
+
             return defines;
         }
 
@@ -366,7 +370,7 @@ namespace Octopus.Player.Core.Playback
 #if SEEK_TRACE
                         Trace.WriteLine("Processing seek frame: " + SeekFrame.frameNumber + " on GPU");
 #endif
-                        SeekFrame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+                        SeekFrame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT);
                         if (!IsPlaying)
                         {
                             displayFrame = SeekFrame.frameNumber;
@@ -525,7 +529,7 @@ namespace Octopus.Player.Core.Playback
             if (frame != null)
             {
                 if (displayFrameCompute != null && displayFrameCompute.Valid && displayFrameGPU != null)
-                    ((SequenceFrameRAW)frame).Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue);
+                    ((SequenceFrameRAW)frame).Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT);
 
                 RenderContext.RequestRender();
                 actualFrameNumber = frame.frameNumber;

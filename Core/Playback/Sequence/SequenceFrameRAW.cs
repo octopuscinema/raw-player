@@ -13,6 +13,6 @@ namespace Octopus.Player.Core.Playback
 		}
 
         public abstract Error Process(IClip clip, GPU.Render.IContext renderContext, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program,
-            GPU.Compute.IQueue queue, bool immediate = false, Action postCopyAction = null);
+            GPU.Compute.IQueue queue, IO.LUT.ILUT3D logToDisplay, bool immediate = false, Action postCopyAction = null);
     }
 }

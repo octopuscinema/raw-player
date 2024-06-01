@@ -104,4 +104,23 @@ PRIVATE half4 ApplyGammaLogC3Mono(half4 linearMono)
     return select(path1, path2, isgreater(linearMono, make_half4(cut)));
 }
 
+PRIVATE RGBHalf4 ApplyLUT(RGBHalf4 rgbLog, __read_only image3d_t logToDisplay)
+{
+    const sampler_t lutSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+    RGBHalf4 out;
+
+    for(int i = 0; i < 4; i++)
+        out.RGB[i] = read_imageh(logToDisplay, lutSampler, make_float4(rgbLog.RGB[i].zyx, 0.0f)).xyz;
+
+    return out;
+}
+
+PRIVATE half4 ApplyLUTMono(half4 monoLog, __read_only image3d_t logToDisplay)
+{
+    return monoLog;
+    //half4 out;
+    //out.x = read_imageh(logToDisplay, lutSampler, make_float4(monoLog.xxx, 0.0f)).xyz;
+    //return out;
+}
+
 #endif

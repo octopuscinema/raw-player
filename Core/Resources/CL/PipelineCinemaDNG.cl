@@ -99,16 +99,23 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 	return display;
 }
 
-KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
-	/*__read_only image3d_t logToDisplay, */ __write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression,
-	__read_only image1d_t linearizeTable, float linearizeTableRange)
+KERNEL void ProcessBayer(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
+	__write_only image2d_t output, eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff,
+	eGamutCompression gamutCompression
+#ifdef LINEARIZE
+	, __read_only image1d_t linearizeTable, float linearizeTableRange
+#endif
+	)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
 
-	// Linearise and debayer
+	// Linearise and/or debayer
+#ifdef LINEARIZE
 	RGBHalf4 cameraRgb = LineariseDebayerBGGR(rawImage, inputCoord, linearizeTable, linearizeTableRange);
+#else
+	RGBHalf4 cameraRgb = DebayerBGGR(rawImage, inputCoord);
+#endif
 #ifdef BAYER_RB
 	for (int i = 0; i < 4; i++)
 		cameraRgb.RGB[i].xz = cameraRgb.RGB[i].zx;
@@ -126,23 +133,34 @@ KERNEL void ProcessBayerNonLinear(__read_only image2d_t rawImage, float2 blackWh
 	write_imageh(output, outputCoord + make_int2(1, 1), make_half4(displayRgb.RGB[3], 0.0f));
 }
 
-KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
-	/*__read_only image3d_t logToDisplay, */__write_only image2d_t output,
-	eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised, Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression)
+KERNEL void ProcessBayerLUT(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure, eToneMappingOperator toneMappingOperator, eGamma gamma,
+	__read_only image3d_t logToDisplay, __write_only image2d_t output, eHighlightRecovery highlightRecovery, float3 cameraWhite, float3 cameraWhiteNormalised,
+	Matrix4x4 rawToDisplay, eRollOff highlightRollOff, eGamutCompression gamutCompression
+#ifdef LINEARIZE
+	, __read_only image1d_t linearizeTable, float linearizeTableRange
+#endif
+	)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
 
-	// Debayer
+	// Linearise and/or debayer
+#ifdef LINEARIZE
+	RGBHalf4 cameraRgb = LineariseDebayerBGGR(rawImage, inputCoord, linearizeTable, linearizeTableRange);
+#else
 	RGBHalf4 cameraRgb = DebayerBGGR(rawImage, inputCoord);
+#endif
 #ifdef BAYER_RB
 	for (int i = 0; i < 4; i++)
 		cameraRgb.RGB[i].xz = cameraRgb.RGB[i].zx;
 #endif
 
 	// Process
-	RGBHalf4 displayRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay, highlightRollOff, gamutCompression,
-		toneMappingOperator, gamma);
+	RGBHalf4 logRgb = ProcessRgb(cameraRgb, blackWhiteLevel, highlightRecovery, cameraWhite, cameraWhiteNormalised, exposure, rawToDisplay,
+		highlightRollOff, gamutCompression, toneMappingOperator, gamma);
+
+	// Apply lut
+	RGBHalf4 displayRgb = ApplyLUT(logRgb, logToDisplay);
 
 	// Write out image data
 	int2 outputCoord = inputCoord;
@@ -152,12 +170,17 @@ KERNEL void ProcessBayerLinear(__read_only image2d_t rawImage, float2 blackWhite
 	write_imageh(output, outputCoord + make_int2(1, 1), make_half4(displayRgb.RGB[3], 0.0f));
 }
 
-KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
-	eToneMappingOperator toneMappingOperator, eGamma gamma,/*__read_only image3d_t logToDisplay,*/ __write_only image2d_t output,
-	__read_only image1d_t linearizeTable, float linearizeTableRange)
+KERNEL void Process(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
+	eToneMappingOperator toneMappingOperator, eGamma gamma, __write_only image2d_t output
+#ifdef LINEARIZE
+	__read_only image1d_t linearizeTable, float linearizeTableRange
+#endif
+	)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
+
+#ifdef LINEARIZE
 
 	// Read mono 2x2 tile
 	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
@@ -173,6 +196,17 @@ KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLe
 		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.z).x,
 		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.w).x);
 
+#else
+
+	// Read mono 2x2 tile
+	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+	half4 cameraMono = make_half4(read_imageh(rawImage, rawSampler, inputCoord).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x);
+
+#endif
+
 	// Process
 	half4 displayMono = ProcessMono(cameraMono, blackWhiteLevel, exposure, toneMappingOperator, gamma);
 
@@ -184,11 +218,33 @@ KERNEL void ProcessNonLinear(__read_only image2d_t rawImage, float2 blackWhiteLe
 	write_imageh(output, outputCoord + make_int2(1, 1), make_half4(displayMono.www, 0.0f));
 }
 
-KERNEL void ProcessLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
-	eToneMappingOperator toneMappingOperator, eGamma gamma, /*__read_only image3d_t logToDisplay,*/ __write_only image2d_t output)
+KERNEL void ProcessLUT(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
+	eToneMappingOperator toneMappingOperator, eGamma gamma, __read_only image3d_t logToDisplay, __write_only image2d_t output
+#ifdef LINEARIZE
+	__read_only image1d_t linearizeTable, float linearizeTableRange
+#endif
+	)
 {
 	int2 workCoord = make_int2(GLOBAL_ID_X, GLOBAL_ID_Y);
 	int2 inputCoord = workCoord * 2;
+
+#ifdef LINEARIZE
+
+	// Read mono 2x2 tile
+	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+	half4 nonLinearMono = make_half4(read_imageh(rawImage, rawSampler, inputCoord).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x,
+		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x) / (half)linearizeTableRange;
+
+	// Linearise mono 2x2 tile
+	const sampler_t lineariseSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;
+	half4 cameraMono = make_half4(read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.x).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.y).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.z).x,
+		read_imageh(linearizeTable, lineariseSampler, (float)nonLinearMono.w).x);
+
+#else
 
 	// Read mono 2x2 tile
 	const sampler_t rawSampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
@@ -196,6 +252,8 @@ KERNEL void ProcessLinear(__read_only image2d_t rawImage, float2 blackWhiteLevel
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 0)).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(0, 1)).x,
 		read_imageh(rawImage, rawSampler, inputCoord + make_int2(1, 1)).x);
+
+#endif
 
 	// Process
 	half4 displayMono = ProcessMono(cameraMono, blackWhiteLevel, exposure, toneMappingOperator, gamma);

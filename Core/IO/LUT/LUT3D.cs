@@ -16,7 +16,7 @@ namespace Octopus.Player.Core.IO.LUT
         public GPU.Compute.IImage ComputeImage { get; private set; }
         public GPU.Format Format { get { return ComputeImage.Format; } }
 
-        public LUT3D(GPU.Compute.IContext computeContext, string filePath, GPU.Format format = GPU.Format.RGBX8)
+        public LUT3D(GPU.Compute.IContext computeContext, string filePath, GPU.Format format = GPU.Format.RGBA8)
         {
             var lines = File.ReadLines(filePath);
             
@@ -30,7 +30,7 @@ namespace Octopus.Player.Core.IO.LUT
             }
         }
 
-        public LUT3D(GPU.Compute.IContext computeContext, Assembly assembly, string resourceName, GPU.Format format = GPU.Format.RGBX8)
+        public LUT3D(GPU.Compute.IContext computeContext, Assembly assembly, string resourceName, GPU.Format format = GPU.Format.RGBA8)
         {
             var sourceStream = assembly.GetManifestResourceStream(resourceName);
             var reader = new StreamReader(sourceStream);

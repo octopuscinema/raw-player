@@ -129,12 +129,12 @@ namespace Octopus.Player.Core.Playback
         }
 
         public override Error Process(IClip clip, IContext renderContext, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program,
-            GPU.Compute.IQueue queue, bool immediate = false, Action postCopyAction = null)
+            GPU.Compute.IQueue queue, IO.LUT.ILUT3D logToDisplay, bool immediate = false, Action postCopyAction = null)
         {
             Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
             var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
             Debug.Assert(metadata != null);
-            var kernel = ComputeKernelForClip(metadata);
+            var kernel = ComputeKernelForClip(metadata, logToDisplay);
 
             Action renderAction = () =>
             {
@@ -161,7 +161,8 @@ namespace Octopus.Player.Core.Playback
                 program.SetArgument(kernel, argumentIndex++, (int)gammaSpace);
 
                 // Apply log to display LUT
-                //program.SetArgument(kernel, argumentIndex++, logToDisplayLUT);
+                if (logToDisplay != null)
+                    program.SetArgument(kernel, argumentIndex++, logToDisplay.ComputeImage);
 
                 // Set output
                 program.SetArgument(kernel, argumentIndex++, output);
@@ -229,13 +230,15 @@ namespace Octopus.Player.Core.Playback
             return Error.None;
         }
 
-        private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata)
+        private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata, IO.LUT.ILUT lut)
         {
             string kernel = "Process";
             if (metadata.ColorProfile.HasValue)
                 kernel += "Bayer";
-            kernel += (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0) ? "NonLinear" : "Linear";
 
+            if (lut != null)
+                kernel += "LUT";
+            
             return kernel;
         }
     }
