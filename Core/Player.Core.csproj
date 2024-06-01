@@ -56,13 +56,6 @@
     <EmbeddedResource Include="Resources\CL\Debayer.cl.h" />
     <EmbeddedResource Include="Resources\CL\PipelineCinemaDNG.cl" />
     <EmbeddedResource Include="Resources\GLSL\Blit.glsl" />
-    <EmbeddedResource Include="Resources\GLSL\DebayerDraft.glsl.h" />
-    <EmbeddedResource Include="Resources\GLSL\Luminance.glsl.h" />
-    <EmbeddedResource Include="Resources\GLSL\Gamma.glsl.h" />
-    <EmbeddedResource Include="Resources\GLSL\HighlightRecovery.glsl.h" />
-    <EmbeddedResource Include="Resources\GLSL\PipelineCinemaDNG.glsl" />
-    <EmbeddedResource Include="Resources\GLSL\RollOff.glsl.h" />
-    <EmbeddedResource Include="Resources\GLSL\ToneMap.glsl.h" />
     <EmbeddedResource Include="Resources\License.txt" />
     <EmbeddedResource Include="Resources\CL\HighlightRecovery.cl.h" />
     <EmbeddedResource Include="Resources\CL\ComputeFunctions.cl.h" />

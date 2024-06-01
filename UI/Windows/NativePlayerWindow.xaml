@@ -35,6 +35,21 @@
                 <MenuItem Header="_+2" Name="exposurePlusTwo" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
             </MenuItem>
             <Separator />
+            <MenuItem Header="_Gamma">
+                <MenuItem Header="_Rec. 709" Name="gammaRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_sRGB" Name="gammaSRGB" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_ARRI LogC3" Name="gammaLogC3" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_RED LOG3G10" Name="gammaLog3G10" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Blackmagic Film Gen. 5" Name="gammaBMFilmG5" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+            </MenuItem>
+            <MenuItem Header="_LUT" Name="lut">
+                <MenuItem Header="_None" Name="lutNone" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
+                <MenuItem Header="_Rec709" Name="lut709" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <Separator />
+                <MenuItem Header="_Custom..." Name="lutCustom" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="False"/>
+            </MenuItem>
+            <Separator />
             <MenuItem Header="_Advanced">
                 <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                 <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff">
@@ -46,18 +61,6 @@
                 <Separator />
                 <MenuItem Header="_Rec. 709 Tone Mapping" Name="toneMapping" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                 <MenuItem Header="_Rec. 709 Gamut Compression" Name="gamutCompression" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                <Separator />
-                <MenuItem Header="_Colour Space" Name="colorSpace">
-                    <MenuItem Header="_Rec. 709" Name="colorSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <MenuItem Header="_Gamma">
-                    <MenuItem Header="_Rec. 709" Name="gammaSpaceRec709" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Debayer Quality" Name="debayerQuality">
-                    <MenuItem Header="_Draft" Name="debayerQualityDraft" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
-                    <MenuItem Header="_Best (Not Available)" Name="debayerQualityBest" Click="MenuItem_Click" IsEnabled="False" StaysOpenOnClick="True"/>
-                </MenuItem>
             </MenuItem>
             <Separator />
             <MenuItem Header="_Metadata..." Name="metadata" Click="MenuItem_Click"/>

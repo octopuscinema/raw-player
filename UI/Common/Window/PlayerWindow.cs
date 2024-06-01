@@ -418,9 +418,12 @@ namespace Octopus.Player.UI
                 NativeWindow.EnableMenuItem("lut", gamma.IsLog());
             }
 
+            // Always remove LUT when gamma changes
+            Playback.RemoveLUT();
+
+            // If we changed log gamma, reset UI
             if (gamma.IsLog())
             {
-                Playback.RemoveLUT();
                 NativeWindow.CheckMenuItem("lutNone");
                 NativeWindow.SetMenuItemTitle("lut709", gamma.DefaultLutName());
             }
@@ -480,8 +483,11 @@ namespace Octopus.Player.UI
                     break;
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
-                    break;
+                    return;
             }
+
+            RawParameterChanged?.Invoke();
+            RenderContext.RequestRender();
         }
 
         public void MenuItemClick(string id)

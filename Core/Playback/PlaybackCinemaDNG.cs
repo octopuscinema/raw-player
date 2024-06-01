@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Octopus.Player.Core.IO.LUT;
 using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU.Compute;
 using Octopus.Player.GPU.Render;
@@ -55,8 +56,12 @@ namespace Octopus.Player.Core.Playback
         public override void Dispose()
         {
             PlayerWindow.RawParameterChanged -= OnRawParameterChanged;
+            
+            LUT?.Dispose();
+            LUT = null;
 
             base.Dispose();
+
             SeekFrameMutex.Dispose();
             SeekFrameMutex = null;
         }
@@ -295,22 +300,30 @@ namespace Octopus.Player.Core.Playback
 
         public void OnRawParameterChanged()
         {
-            // If raw parameters changed while not playing, reprocess the frame
-            if ( !IsPlaying && State != State.Empty && IsOpen() )
+            if (IsPlaying || State == State.Empty || !IsOpen())
+                return;
+
+            // If raw parameters changed while not playing, update the paused frame
+            Action updatePausedFrame = () =>
             {
-                // TODO: maybe cache this frame as 'pauseFrame' or something
-                var frame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
-                frame.frameNumber = LastDisplayedFrame.Value;// displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
-                frame.Decode(Clip);
-
-                Action discardFrame = () =>
+                if (!IsPlaying && State != State.Empty && IsOpen())
                 {
-                    frame.Dispose();
-                    frame = null;
-                };
+                    // TODO: maybe cache this frame as 'pauseFrame' or something
+                    var frame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
+                    frame.frameNumber = LastDisplayedFrame.Value;// displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
+                    frame.Decode(Clip);
 
-                frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, false, discardFrame);
-            }
+                    Action discardFrame = () =>
+                    {
+                        frame.Dispose();
+                        frame = null;
+                    };
+
+                    frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, true, discardFrame);
+                }
+            };
+
+            RenderContext.EnqueueRenderAction(updatePausedFrame);
         }
 
         private IReadOnlyCollection<string> GpuDefinesForClip(IClip clip)
@@ -559,8 +572,12 @@ namespace Octopus.Player.Core.Playback
         {
             if ( LUT != null )
             {
-                LUT.Dispose();
-                LUT = null;
+                Action removeLut = () =>
+                { 
+                    LUT?.Dispose();
+                    LUT = null;
+                };
+                RenderContext.EnqueueRenderAction(removeLut);
             }
         }
 
@@ -572,15 +589,15 @@ namespace Octopus.Player.Core.Playback
             {
                 if (resource.Contains(resourceName))
                 {
-                    if (LUT != null)
-                    {
-                        LUT.Dispose();
-                        LUT = null;
-                    }
-
                     try
                     {
-                        LUT = new IO.LUT.LUT3D(ComputeContext, assembly, resource);
+                        var lut = new LUT3D(ComputeContext, assembly, resource);
+                        Action changeLut = () =>
+                        {
+                            LUT?.Dispose();
+                            LUT = lut;
+                        };
+                        RenderContext.EnqueueRenderAction(changeLut);
                         return Error.None;
                     }
                     catch
@@ -595,15 +612,18 @@ namespace Octopus.Player.Core.Playback
 
         public override Error ApplyLUT(Uri path)
         {
-            LUT.Dispose();
-            LUT = null;
-
             if (!File.Exists(path.AbsolutePath))
                 return Error.LutNotFound;
 
             try
             {
-                LUT = new IO.LUT.LUT3D(ComputeContext, path.AbsolutePath);
+                var lut = new IO.LUT.LUT3D(ComputeContext, path.AbsolutePath);
+                Action changeLut = () =>
+                {
+                    LUT?.Dispose();
+                    LUT = lut;
+                };
+                RenderContext.EnqueueRenderAction(changeLut);
                 return Error.None;
             }
             catch
