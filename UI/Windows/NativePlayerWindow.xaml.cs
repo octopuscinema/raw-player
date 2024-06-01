@@ -291,6 +291,25 @@ namespace Octopus.Player.UI.Windows
 
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
+
+        public string? OpenFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string,string>> extensionsDescriptions)
+        {
+            using var dialog = new Microsoft.WindowsAPICodePack.Dialogs.CommonOpenFileDialog();
+            dialog.IsFolderPicker = false;
+            dialog.EnsurePathExists = true;
+            dialog.Multiselect = false;
+            dialog.DefaultDirectory = defaultDirectory;
+            dialog.Title = title;
+            dialog.EnsureFileExists = true;
+            if (extensionsDescriptions != null)
+            {
+                foreach (var extDesc in extensionsDescriptions)
+                    dialog.Filters.Add(new Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogFilter(extDesc.Item2, extDesc.Item1));
+            }
+
+            return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
+        }
+
         public void Exit()
         {
             Application.Current.Shutdown();
@@ -343,6 +362,19 @@ namespace Octopus.Player.UI.Windows
         {
             var contextMenu = FindContextMenu(contextMenuId);
             return contextMenu == null ? null : FindMenuItem(contextMenu.Items, id);
+        }
+
+        void AddMenuItem(MenuItem parent, string name, uint? index, Action onClick, string? id = null)
+        {
+            var item = new MenuItem();
+            item.Header = name;
+            if (id != null)
+                item.Name = id;
+            item.Click += (object sender, RoutedEventArgs e) => { onClick(); };
+            if (index.HasValue)
+                parent.Items.Insert((int)index.Value, item);
+            else
+                parent.Items.Add(item);
         }
 
         public void EnableMenuItem(string id, bool enable)
@@ -408,18 +440,33 @@ namespace Octopus.Player.UI.Windows
                 item.Header = "_" + name;
         }
 
-        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null)
+        {
+            var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
+            if (parentItem != null)
+                AddMenuItem(parentItem, name, index, onClick, id);
+
+            parentItem = FindContextMenuItem(parentId);
+            if (parentItem != null)
+                AddMenuItem(parentItem, name, index, onClick, id);
+        }
+
+        public void RemoveMenuItem(string parentId, string id)
         {
             var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
             if (parentItem != null)
             {
-                MenuItem item = new MenuItem();
-                item.Header = name;
-                item.Click += (object sender, RoutedEventArgs e) => { onClick(); };
-                if ( index.HasValue )
-                    parentItem.Items.Insert((int)index.Value, item);
-                else
-                    parentItem.Items.Add(item);
+                var item = FindMenuItem(PlayerMenu.Items, id);
+                if (item != null)
+                    parentItem.Items.Remove(item);
+            }
+
+            parentItem = FindContextMenuItem(parentId);
+            if (parentItem != null)
+            {
+                var item = FindContextMenuItem(id);
+                if (item != null)
+                    parentItem.Items.Remove(item);
             }
         }
 

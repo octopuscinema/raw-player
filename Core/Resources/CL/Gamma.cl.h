@@ -142,6 +142,48 @@ PRIVATE half4 ApplyGammaLog3G10Mono(half4 linearMono)
     return select(path2, path1, isless(x, make_half4(0.0f)));
 }
 
+PRIVATE RGBHalf4 ApplyGammaBlackmagicFilmG5(RGBHalf4 linearRgb)
+{
+    // Constants
+    half a = 0.08692876065491224f;
+    half b = 0.005494072432257808f;
+    half c = 0.5300133392291939f;
+    half d = 8.283605932402494f;
+    half e = 0.09246575342465753f;
+    half linCut = 0.005f;
+
+    RGBHalf4 out;
+    for (int i = 0; i < 4; i++)
+    {
+        half3 x = linearRgb.RGB[i];
+
+        half3 path1 = make_half3(d)*x + make_half3(e);
+        half3 path2 = make_half3(a) * log(x + make_half3(b)) + make_half3(c);
+
+        out.RGB[i] = select(path2, path1, isless(x, make_half3(linCut)));
+    }
+
+    return out;
+}
+
+PRIVATE half4 ApplyGammaBlackmagicFilmG5Mono(half4 linearMono)
+{
+    // Constants
+    half a = 0.08692876065491224f;
+    half b = 0.005494072432257808f;
+    half c = 0.5300133392291939f;
+    half d = 8.283605932402494f;
+    half e = 0.09246575342465753f;
+    half linCut = 0.005f;
+
+    half4 x = linearMono;
+
+    half4 path1 = make_half4(d) * x + make_half4(e);
+    half4 path2 = make_half4(a) * log(x + make_half4(b)) + make_half4(c);
+
+    return select(path2, path1, isless(x, make_half4(linCut)));
+}
+
 PRIVATE RGBHalf4 ApplyLUT(RGBHalf4 rgbLog, __read_only image3d_t logToDisplay)
 {
     const sampler_t lutSampler = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_LINEAR;

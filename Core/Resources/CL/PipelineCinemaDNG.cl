@@ -62,6 +62,9 @@ PRIVATE RGBHalf4 ProcessRgb(RGBHalf4 linearRgb, float2 blackWhiteLevel, eHighlig
 	case GAMMA_LOG3G10:
 		displayRgb = ApplyGammaLog3G10(displayRgb);
 		break;
+	case GAMMA_FILMGEN5:
+		displayRgb = ApplyGammaBlackmagicFilmG5(displayRgb);
+		break;
 	default:
 		break;
 	}
@@ -98,6 +101,9 @@ PRIVATE half4 ProcessMono(half4 linearIn, float2 blackWhiteLevel, float exposure
 		break;
 	case GAMMA_LOG3G10:
 		display = ApplyGammaLog3G10Mono(display);
+		break;
+	case GAMMA_FILMGEN5:
+		display = ApplyGammaBlackmagicFilmG5Mono(display);
 		break;
 	default:
 		break;

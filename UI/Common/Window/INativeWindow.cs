@@ -36,13 +36,15 @@ namespace Octopus.Player.UI
 		void ToggleFullscreen();
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
+        string? OpenFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions);
 #nullable disable
-		void EnableMenuItem(string id, bool enable);
+        void EnableMenuItem(string id, bool enable);
 		void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true);
 		bool MenuItemIsChecked(string id);
 		void ToggleMenuItemChecked(string id);
 		void SetMenuItemTitle(string id, string name);
-		void AddMenuItem(string parentId, string name, uint? index, Action onClick);
+		void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null);
+		void RemoveMenuItem(string parentId, string id);
 		void AddMenuSeperator(string parentId, uint? index);
         void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null);
 		void SetButtonVisibility(string id, bool visible);

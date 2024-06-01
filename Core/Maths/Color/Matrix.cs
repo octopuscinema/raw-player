@@ -124,19 +124,19 @@ namespace Octopus.Player.Core.Maths.Color
             return XYZTosRGBD50();
         }
 
-        public static Matrix3 XYZtoBMDFilmD50()
+        public static Matrix3 XYZtoAlexaWideGamutD65()
         {
-            var conversionMatrix = new Matrix3(
-                new Vector3(1.693614f, -0.459157f, -0.138632f),
-                new Vector3(-0.489970f, 1.344410f, 0.111740f),
-                new Vector3(-0.074796f, 0.385269f, 0.629528f));
+            var ConversionMatrix = new Matrix3(
+                new Vector3(1.789066f, -0.482534f, -0.200076f),
+                new Vector3(-0.639849f, 1.396400f, 0.194432f),
+                new Vector3(-0.041532f, 0.082335f, 0.878868f));
 
-            return conversionMatrix;
+            return ConversionMatrix;
         }
 
-        public static Matrix3 XYZtoBMDFilmD65()
+        public static Matrix3 XYZtoAlexaWideGamutD50()
         {
-            return BradfordChromaticAdaptationD50toD65(XYZtoBMDFilmD50());
+            return BradfordChromaticAdaptationD50toD65(XYZtoAlexaWideGamutD65());
         }
 
         public static Matrix3 XYZtoRedWideGamutD65()
@@ -154,34 +154,19 @@ namespace Octopus.Player.Core.Maths.Color
             return BradfordChromaticAdaptationD50toD65(XYZtoRedWideGamutD65());
         }
 
-        public static Matrix3 XYZtoAlexaWideGamutD65()
+        public static Matrix3 XYZtoBlackmagicWideGamutD65()
         {
-            var ConversionMatrix = new Matrix3(
-                new Vector3(1.789066f, -0.482534f, -0.200076f),
-                new Vector3(-0.639849f, 1.396400f, 0.194432f),
-                new Vector3(-0.041532f, 0.082335f, 0.878868f));
+            var conversionMatrix = new Matrix3(
+                new Vector3(1.866382f, -0.518397f, -0.234610f),
+                new Vector3(-0.600342f, 1.378149f, 0.176732f),
+                new Vector3(0.002452f, 0.086400f, 0.836943f));
 
-            return ConversionMatrix;
+            return conversionMatrix;
         }
 
-        public static Matrix3 XYZtoAlexaWideGamutD50()
+        public static Matrix3 XYZtoBlackmagicWideGamutD50()
         {
-            return BradfordChromaticAdaptationD50toD65(XYZtoAlexaWideGamutD65());
-        }
-
-        public static Matrix3 XYZtoWideGamutD50()
-        {
-            var ConversionMatrix = new Matrix3(
-                new Vector3(1.4628067f, -0.1840623f, -0.2743606f),
-                new Vector3(-0.5217933f, 1.4472381f, 0.0677227f),
-                new Vector3(0.0349342f, -0.0968930f, 1.2884099f));
-
-            return ConversionMatrix;
-        }
-
-        public static Matrix3 XYZtoWideGamutD65()
-        {
-            return BradfordChromaticAdaptationD50toD65(XYZtoWideGamutD50());
+            return BradfordChromaticAdaptationD50toD65(XYZtoBlackmagicWideGamutD65());
         }
 
         public static Matrix3 MapWhiteMatrix(in Vector3 white1, in Vector3 white2)

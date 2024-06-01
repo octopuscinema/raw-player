@@ -481,6 +481,13 @@ namespace Octopus.Player.UI
                             NativeWindow.CheckMenuItem(id, true);
                     }
                     break;
+                case "lutCustom":
+
+                    break;
+                case "lutLoadCustom":
+                    var lutExtension = new Tuple<string, string>("*.cube", "3D LUT Files");
+                    NativeWindow.OpenFileDialogue("Select .cube file", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), new List<Tuple<string, string>>() { lutExtension });
+                    break;
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
                     return;
@@ -547,8 +554,9 @@ namespace Octopus.Player.UI
                     break;
 
                 // LUT
-                case "lut709":
                 case "lutNone":
+                case "lut709":
+                case "lutLoadCustom":
                     if (!NativeWindow.MenuItemIsChecked(id))
                         MenuLUTClick(id);
                     break;
@@ -577,8 +585,7 @@ namespace Octopus.Player.UI
                     switch (ComputeContext.Api)
                     {
                         case GPU.Compute.Api.OpenCL:
-                            computeApiInfo += "\n\n";
-                            computeApiInfo += "\nFP16 Support: " + ComputeContext.ApiSupportsFp16;
+                            computeApiInfo += "\n\nFP16 Support: " + ComputeContext.ApiSupportsFp16;
                             computeApiInfo += "\nMax 3D Image size: " + ComputeContext.ApiMaxImageDimensions3D;
                             NativeWindow.Alert(AlertType.Information, computeApiInfo, "OpenCL information");
                             break;

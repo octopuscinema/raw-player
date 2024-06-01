@@ -98,6 +98,8 @@ namespace Octopus.Player.Core
                     return Matrix.XYZtoAlexaWideGamutD50();
                 case GammaSpace.Log3G10:
                     return Matrix.XYZtoRedWideGamutD50();
+                case GammaSpace.FilmGen5:
+                    return Matrix.XYZtoBlackmagicWideGamutD50();
                 default:
                     return Matrix.XYZToRec709D50();
             }
