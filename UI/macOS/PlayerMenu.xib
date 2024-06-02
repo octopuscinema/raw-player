@@ -236,7 +236,7 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="Alo-5E-niy"/>
-                                        <menuItem title="Custom..." identifier="lutLoadCustom" id="cLV-XO-uhQ">
+                                        <menuItem title="Load custom .cube LUT..." identifier="lutLoadCustom" id="cLV-XO-uhQ">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="doClick:" target="-1" id="dDI-bN-SlL"/>

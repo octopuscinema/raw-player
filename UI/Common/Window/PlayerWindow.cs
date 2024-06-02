@@ -481,16 +481,19 @@ namespace Octopus.Player.UI
                             NativeWindow.CheckMenuItem(id, true);
                     }
                     break;
-                case "lutCustom":
-
-                    break;
                 case "lutLoadCustom":
                     var lutExtension = new Tuple<string, string>("*.cube", "3D LUT Files");
-                    var customLutPath = NativeWindow.OpenFileDialogue("Select .cube file", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    var customLutPath = NativeWindow.OpenFileDialogue("Select .cube LUT", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                         new List<Tuple<string, string>>() { lutExtension });
                     if (customLutPath != null)
                     {
-                        LoadCustomLUT(customLutPath);
+                        var error = LoadCustomLUT(customLutPath);
+                        if ( error != Error.None )
+                        {
+                            var lutName = Path.GetFileName(customLutPath);
+                            string errorMessage = "Failed to load '" + lutName + "'\nError: " + error.ToString();
+                            NativeWindow.Alert(AlertType.Error, errorMessage, "Error loading LUT");
+                        }
                     }
                     break;
                 default:
@@ -849,14 +852,29 @@ namespace Octopus.Player.UI
             var error = Playback.ApplyLUT(new Uri(lutPath));
             if ( error == Error.None )
             {
-                var lutName = Path.GetFileNameWithoutExtension(lutPath);
+                if (NativeWindow.MenuItemExists("lutCustom"))
+                    NativeWindow.RemoveMenuItem("lut","lutCustom");
+
+                var lutName = Path.GetFileName(lutPath);
 
                 Action applyCustomLut = () =>
                 {
-
+                    var error = Playback.ApplyLUT(new Uri(lutPath));
+                    if (error == Error.None)
+                    {
+                        RawParameterChanged?.Invoke();
+                        RenderContext.RequestRender();
+                        NativeWindow.CheckMenuItem("lutCustom");
+                    }
+                    else
+                    {
+                        string errorMessage = "Failed to load '" + lutName + "'\nError: " + error.ToString();
+                        NativeWindow.Alert(AlertType.Error, errorMessage, "Error loading LUT");
+                    }
                 };
 
                 NativeWindow.AddMenuItem("lut", lutName, 3, applyCustomLut, "lutCustom");
+                NativeWindow.CheckMenuItem("lutCustom");
             }
 
             return error;

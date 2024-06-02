@@ -428,6 +428,11 @@ namespace Octopus.Player.UI.macOS
 			}
 		}
 
+		public bool MenuItemExists(string id)
+		{
+			return FindMenuItem(NSApplication.SharedApplication.MainMenu, id) != null;
+        }
+
         public void AddMenuSeperator(string parentId, uint? index)
 		{
             var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;

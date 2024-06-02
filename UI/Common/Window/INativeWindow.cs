@@ -45,7 +45,8 @@ namespace Octopus.Player.UI
 		void SetMenuItemTitle(string id, string name);
 		void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null);
 		void RemoveMenuItem(string parentId, string id);
-		void AddMenuSeperator(string parentId, uint? index);
+		bool MenuItemExists(string id);
+        void AddMenuSeperator(string parentId, uint? index);
         void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null);
 		void SetButtonVisibility(string id, bool visible);
 		void SetButtonEnabled(string id, bool enabled);
