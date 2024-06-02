@@ -519,12 +519,12 @@ namespace Octopus.Player.Core.Playback
 
         public override Error ApplyLUT(Uri path)
         {
-            if (!File.Exists(path.AbsolutePath))
+            if (!File.Exists(path.OriginalString))
                 return Error.LutNotFound;
 
             try
             {
-                var lut = new IO.LUT.LUT3D(ComputeContext, path.AbsolutePath);
+                var lut = new LUT3D(ComputeContext, path.OriginalString);
                 Action changeLut = () =>
                 {
                     LUT?.Dispose();

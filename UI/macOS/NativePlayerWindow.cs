@@ -10,6 +10,8 @@ using System.Linq;
 using CoreText;
 using System.Security.Policy;
 using System.IO;
+using AVFoundation;
+using UniformTypeIdentifiers;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -178,6 +180,37 @@ namespace Octopus.Player.UI.macOS
 
 			return null;
 		}
+
+#nullable enable
+        public string? OpenFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions)
+#nullable disable
+        {
+            var dialog = NSOpenPanel.OpenPanel;
+            dialog.CanChooseFiles = true;
+            dialog.CanChooseDirectories = false;
+            dialog.CanCreateDirectories = false;
+            dialog.Message = title;
+			dialog.AllowsMultipleSelection = false;
+
+            var fileTypes = extensionsDescriptions.Select(fileType => UTType.CreateFromExtension(fileType.Item1.Trim('*').Trim('.').ToLower()))
+                    .Where(utType => utType != null)
+                    .ToArray()!;
+
+            dialog.AllowedContentTypes = fileTypes;
+            
+            if (dialog.RunModal() == 1)
+            {
+                Debug.Assert(dialog.Urls.Length > 0);
+                if (dialog.Urls.Length == 0)
+                    return null;
+
+                var url = dialog.Urls[0];
+                if (url != null)
+                    return url.Path;
+            }
+
+            return null;
+        }
 
         public void Exit()
         {
@@ -369,17 +402,31 @@ namespace Octopus.Player.UI.macOS
 				item.Title = name;
 		}
 
-        public void AddMenuItem(string parentId, string name, uint? index, Action onClick)
+        public void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null)
         {
 			var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
 			var menuItem = new NSMenuItem(name);
 			menuItem.Activated += (sender, e) => { onClick(); };
+			if (id != null)
+				menuItem.Identifier = id;
 
-			if (index.HasValue)
+            if (index.HasValue)
                 parentMenu.InsertItem(menuItem, (nint)index.Value);
 			else
                 parentMenu.AddItem(menuItem);
         }
+
+		public void RemoveMenuItem(string parentId, string id)
+		{
+			var parent = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+			var item = FindMenuItem(NSApplication.SharedApplication.MainMenu, id);
+
+			if (parent != null && item != null)
+			{
+				parent.RemoveItem(item);
+				item.Dispose();
+			}
+		}
 
         public void AddMenuSeperator(string parentId, uint? index)
 		{

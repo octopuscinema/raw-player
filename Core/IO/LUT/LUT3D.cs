@@ -19,15 +19,7 @@ namespace Octopus.Player.Core.IO.LUT
         public LUT3D(GPU.Compute.IContext computeContext, string filePath, GPU.Format format = GPU.Format.RGBA8)
         {
             var lines = File.ReadLines(filePath);
-            
-            switch (format)
-            {
-                case GPU.Format.RGBX8:
-                    Upload(computeContext, Parse(lines).ToArray(), format);
-                    break;
-                default:
-                    throw new Exception("Unsupported LUT3D format");
-            }
+            Upload(computeContext, Parse(lines).ToArray(), format);
         }
 
         public LUT3D(GPU.Compute.IContext computeContext, Assembly assembly, string resourceName, GPU.Format format = GPU.Format.RGBA8)

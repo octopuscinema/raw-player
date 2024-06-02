@@ -486,7 +486,12 @@ namespace Octopus.Player.UI
                     break;
                 case "lutLoadCustom":
                     var lutExtension = new Tuple<string, string>("*.cube", "3D LUT Files");
-                    NativeWindow.OpenFileDialogue("Select .cube file", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), new List<Tuple<string, string>>() { lutExtension });
+                    var customLutPath = NativeWindow.OpenFileDialogue("Select .cube file", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        new List<Tuple<string, string>>() { lutExtension });
+                    if (customLutPath != null)
+                    {
+                        LoadCustomLUT(customLutPath);
+                    }
                     break;
                 default:
                     Debug.Assert(false, "Unhandled menu item: " + id);
@@ -837,6 +842,24 @@ namespace Octopus.Player.UI
             var frame = (uint)Math.Round(Playback.FirstFrame + (Playback.LastFrame - Playback.FirstFrame) * value);
             Playback.RequestSeek(frame, true);
             Playback.SeekEnd();
+        }
+
+        private Error LoadCustomLUT(string lutPath)
+        {
+            var error = Playback.ApplyLUT(new Uri(lutPath));
+            if ( error == Error.None )
+            {
+                var lutName = Path.GetFileNameWithoutExtension(lutPath);
+
+                Action applyCustomLut = () =>
+                {
+
+                };
+
+                NativeWindow.AddMenuItem("lut", lutName, 3, applyCustomLut, "lutCustom");
+            }
+
+            return error;
         }
 
         private Error OpenCinemaDNG(string dngPath)
