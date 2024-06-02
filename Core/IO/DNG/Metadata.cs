@@ -82,10 +82,8 @@ namespace Octopus.Player.Core.IO.DNG
             Title = Path.GetFileName(clip.Path);
 
             // Duration in frames is the sequencing field of the last frame subtracted by the first frame index
-            var dngSortedFrames = Directory.EnumerateFiles(clip.Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Where(f => !Path.GetFileName(f).StartsWith("._")).OrderBy(f => f);
-            uint firstFrameNumber;
-            uint lastFrameNumber;
-            if (clip.GetFrameNumber(dngSortedFrames.First(), out firstFrameNumber) == Error.None && clip.GetFrameNumber(dngSortedFrames.Last(), out lastFrameNumber) == Error.None)
+            if (clip.GetFrameNumber(clip.FirstFrame, out uint firstFrameNumber) == Error.None &&
+                clip.GetFrameNumber(clip.LastFrame, out uint lastFrameNumber) == Error.None)
             {
                 FirstFrame = firstFrameNumber;
                 LastFrame = lastFrameNumber;

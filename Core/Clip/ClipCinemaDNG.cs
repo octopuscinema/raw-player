@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -14,34 +15,29 @@ namespace Octopus.Player.Core
         {
             get
             {
-                var clips = EnumerateAdditionalClips();
-                if (clips != null)
-                {
-                    for (int i = 0; i < clips.Count; i++)
-                    {
-                        if (clips[i].Path == Path && (i+1) < clips.Count)
-                            return clips[i+1];
-                    }
-                }
-                return null;
+                if (nextClip == null)
+                    nextClip = AdjacentClip(false);
+
+                return nextClip;
             }
         }
+
         public override IClip PreviousClip
         {
             get
             {
-                var clips = EnumerateAdditionalClips();
-                if (clips != null)
-                {
-                    for (int i = 0; i < clips.Count; i++)
-                    {
-                        if (clips[i].Path == Path && (i - 1) >= 0)
-                            return clips[i - 1];
-                    }
-                }
-                return null;
+                if (previousClip == null)
+                    previousClip = AdjacentClip(true);
+
+                return previousClip;
             }
         }
+
+        public string FirstFrame { get; private set; }
+        public string LastFrame { get; private set; }
+
+        private IClip nextClip;
+        private IClip previousClip;
 
         private uint SequencingFieldPosition { get; set; }
         private uint SequencingFieldLength { get; set; }
@@ -114,7 +110,20 @@ namespace Octopus.Player.Core
             return uint.TryParse(sequencingField, out frameNumber) ? Error.None : Error.BadFrameIndex;
         }
 
-        private List<IClip> EnumerateAdditionalClips()
+        private bool FolderHasDNG(string folder)
+        {
+            try
+            {
+                return System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any();
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine("Could not enumerate files in: '" + folder + "'\n" + e.Message);
+                return false;
+            }
+        }
+
+        private IClip AdjacentClip(bool previous)
         {
             var parentFolder = System.IO.Directory.GetParent(Path);
             if (parentFolder == null)
@@ -125,30 +134,47 @@ namespace Octopus.Player.Core
             {
                 folders = System.IO.Directory.EnumerateDirectories(parentFolder.FullName, "*", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Trace.WriteLine("Could not enumerate directories in: '" + parentFolder.FullName + "'\n" + e.Message);
                 return null;
             }
 
-            var clips = new List<IClip>();
-            foreach(var folder in folders)
+            int? clipIndex = null;
+            for(int i = 0; i < folders.Count(); i++)
             {
-                if (!System.IO.Directory.Exists(folder))
-                    continue;
-                try
+                if (folders.ElementAt(i) == Path)
                 {
-                    if (System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any())
-                        clips.Add(new ClipCinemaDNG(folder));
-                }
-                catch(Exception e)
-                {
-                    Trace.WriteLine("Could not enumerate files in: '" + folder + "'\n" + e.Message);
+                    clipIndex = i;
+                    break;
                 }
             }
-            return clips;
-        }
 
+            if ( clipIndex.HasValue )
+            {
+                if (previous)
+                {
+                    for (int i = clipIndex.Value - 1; i >= 0; i++)
+                    {
+                        var folder = folders.ElementAt(i);
+                        if (FolderHasDNG(folder))
+                            return new ClipCinemaDNG(folder);
+                    }
+                }
+                else
+                {
+                    for (int i = clipIndex.Value + 1; i < folders.Count(); i++)
+                    {
+                        var folder = folders.ElementAt(i);
+                        if (FolderHasDNG(folder))
+                            return new ClipCinemaDNG(folder);
+                    }
+                }
+            }
+
+            return null;
+        }
+        
         public override Error Validate()
         {
             // Check path is a folder
@@ -158,7 +184,7 @@ namespace Octopus.Player.Core
             // Check path has sequenceable DNGs
             try
             {
-                var dngFiles = System.IO.Directory.EnumerateFiles(Path, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Where(f => !System.IO.Path.GetFileName(f).StartsWith("._")).OrderBy(f => f);
+                var dngFiles = Directory.EnumerateFiles(Path, "*.dng", SearchOption.TopDirectoryOnly).Where(f => !System.IO.Path.GetFileName(f).StartsWith("._")).OrderBy(f => f);
 
                 // Determine the sequencing field
                 // Travel backwards from where digits start to where digits end
@@ -177,6 +203,8 @@ namespace Octopus.Player.Core
                             SequencingFieldPosition = (uint)i + 1;
                             SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
                             CachedFramePath = dngPath;
+                            FirstFrame = dngPath;
+                            LastFrame = dngFiles.Last();
                             Valid = true;
                             return Error.None;
                         }

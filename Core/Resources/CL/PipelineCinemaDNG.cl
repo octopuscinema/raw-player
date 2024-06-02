@@ -186,7 +186,7 @@ KERNEL void ProcessBayerLUT(__read_only image2d_t rawImage, float2 blackWhiteLev
 KERNEL void Process(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
 	eToneMappingOperator toneMappingOperator, eGamma gamma, __write_only image2d_t output
 #ifdef LINEARIZE
-	__read_only image1d_t linearizeTable, float linearizeTableRange
+	, __read_only image1d_t linearizeTable, float linearizeTableRange
 #endif
 	)
 {
@@ -234,7 +234,7 @@ KERNEL void Process(__read_only image2d_t rawImage, float2 blackWhiteLevel, floa
 KERNEL void ProcessLUT(__read_only image2d_t rawImage, float2 blackWhiteLevel, float exposure,
 	eToneMappingOperator toneMappingOperator, eGamma gamma, __read_only image3d_t logToDisplay, __write_only image2d_t output
 #ifdef LINEARIZE
-	__read_only image1d_t linearizeTable, float linearizeTableRange
+	, __read_only image1d_t linearizeTable, float linearizeTableRange
 #endif
 	)
 {
