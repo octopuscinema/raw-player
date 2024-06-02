@@ -470,6 +470,12 @@ namespace Octopus.Player.UI.Windows
             }
         }
 
+        public bool MenuItemExists(string id)
+        {
+            return FindMenuItem(PlayerMenu.Items, id) != null ||
+                FindContextMenuItem(id) != null;
+        }
+
         public void AddMenuSeperator(string parentId, uint? index)
         {
             var parentItem = FindMenuItem(PlayerMenu.Items, parentId);
