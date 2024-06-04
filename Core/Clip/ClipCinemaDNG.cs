@@ -114,7 +114,7 @@ namespace Octopus.Player.Core
         {
             try
             {
-                return System.IO.Directory.EnumerateFiles(folder, "*.dng", System.IO.SearchOption.TopDirectoryOnly).Any();
+                return Directory.EnumerateFiles(folder, "*.dng", SearchOption.TopDirectoryOnly).Any();
             }
             catch (Exception e)
             {
@@ -125,14 +125,14 @@ namespace Octopus.Player.Core
 
         private IClip AdjacentClip(bool previous)
         {
-            var parentFolder = System.IO.Directory.GetParent(Path);
+            var parentFolder = Directory.GetParent(Path);
             if (parentFolder == null)
                 return null;
 
             IEnumerable<string> folders = null;
             try
             {
-                folders = System.IO.Directory.EnumerateDirectories(parentFolder.FullName, "*", System.IO.SearchOption.TopDirectoryOnly).OrderBy(f => f);
+                folders = Directory.EnumerateDirectories(parentFolder.FullName, "*", SearchOption.TopDirectoryOnly).OrderBy(f => f);
             }
             catch (Exception e)
             {
@@ -184,33 +184,30 @@ namespace Octopus.Player.Core
             // Check path has sequenceable DNGs
             try
             {
-                var dngFiles = Directory.EnumerateFiles(Path, "*.dng", SearchOption.TopDirectoryOnly).Where(f => !System.IO.Path.GetFileName(f).StartsWith("._")).OrderBy(f => f);
+                var dngFiles = Directory.EnumerateFiles(Path, "*.dng", SearchOption.TopDirectoryOnly).Where(f => !System.IO.Path.GetFileName(f).StartsWith("._"));
 
                 // Determine the sequencing field
                 // Travel backwards from where digits start to where digits end
-                if (dngFiles.Any())
+                var dngPath = dngFiles.Min();
+                uint? sequenceEndPosition = null;
+                for (int i = dngPath.Length - 1; i >= 0; i--)
                 {
-                    var dngPath = dngFiles.First();
-                    uint? sequenceEndPosition = null;
-                    for (int i = dngPath.Length - 1; i >= 0; i--)
+                    var character = dngPath[i];
+                    bool isDigit = char.IsDigit(character);
+                    if (isDigit && sequenceEndPosition == null)
+                        sequenceEndPosition = (uint)i + 1;
+                    if (!isDigit && sequenceEndPosition != null)
                     {
-                        var character = dngPath[i];
-                        bool isDigit = Char.IsDigit(character);
-                        if (isDigit && sequenceEndPosition == null)
-                            sequenceEndPosition = (uint)i + 1;
-                        if (!isDigit && sequenceEndPosition != null)
-                        {
-                            SequencingFieldPosition = (uint)i + 1;
-                            SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
-                            CachedFramePath = dngPath;
-                            FirstFrame = dngPath;
-                            LastFrame = dngFiles.Last();
-                            Valid = true;
-                            return Error.None;
-                        }
+                        SequencingFieldPosition = (uint)i + 1;
+                        SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
+                        CachedFramePath = dngPath;
+                        FirstFrame = dngPath;
+                        LastFrame = dngFiles.Max();
+                        Valid = true;
+                        return Error.None;
                     }
                 }
-
+                
                 Valid = false;
                 return Error.NoVideoStream;
             }
