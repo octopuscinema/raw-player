@@ -24,6 +24,8 @@ namespace Octopus.Player.Core.Playback
         private SequenceFrameDNG SeekFrame { get; set; }
         private Mutex SeekFrameMutex { get; set; }
 
+        private SequenceFrameDNG PauseFrame { get; set; }
+
         private ISequenceStream SequenceStream { get; set; }
         private IProgram GpuPipelineComputeProgram { get; set; }
 
@@ -41,7 +43,6 @@ namespace Octopus.Player.Core.Playback
 
         public override uint? ActiveSeekRequest { get; protected set; }
 
-        byte[] displayFrameStaging;
         ITexture displayFrameGPU;
         IImage2D displayFrameCompute;
 
@@ -72,6 +73,11 @@ namespace Octopus.Player.Core.Playback
             if (State != State.Stopped && State != State.Empty)
                 Stop();
             Debug.Assert(IsOpen());
+            if ( PauseFrame != null)
+            {
+                PauseFrame.Dispose();
+                PauseFrame = null;
+            }
             if (SeekFrame != null)
             {
                 SeekFrame.Dispose();
@@ -92,7 +98,7 @@ namespace Octopus.Player.Core.Playback
                 LinearizeTable.Dispose();
                 LinearizeTable = null;
             }
-            displayFrameStaging = null;
+
             State = State.Empty;
             Clip = null;
             LastDisplayedFrame = null;
@@ -308,18 +314,16 @@ namespace Octopus.Player.Core.Playback
             {
                 if (!IsPlaying && State != State.Empty && IsOpen())
                 {
-                    // TODO: maybe cache this frame as 'pauseFrame' or something
-                    var frame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
-                    frame.frameNumber = LastDisplayedFrame.Value;// displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
-                    frame.Decode(Clip);
+                    if (PauseFrame == null)
+                        PauseFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
 
-                    Action discardFrame = () =>
+                    if (!LastDisplayedFrame.HasValue || PauseFrame.frameNumber != LastDisplayedFrame.Value || !PauseFrame.Processed)
                     {
-                        frame.Dispose();
-                        frame = null;
-                    };
+                        PauseFrame.frameNumber = LastDisplayedFrame.Value;
+                        PauseFrame.Decode(Clip);
+                    }
 
-                    frame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, true, discardFrame);
+                    PauseFrame.Process(Clip, RenderContext, displayFrameCompute, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, true);
                 }
             };
 
