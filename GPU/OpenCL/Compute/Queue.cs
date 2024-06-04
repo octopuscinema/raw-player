@@ -67,6 +67,24 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             }
         }
 
+        public void Memset(IImage2D image, in Vector4 color)
+        {
+            var imageCL = (Image2D)image;
+            if (imageCL == null)
+                throw new ArgumentException("Invalid image object");
+
+            var originArray = new nuint[] { 0, 0, 0 };
+            var sizeArray = new nuint[] { (nuint)image.Dimensions.X, (nuint)image.Dimensions.Y, 1 };
+
+            unsafe
+            {
+                fixed (nuint* pOrigin = originArray, pSize = sizeArray)
+                {
+                    Debug.CheckError(Context.Handle.EnqueueFillImage(NativeHandle, imageCL.NativeHandle, color, pOrigin, pSize, 0, null, null));
+                }
+            }
+        }
+
         public void AcquireTextureObject(Render.IContext renderContext, IImage image)
         {
             var sharingExtension = new Silk.NET.OpenCL.Extensions.KHR.KhrGlSharing(Context.Handle.Context);

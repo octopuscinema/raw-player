@@ -12,6 +12,7 @@ namespace Octopus.Player.GPU.Compute
         string Name { get; }
 
         void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
+        void Memset(IImage2D image, in Vector4 color);
 
         void AcquireTextureObject(GPU.Render.IContext renderContext, IImage image);
         void ReleaseTextureObject(IImage image);
