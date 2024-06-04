@@ -71,8 +71,11 @@ namespace Octopus.Player.GPU.OpenCL.Compute
 
         override public void Dispose()
         {
-            Debug.CheckError(Context.Handle.ReleaseMemObject(NativeHandle));
-            NativeHandle = 0;
+            if (NativeHandle != 0)
+            {
+                Debug.CheckError(Context.Handle.ReleaseMemObject(NativeHandle));
+                NativeHandle = 0;
+            }
         }
     }
 }
