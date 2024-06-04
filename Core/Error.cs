@@ -15,6 +15,7 @@ namespace Octopus.Player.Core
         BadImageData,
         BadFrameIndex,
         FrameNotReady,
+        FrameAlreadyReady,
         FrameRequestError,
         NotImplmeneted,
         SeekRequestAlreadyActive,

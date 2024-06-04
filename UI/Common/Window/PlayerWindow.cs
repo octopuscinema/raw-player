@@ -843,8 +843,12 @@ namespace Octopus.Player.UI
 
             Playback.SeekStart();
             var frame = (uint)Math.Round(Playback.FirstFrame + (Playback.LastFrame - Playback.FirstFrame) * value);
-            Playback.RequestSeek(frame, true);
+            var seekResult = Playback.RequestSeek(frame, true);
             Playback.SeekEnd();
+
+            // Manually update playhead if seek failed for a sensible reason
+            if (seekResult == Error.FrameAlreadyReady)
+                playhead = (float)value;
         }
 
         private Error LoadCustomLUT(string lutPath)

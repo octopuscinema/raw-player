@@ -235,7 +235,7 @@ namespace Octopus.Player.Core.Playback
 
             // Nothing to do
             if (SeekFrame != null && SeekFrame.frameNumber == frame)
-                return Error.None;
+                return Error.FrameAlreadyReady;
 
             // If forced, wait for previous work to finish
             if ( SeekWork.IsBusy && !force)
