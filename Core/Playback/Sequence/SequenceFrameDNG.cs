@@ -100,11 +100,11 @@ namespace Octopus.Player.Core.Playback
         public override Error Decode(IClip clip, byte[] workingBuffer = null)
         {
             var result = TryDecode(clip, workingBuffer);
+
+            // Blank data if we didn't decode properly
             if (result != Error.None)
-            {
-                // TODO: memset the gpu frame to black if there was a decode error
-                Trace.WriteLine("TODO: : memset the gpu frame to black if there was a decode error");
-            }
+                ComputeQueue.Memset(decodedImageGpu, Vector4.Zero);
+            
             LastError = result;
             Processed = false;
             return result;
@@ -134,11 +134,12 @@ namespace Octopus.Player.Core.Playback
             Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
             var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
             Debug.Assert(metadata != null);
-            var kernel = ComputeKernelForClip(metadata, logToDisplay);
 
             Action renderAction = () =>
             {
+                bool useLut = logToDisplay != null && logToDisplay.ComputeImage != null;
                 uint argumentIndex = 0;
+                var kernel = ComputeKernelForClip(metadata, useLut);
                 program.SetArgument(kernel, argumentIndex++, decodedImageGpu);
 
                 // Calculate and apply black/white levels
@@ -161,7 +162,7 @@ namespace Octopus.Player.Core.Playback
                 program.SetArgument(kernel, argumentIndex++, (int)gammaSpace);
 
                 // Apply log to display LUT
-                if (logToDisplay != null)
+                if (useLut)
                     program.SetArgument(kernel, argumentIndex++, logToDisplay.ComputeImage);
 
                 // Set output
@@ -230,13 +231,13 @@ namespace Octopus.Player.Core.Playback
             return Error.None;
         }
 
-        private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata, IO.LUT.ILUT lut)
+        private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata, bool useLut)
         {
             string kernel = "Process";
             if (metadata.ColorProfile.HasValue)
                 kernel += "Bayer";
 
-            if (lut != null)
+            if (useLut)
                 kernel += "LUT";
             
             return kernel;

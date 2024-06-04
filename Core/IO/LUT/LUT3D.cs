@@ -34,13 +34,9 @@ namespace Octopus.Player.Core.IO.LUT
 
         public LUT3D(GPU.Compute.IContext computeContext, Assembly assembly, string resourceName, GPU.Format format = GPU.Format.RGBA8)
         {
-            //var sourceStream = assembly.GetManifestResourceStream(resourceName);
-            //var reader = new StreamReader(sourceStream);
-
             using (var sourceStream = assembly.GetManifestResourceStream(resourceName))
             using (var reader = new StreamReader(sourceStream))
             {
-
                 switch (format)
                 {
                     case GPU.Format.RGBA8:
@@ -62,7 +58,10 @@ namespace Octopus.Player.Core.IO.LUT
         public void Dispose()
         {
             if (ComputeImage != null)
+            {
                 ComputeImage.Dispose();
+                ComputeImage = null;
+            }
         }
 
         void Parse<T>(string line, IList<T> data)
