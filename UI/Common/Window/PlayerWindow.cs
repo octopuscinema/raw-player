@@ -1,4 +1,5 @@
 ﻿using Octopus.Player.Core;
+using Octopus.Player.Core.Playback;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace Octopus.Player.UI
             }
         }
         public RecentFiles RecentFiles { get; private set; }
+        private RawParameters? PersistantClipParameters { get; set; }
 
         private DateTime lastInteraction;
         private float playhead;
@@ -1023,8 +1025,34 @@ namespace Octopus.Player.UI
             NativeWindow.SetLabelContent("timeCodeLabel", timeCode.ToString(), timeCodeLabelColour);
         }
 
+        private void SavePersistantClipParameters(IClip clip)
+        {
+            if (!clip.RawParameters.HasValue)
+            {
+                PersistantClipParameters = null;
+                return;
+            }
+
+            var persistantClipParamters = new RawParameters();
+            persistantClipParamters.gammaSpace = clip.RawParameters.Value.gammaSpace;
+            PersistantClipParameters = persistantClipParamters;
+        }
+
+        private void RestorePersistantClipParameters(IClip clip)
+        {
+            if (clip.RawParameters != null && PersistantClipParameters != null)
+            {
+                var parameters = clip.RawParameters.Value;
+                parameters.gammaSpace = PersistantClipParameters.Value.gammaSpace;
+                clip.RawParameters = parameters;
+            }
+        }
+
         public void OnClipClosed(object sender, EventArgs e)
         {
+            if (Playback.Clip != null)
+                SavePersistantClipParameters(Playback.Clip);
+
             NativeWindow.SetButtonEnabled("playButton", false);
             NativeWindow.SetButtonEnabled("pauseButton", false);
             NativeWindow.SetButtonEnabled("fastRewindButton", false);
@@ -1045,6 +1073,12 @@ namespace Octopus.Player.UI
 
         public void OnClipOpened(object sender, EventArgs e)
         {
+            if (Playback != null && Playback.Clip != null)
+                RestorePersistantClipParameters(Playback.Clip);
+
+            bool isLogGamma = (Playback.Clip.RawParameters.HasValue && Playback.Clip.RawParameters.Value.gammaSpace.HasValue) ?
+                Playback.Clip.RawParameters.Value.gammaSpace.Value.IsLog() : false;
+
             playhead = 0.0f;
             NativeWindow.SetButtonEnabled("playButton", true);
             NativeWindow.SetButtonEnabled("pauseButton", true);
@@ -1054,11 +1088,10 @@ namespace Octopus.Player.UI
             NativeWindow.SetSliderEnabled("seekBar", true);
             NativeWindow.SetSliderValue("seekBar", playhead);
             NativeWindow.EnableMenuItem("clip", true);
-            NativeWindow.EnableMenuItem("toneMapping", true);
-            NativeWindow.EnableMenuItem("lut", false);
+            NativeWindow.EnableMenuItem("toneMapping", !isLogGamma);
+            NativeWindow.EnableMenuItem("lut", isLogGamma);
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
-            NativeWindow.CheckMenuItem("gammaRec709");
             NativeWindow.DropAreaVisible = false;
 
             bool isColour = false;
@@ -1119,10 +1152,9 @@ namespace Octopus.Player.UI
             }
 
             NativeWindow.EnableMenuItem("whiteBalance", isColour);
-            NativeWindow.EnableMenuItem("colorSpace", isColour);
             NativeWindow.EnableMenuItem("highlightRecovery", isColour);
-            NativeWindow.EnableMenuItem("gamutCompression", isColour);
-            NativeWindow.EnableMenuItem("highlightRollOff", isColour);
+            NativeWindow.EnableMenuItem("gamutCompression", isColour && !isLogGamma);
+            NativeWindow.EnableMenuItem("highlightRollOff", isColour && !isLogGamma);
             NativeWindow.CheckMenuItem("highlightRecovery", isColour, false);
             NativeWindow.CheckMenuItem("highlightRollOffMedium", isColour);
             NativeWindow.CheckMenuItem("gamutCompression", isColour, false);

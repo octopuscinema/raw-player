@@ -100,9 +100,9 @@ namespace Octopus.Player.Core.Playback
             }
 
             State = State.Empty;
+            ClipClosed?.Invoke(this, new EventArgs());
             Clip = null;
             LastDisplayedFrame = null;
-            ClipClosed?.Invoke(this, new EventArgs());
             GC.Collect();
         }
 

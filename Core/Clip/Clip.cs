@@ -6,7 +6,6 @@ namespace Octopus.Player.Core
 	{
 		public Clip()
 		{
-
 		}
 
         public string Path { get; protected set; }
