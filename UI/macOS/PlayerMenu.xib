@@ -65,8 +65,8 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="File" id="83">
-                    <menu key="submenu" title="File" id="81">
+                <menuItem title="File" identifier="file" id="83">
+                    <menu key="submenu" title="File" autoenablesItems="NO" id="81">
                         <items>
                             <menuItem title="Open CinemaDNG Sequence..." keyEquivalent="o" identifier="openCinemaDNG" id="4Ld-fG-0SO">
                                 <connections>
@@ -84,6 +84,13 @@
                                         </menuItem>
                                     </items>
                                 </menu>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="ODM-Y5-oay"/>
+                            <menuItem title="Export Frame..." enabled="NO" identifier="exportFrame" id="ttP-sh-Kwh">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="doClick:" target="-1" id="oEk-YR-ite"/>
+                                </connections>
                             </menuItem>
                         </items>
                     </menu>

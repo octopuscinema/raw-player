@@ -12,6 +12,7 @@ using System.Security.Policy;
 using System.IO;
 using AVFoundation;
 using UniformTypeIdentifiers;
+using Octopus.Player.GPU;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -212,6 +213,27 @@ namespace Octopus.Player.UI.macOS
             return null;
         }
 
+#nullable enable
+        public string? SaveFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions)
+#nullable disable
+        {
+            var dialog = NSSavePanel.SavePanel;
+			dialog.ExtensionHidden = false;
+            dialog.CanCreateDirectories = false;
+            dialog.Message = title;
+			
+            var fileTypes = extensionsDescriptions.Select(fileType => UTType.CreateFromExtension(fileType.Item1.Trim('*').Trim('.').ToLower()))
+                    .Where(utType => utType != null)
+                    .ToArray()!;
+
+            dialog.AllowedContentTypes = fileTypes;
+
+			if (dialog.RunModal() == 1 && dialog.Url != null)
+				return dialog.Url.Path;
+
+            return null;
+        }
+
         public void Exit()
         {
 			NSApplication.SharedApplication.Terminate(this);
@@ -250,6 +272,31 @@ namespace Octopus.Player.UI.macOS
             }
 		}
 
+		public Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, bool ignoreAlpha = true)
+		{
+			if (format == Format.RGBX8 || format == Format.RGBX16)
+				ignoreAlpha = true;
+
+			try
+			{
+				using (var colorSpace = CoreGraphics.CGColorSpace.CreateItuR_709())
+				using (var dataProvider = new CoreGraphics.CGDataProvider(data))
+				using (var nsUrl = new NSUrl(path))
+				{
+					var imageDestination = ImageIO.CGImageDestination.Create(nsUrl, MobileCoreServices.UTType.PNG, imageCount: 1);
+					var image = new CoreGraphics.CGImage(dimensions.X, dimensions.Y, format.ComponentBitDepth(), format.SizeBits(), dimensions.X * format.SizeBytes(), colorSpace,
+						ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipLast : CoreGraphics.CGBitmapFlags.Last, dataProvider, null, false, CoreGraphics.CGColorRenderingIntent.Default);
+					imageDestination.AddImage(image);
+					imageDestination.Close();
+					image.Dispose();
+					return Core.Error.None;
+				}
+			}
+			catch
+			{
+				return Core.Error.BadFile;
+			}
+		}
 
         public void OpenContextMenu(string id)
         {

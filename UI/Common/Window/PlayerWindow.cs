@@ -51,6 +51,7 @@ namespace Octopus.Player.UI
         public void OnLoad()
         {
             NativeWindow.EnableMenuItem("clip", false);
+            NativeWindow.EnableMenuItem("exportFrame", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "", null, true);
             NativeWindow.SetLabelContent("durationLabel", "", null, true);
             NativeWindow.SetLabelContent("fastForwardLabel", "");
@@ -663,6 +664,13 @@ namespace Octopus.Player.UI
                     NativeWindow.PlayerApplication.CheckForUpdates(this, true);
                     break;
 
+                // Export frame
+                case "exportFrame":
+                    var pngExtension = new Tuple<string, string>("*.png", "PNG image");
+                    string savePath = NativeWindow.SaveFileDialogue("Export frame as PNG", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                         new List<Tuple<string, string>>() { pngExtension });
+                    break;
+
                 // Clip
                 case "metadata":
                     Debug.Assert(Playback != null && Playback.Clip != null);
@@ -1063,6 +1071,7 @@ namespace Octopus.Player.UI
             NativeWindow.SetLabelContent("timeCodeLabel", "", Theme.LabelColour);
             NativeWindow.SetLabelContent("durationLabel", "");
             NativeWindow.EnableMenuItem("clip", false);
+            NativeWindow.EnableMenuItem("exportFrame", false);
             NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
@@ -1088,6 +1097,7 @@ namespace Octopus.Player.UI
             NativeWindow.SetSliderEnabled("seekBar", true);
             NativeWindow.SetSliderValue("seekBar", playhead);
             NativeWindow.EnableMenuItem("clip", true);
+            NativeWindow.EnableMenuItem("exportFrame", true);
             NativeWindow.EnableMenuItem("toneMapping", !isLogGamma);
             NativeWindow.EnableMenuItem("lut", isLogGamma);
             NativeWindow.CheckMenuItem("exposureAsShot");

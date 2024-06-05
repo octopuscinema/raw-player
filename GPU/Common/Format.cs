@@ -14,6 +14,30 @@ namespace Octopus.Player.GPU
 
     public static partial class Extensions
     {
+        public static int ComponentBitDepth(this Format format)
+        {
+            switch (format)
+            {
+                case Format.RGBA8:
+                case Format.RGBX8:
+                case Format.R8:
+                case Format.RGB8:
+                    return 8;
+                case Format.RGBA16:
+                case Format.RGBX16:
+                case Format.R16:
+                case Format.RGB16:
+                    return 16;
+                default:
+                    throw new System.Exception("Unhandled GPU format");
+            }
+        }
+
+        public static int SizeBits(this Format format)
+        {
+            return SizeBytes(format) * 8;
+        }
+
         public static int SizeBytes(this Format format)
         {
             switch (format)

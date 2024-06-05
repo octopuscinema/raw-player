@@ -37,6 +37,7 @@ namespace Octopus.Player.UI
 #nullable enable
 		string? OpenFolderDialogue(string title, string defaultDirectory);
         string? OpenFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions);
+		string? SaveFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions);
 #nullable disable
         void EnableMenuItem(string id, bool enable);
 		void CheckMenuItem(string id, bool check = true, bool uncheckSiblings = true);
@@ -53,6 +54,7 @@ namespace Octopus.Player.UI
 		void SetSliderValue(string id, float value);
 		void SetSliderEnabled(string id, bool enabled);
         AlertResponse Alert(AlertType alertType, string message, string title);
+		Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, bool ignoreAlpha = true);
         void OpenContextMenu(string id);
 		void OpenContextMenu(List<string> mainMenuItems, List<(string, string)> additionalItems = null);
 		void OpenAboutPanel();
