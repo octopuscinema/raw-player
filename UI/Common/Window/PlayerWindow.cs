@@ -294,7 +294,7 @@ namespace Octopus.Player.UI
             }
         }
 
-        private void MenuWhiteBalanceClick(string whiteBalanceMenuId)
+        private void MenuWhiteBalanceClick(string whiteBalanceMenuId, bool fireEvents = true)
         {
             if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
             {
@@ -313,7 +313,8 @@ namespace Octopus.Player.UI
                 rawParameters.whiteBalance = whiteBalancePresets[whiteBalanceMenuId];
                 Playback.Clip.RawParameters = rawParameters;
                 NativeWindow.CheckMenuItem(whiteBalanceMenuId);
-                RawParameterChanged?.Invoke();
+                if (fireEvents)
+                    RawParameterChanged?.Invoke();
                 RenderContext.RequestRender();
             }
         }
@@ -1155,7 +1156,7 @@ namespace Octopus.Player.UI
                     {
                         NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (Unknown)");
                         NativeWindow.EnableMenuItem("whiteBalanceAsShot", false);
-                        MenuWhiteBalanceClick("whiteBalanceDaylight");
+                        MenuWhiteBalanceClick("whiteBalanceDaylight", false);
                     }
                 }
                 NativeWindow.LockAspect(Playback.Clip.Metadata.AspectRatio);
