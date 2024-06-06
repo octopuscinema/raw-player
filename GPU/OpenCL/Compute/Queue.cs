@@ -80,7 +80,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             {
                 fixed (nuint* pOrigin = originArray, pSize = sizeArray)
                 {
-                    Debug.CheckError(Context.Handle.EnqueueFillImage(NativeHandle, imageCL.NativeHandle, color, pOrigin, pSize, 0, null, null));
+                    Debug.CheckError(Context.Handle.EnqueueFillImage(NativeHandle, imageCL.NativeHandle, in color, pOrigin, pSize, 0, null, null));
                 }
             }
         }
