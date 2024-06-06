@@ -1,4 +1,5 @@
 ﻿using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace Octopus.Player.Core.IO
         public Maths.Rational? Framerate { get; protected set; }
         public SMPTETimeCode? StartTimeCode { get; protected set; }
         public virtual Rational AspectRatio { get { return DefaultCrop.HasValue ? new Rational(DefaultCrop.Value.Z, DefaultCrop.Value.W) : new Rational(Dimensions.X, Dimensions.Y); } }
+        public Orientation Orientation { get; protected set; }
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
         public float ExposureValue { get; protected set; }

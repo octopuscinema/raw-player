@@ -6,7 +6,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU;
 using OpenTK.Mathematics;
+using TiffLibrary;
 
 namespace Octopus.Player.Core.IO.DNG
 {
@@ -22,6 +25,34 @@ namespace Octopus.Player.Core.IO.DNG
         Unknown = -1,
         ColorFilterArray = 32803,
         LinearRaw = 34892
+    }
+
+    public static partial class Extensions
+    {
+        public static Orientation Orientation(this TiffOrientation orientation)
+        {
+            switch (orientation)
+            {
+                case TiffOrientation.TopLeft:
+                    return GPU.Orientation.TopLeft;
+                case TiffOrientation.TopRight:
+                    return GPU.Orientation.TopRight;
+                case TiffOrientation.BottomRight:
+                    return GPU.Orientation.BottomRight;
+                case TiffOrientation.BottomLeft:
+                    return GPU.Orientation.BottomLeft;
+                case TiffOrientation.LeftTop:
+                    return GPU.Orientation.LeftTop;
+                case TiffOrientation.RightTop:
+                    return GPU.Orientation.RightTop;
+                case TiffOrientation.RightBottom:
+                    return GPU.Orientation.RightBottom;
+                case TiffOrientation.LeftBottom:
+                    return GPU.Orientation.LeftBottom;
+                default:
+                    throw new ArgumentException("Unknown tiff orientation");
+            }
+        }
     }
 
     public class MetadataCinemaDNG : Metadata
@@ -41,12 +72,13 @@ namespace Octopus.Player.Core.IO.DNG
         public Vector2 PixelAspectRatio { get; private set; }
         public Vector4i ActiveArea { get; private set; }
 
-        public override Maths.Rational AspectRatio
+        public override Rational AspectRatio
         {
             get
             {
-                return new Maths.Rational((int)((float)base.AspectRatio.Numerator * PixelAspectRatio.X),
+                var ratio = new Rational((int)((float)base.AspectRatio.Numerator * PixelAspectRatio.X),
                     (int)((float)base.AspectRatio.Denominator * PixelAspectRatio.Y));
+                return Orientation.IsTransposed() ? ratio.Transpose() : ratio;
             }
         }
 
@@ -77,6 +109,7 @@ namespace Octopus.Player.Core.IO.DNG
             if (reader.ContainsDefaultCropOrigin && reader.ContainsDefaultCropSize)
                 DefaultCrop = new Vector4i(reader.DefaultCropOrigin, reader.DefaultCropSize);
             ActiveArea = reader.ContainsActiveArea ? reader.ActiveArea : new Vector4i(0,0, reader.Dimensions.Y, reader.Dimensions.X);
+            Orientation = reader.Orientation.Orientation();
 
             // Title is just the path without the parent folders
             Title = Path.GetFileName(clip.Path);

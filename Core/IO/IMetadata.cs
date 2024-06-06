@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU;
 using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.IO
@@ -17,6 +18,7 @@ namespace Octopus.Player.Core.IO
         Vector2i Dimensions { get; }
         Vector2i PaddedDimensions { get; }
         Rational AspectRatio { get; }
+        Orientation Orientation { get; }
         uint BitDepth { get; }
         uint DecodedBitDepth { get; }
         float ExposureValue { get; }

@@ -224,6 +224,37 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size);
         }
 
+        public void Blit2D(ITexture texture, Vector2i pos, Vector2i size, Orientation orientation)
+        {
+            switch (orientation)
+            {
+                case Orientation.TopLeft:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size);
+                    break;
+                case Orientation.TopRight:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4i(1, 0, 0, 1));
+                    break;
+                case Orientation.BottomLeft:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4i(0, 1, 1, 0));
+                    break;
+                case Orientation.BottomRight:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4i(1, 1, 0, 0));
+                    break;
+                case Orientation.LeftBottom:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4(0, 1, 1, 0), true);
+                    break;
+                case Orientation.RightBottom:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4(0, 0, 1, 1), true);
+                    break;
+                case Orientation.LeftTop:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4(1, 1, 0, 0), true);
+                    break;
+                case Orientation.RightTop:
+                    Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, new Vector4(1, 0, 0, 1), true);
+                    break;
+            }
+        }
+
         public void Blit2D(ITexture texture, Vector2i pos, Vector2i size, in Vector4 uv)
         {
             Draw2D(blitShader, new Dictionary<string, ITexture> { { "image", texture } }, pos, size, uv);
@@ -234,7 +265,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
             Draw2D(shader, textures, pos, size, new Vector4i(0, 0, 1, 1));
         }
 
-        public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size, in Vector4 uv)
+        public void Draw2D(IShader shader, IDictionary<string, ITexture> textures, Vector2i pos, Vector2i size, in Vector4 uv, bool transposeUv = false)
         {
             SetVertexBuffer(Draw2DVertexBuffer);
             SetShader((Shader)shader);
@@ -248,6 +279,7 @@ namespace Octopus.Player.GPU.OpenGL.Render
                     textureUnit++;
                 }
             }
+            shader.SetUniform(this, "RectTransposeUV", transposeUv ? 1 : 0);
             shader.SetUniform(this, "RectUV", new Vector4(uv));
             shader.SetUniform(this, "RectBounds", new Vector4(pos.X, pos.Y, size.X, size.Y));
             shader.SetUniform(this, "OrthographicBoundsInverse", new Vector2(1, 1) / FramebufferSize.ToVector2());

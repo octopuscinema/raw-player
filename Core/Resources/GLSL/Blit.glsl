@@ -6,7 +6,8 @@ out highp vec2 normalisedCoordinates;
 
 layout(location = 0) in highp vec2 VertexPosition;
 
-uniform vec4 RectUV;
+uniform lowp int RectTransposeUV;
+uniform highp vec4 RectUV;
 uniform highp vec4 RectBounds;
 uniform highp vec2 OrthographicBoundsInverse;
 
@@ -15,7 +16,7 @@ void main(void)
 	// Calculate Texture Coordinates from vertex position
 	highp vec2 UV0 = RectUV.xw;
 	highp vec2 UV1 = RectUV.zy;
-	normalisedCoordinates = mix(UV0, UV1, VertexPosition);
+	normalisedCoordinates = mix(UV0, UV1, RectTransposeUV != 0 ? VertexPosition.yx : VertexPosition);
 	
 	// Calculate position
 	vec2 Translate = RectBounds.xy;

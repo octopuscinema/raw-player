@@ -65,7 +65,7 @@ namespace Octopus.Player.Core.IO.DNG
         private Vector2i? CachedDefaultCropOrigin { get; set; }
         private bool? CachedContainsActiveArea { get; set; }
         private Vector4i? CachedActiveArea { get; set; }
-
+        private TiffOrientation? CachedOrientation { get; set; }
         public Reader(string filePath)
         {
             // Open TIFF file
@@ -919,6 +919,16 @@ namespace Octopus.Player.Core.IO.DNG
                 if (!CachedContainsActiveArea.HasValue)
                     CachedContainsActiveArea = Ifd.Contains((TiffTag)TiffTagDNG.ActiveArea);
                 return CachedContainsActiveArea.Value;
+            }
+        }
+
+        public TiffOrientation Orientation
+        {
+            get
+            {
+                if (!CachedOrientation.HasValue)
+                    CachedOrientation = TagReader.ReadOrientation();
+                return CachedOrientation.Value;
             }
         }
 

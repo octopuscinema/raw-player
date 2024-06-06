@@ -20,6 +20,11 @@ namespace Octopus.Player.Core.Maths
 
         public bool IsZero { get { return Numerator == 0; } }
 
+        public Rational Transpose()
+        {
+            return new Rational(Denominator, Numerator);
+        }
+
         public double ToSingle()
         {
             return Numerator / (double)Denominator;

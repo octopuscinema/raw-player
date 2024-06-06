@@ -404,7 +404,7 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectPos;
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
-                RenderContext.Blit2D(displayFrameGPU, rectPos, rectSize);
+                RenderContext.Blit2D(displayFrameGPU, rectPos, rectSize, Clip.Metadata.Orientation);
             }
         }
 
