@@ -542,6 +542,28 @@ namespace Octopus.Player.Core.Playback
                 return Error.InvalidLutFile;
             }
         }
+
+        public override Error ExportFrame(out ExportedFrame frame, uint? frameNumber = null)
+        {
+            frame = new ExportedFrame();
+
+            using var frameIn = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
+            using var frameOut = ComputeContext.CreateImage(displayFrameCompute.Dimensions, displayFrameCompute.Format, MemoryDeviceAccess.WriteOnly, MemoryHostAccess.ReadOnly);
+
+            frameIn.frameNumber = frameNumber.GetValueOrDefault(LastDisplayedFrame.GetValueOrDefault());
+
+            var decodeResult = frameIn.Decode(Clip);
+            if (decodeResult != Error.None)
+                return decodeResult;
+
+            var processResult = frameIn.Process(Clip, RenderContext, frameOut, LinearizeTable, GpuPipelineComputeProgram, ComputeContext.DefaultQueue, LUT, true);
+            if (processResult != Error.None)
+                return processResult;
+
+            var data = ComputeContext.DefaultQueue.ReadImage(frameOut);
+
+            return Error.None;
+        }
     }
 }
 

@@ -622,6 +622,20 @@ namespace Octopus.Player.UI.macOS
 				((NSView)PlaybackControls.Animator).AlphaValue = 0.0f;
 			});
 		}
+
+		public void Notification(string title, string caption)
+		{
+            // Trigger a local notification after the time has elapsed
+            var notification = new NSUserNotification();
+
+			// Add text and sound to the notification
+			notification.Title = title;
+			notification.InformativeText = caption;
+            notification.SoundName = NSUserNotification.NSUserNotificationDefaultSoundName;
+			notification.HasActionButton = true;
+
+            NSUserNotificationCenter.DefaultUserNotificationCenter.DeliverNotification(notification);
+        }
     }
 }
 

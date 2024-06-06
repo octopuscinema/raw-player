@@ -129,7 +129,7 @@ namespace Octopus.Player.Core.Playback
         }
 
         public override Error Process(IClip clip, IContext renderContext, GPU.Compute.IImage2D output, GPU.Compute.IImage1D linearizeTable, GPU.Compute.IProgram program,
-            GPU.Compute.IQueue queue, IO.LUT.ILUT3D logToDisplay, bool immediate = false, Action postCopyAction = null)
+            GPU.Compute.IQueue queue, IO.LUT.ILUT3D logToDisplay, bool immediate = false, Action postProcessAction = null)
         {
             Debug.Assert(clip.GetType() == typeof(ClipCinemaDNG));
             var metadata = (IO.DNG.MetadataCinemaDNG)clip.Metadata;
@@ -218,8 +218,8 @@ namespace Octopus.Player.Core.Playback
                 // Release access to GL texture
                 queue.ReleaseTextureObject(output);
 
-                if (postCopyAction != null)
-                    postCopyAction();
+                if (postProcessAction != null)
+                    postProcessAction();
             };
 
             if (immediate)

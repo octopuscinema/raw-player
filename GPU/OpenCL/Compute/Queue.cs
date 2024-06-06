@@ -4,6 +4,7 @@ using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using Silk.NET.OpenCL;
 using System;
+using System.Drawing;
 
 namespace Octopus.Player.GPU.OpenCL.Compute
 {
@@ -54,7 +55,6 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             var originArray = new nuint[] { (nuint)origin.X, (nuint)origin.Y, 0};
             var sizeArray = new nuint[] { (nuint)size.X, (nuint)size.Y, 1 };
 
-            nuint stride = (nuint)image.Dimensions.X * (nuint)image.Format.BytesPerPixel();
             unsafe
             {
                 fixed (nuint* pOrigin = originArray, pSize = sizeArray)
@@ -65,6 +65,30 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                     }
                 }
             }
+        }
+
+        public byte[] ReadImage(IImage2D image)
+        {
+            var imageCL = (Image2D)image;
+            if (imageCL == null)
+                throw new ArgumentException("Invalid image object");
+
+            var imageData = new byte[image.Format.BytesPerPixel() * image.Dimensions.Area()];
+            var originArray = new nuint[] { 0, 0, 0 };
+            var sizeArray = new nuint[] { (nuint)image.Dimensions.X, (nuint)image.Dimensions.Y, 1 };
+
+            unsafe
+            {
+                fixed (nuint* pOrigin = originArray, pSize = sizeArray)
+                {
+                    fixed (byte* pImageData = imageData)
+                    {
+                        Debug.CheckError(Context.Handle.EnqueueReadImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, 0, 0, pImageData, 0, null, null));
+                    }
+                }
+            }
+
+            return imageData;
         }
 
         public void Memset(IImage2D image, in Vector4 color)

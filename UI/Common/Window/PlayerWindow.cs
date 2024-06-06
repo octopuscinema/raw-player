@@ -670,6 +670,7 @@ namespace Octopus.Player.UI
                     var pngExtension = new Tuple<string, string>("*.png", "PNG image");
                     string savePath = NativeWindow.SaveFileDialogue("Export frame as PNG", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                          new List<Tuple<string, string>>() { pngExtension });
+                    //Notification("Frame exported", "Saved to: '" + savePath + "'");
                     break;
 
                 // Clip

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OpenTK.Mathematics;
 
 namespace Octopus.Player.Core.Playback
 {
@@ -33,6 +34,14 @@ namespace Octopus.Player.Core.Playback
 		{
 			return (int)velocity > 0;
 		}
+	}
+
+	public readonly struct ExportedFrame
+	{
+		public readonly byte[] data;
+		public readonly Vector2i dimensions;
+		public readonly GPU.Format format;
+		public readonly uint frameNumber;
 	}
 
 	public interface IPlayback : IDisposable
@@ -86,7 +95,10 @@ namespace Octopus.Player.Core.Playback
 		event EventHandler ClipOpened;
 		event EventHandler ClipClosed;
 
-		void OnRenderFrame(double timeInterval);
+        // Export
+        Error ExportFrame(out ExportedFrame frame, uint? frameNumber = null);
+
+        void OnRenderFrame(double timeInterval);
 	}
 }
 

@@ -1,12 +1,10 @@
 ﻿using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace Octopus.Player.Core.Maths.Color
 {
-    public struct Profile
+    public readonly struct Profile
     {
         public static Vector3 Rec709LuminanceWeights { get { return new Vector3(0.2126f, 0.7152f, 0.0722f); } }
 
@@ -56,13 +54,13 @@ namespace Octopus.Player.Core.Maths.Color
                 asShotWhiteXY = reader.AsShotWhiteXY;
         }
 
-        public Tuple<double,double> AsShotWhiteBalance()
+        public readonly Tuple<double,double> AsShotWhiteBalance()
         {
             Debug.Assert(asShotWhiteXY.HasValue);
             return Temperature.ChromaticityToTemperatureTint(asShotWhiteXY.Value);
         }
 
-        public Matrix3 XYZToCamera(in Vector2 whiteXY)
+        public readonly Matrix3 XYZToCamera(in Vector2 whiteXY)
         {
             if (!isDualIlluminant)
                 return colorMatrix1;
@@ -93,7 +91,7 @@ namespace Octopus.Player.Core.Maths.Color
                 return Matrix.InterpolateColourMatrix(colorMatrix2, colorMatrix1, (float)g);
         }
 
-        public Vector2 NeutralToXY(in Vector3 neutral)
+        public readonly Vector2 NeutralToXY(in Vector3 neutral)
         {
             const uint kMaxPasses = 30;
 
@@ -127,7 +125,7 @@ namespace Octopus.Player.Core.Maths.Color
             return last;
         }
 
-        public Matrix3 CameraToXYZ(uint colorTemperature)
+        public readonly Matrix3 CameraToXYZ(uint colorTemperature)
         {
             Debug.Assert(hasForwardMatrix, "Warning, using CameraToXYZ for colour profile without Forward Matrices, please use XYZToCamera");
 
@@ -179,19 +177,19 @@ namespace Octopus.Player.Core.Maths.Color
             }
         }
 
-        public Matrix3 CalculateCameraToXYZD50(Tuple<float,float> whiteBalance)
+        public readonly Matrix3 CalculateCameraToXYZD50(Tuple<float,float> whiteBalance)
         {
             return (whiteBalance != null) ? CalculateCameraToXYZD50(Temperature.ColourTemperatureToChromaticity(whiteBalance.Item1, whiteBalance.Item2)) :
                 CalculateCameraToXYZD50();
         }
 
-        public Matrix3 CalculateCameraToXYZD65(Tuple<float, float> whiteBalance)
+        public readonly Matrix3 CalculateCameraToXYZD65(Tuple<float, float> whiteBalance)
         {
             return (whiteBalance != null) ? CalculateCameraToXYZD65(Temperature.ColourTemperatureToChromaticity(whiteBalance.Item1, whiteBalance.Item2)) :
                 CalculateCameraToXYZD65();
         }
 
-        public Matrix3 CalculateCameraToXYZD50(Vector2? whiteXY = null)
+        public readonly Matrix3 CalculateCameraToXYZD50(Vector2? whiteXY = null)
         {
             Debug.Assert(whiteXY != null || asShotWhiteXY.HasValue);
             if (!whiteXY.HasValue)
@@ -230,7 +228,7 @@ namespace Octopus.Player.Core.Maths.Color
             }
         }
 
-        public Matrix3 CalculateCameraToXYZD65(Vector2? whiteXY = null)
+        public readonly Matrix3 CalculateCameraToXYZD65(Vector2? whiteXY = null)
         {
             Debug.Assert(asShotWhiteXY.HasValue);
             if (!whiteXY.HasValue)
@@ -267,7 +265,7 @@ namespace Octopus.Player.Core.Maths.Color
             }
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             string text = "";
             text += "\nAs Shot XY: " + (asShotWhiteXY.HasValue ? asShotWhiteXY.Value.ToString() : "Unknown");
