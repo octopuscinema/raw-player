@@ -12,7 +12,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Xml.Linq;
+using Octopus.Player.Core;
 using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
 
@@ -308,6 +310,27 @@ namespace Octopus.Player.UI.Windows
             }
 
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
+        }
+
+        string? INativeWindow.SaveFileDialogue(string title, string defaultDirectory, IReadOnlyCollection<Tuple<string, string>> extensionsDescriptions)
+        {
+            using var dialog = new Microsoft.WindowsAPICodePack.Dialogs.CommonSaveFileDialog();
+            dialog.EnsurePathExists = true;
+            dialog.DefaultDirectory = defaultDirectory;
+            dialog.Title = title;
+
+            if (extensionsDescriptions != null)
+            {
+                foreach (var extDesc in extensionsDescriptions)
+                    dialog.Filters.Add(new Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogFilter(extDesc.Item2, extDesc.Item1));
+            }
+
+            return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
+        }
+
+        Error INativeWindow.SavePng(string path, byte[] data, in Vector2i dimensions, Format format, bool ignoreAlpha)
+        {
+            throw new NotImplementedException();
         }
 
         public void Exit()
