@@ -56,13 +56,16 @@ namespace Octopus.Player.UI
         AlertResponse Alert(AlertType alertType, string message, string title);
 		Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, bool ignoreAlpha = true);
         void OpenContextMenu(string id);
-		void OpenContextMenu(List<string> mainMenuItems, List<(string, string)> additionalItems = null);
-		void OpenAboutPanel();
+#nullable enable
+        void OpenContextMenu(List<string> mainMenuItems, List<(string, string)?>? additionalItems = null);
+#nullable disable
+        void OpenAboutPanel();
         void OpenUrl(string url);
 		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();
 		void AnimateOutControls();
-		ControlsAnimationState ControlsAnimationState { get; }
+		void Notification(string title, string caption);
+        ControlsAnimationState ControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }
 		bool MouseInsidePlaybackControls { get; }

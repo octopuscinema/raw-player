@@ -15,6 +15,8 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         public Format Format { get; protected set; }
         public abstract int SizeBytes { get; }
 
+        public Render.ITexture Texture { get; protected set; }
+
         public string Name { get; protected set; }
         public bool Valid { get { return valid; } }
         protected volatile bool valid;

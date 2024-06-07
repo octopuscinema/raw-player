@@ -207,7 +207,8 @@ namespace Octopus.Player.Core.Playback
                 }
 
                 // Lock GL texture output
-                queue.AcquireTextureObject(renderContext, output);
+                if ( output.Texture != null)
+                    queue.AcquireTextureObject(renderContext, output);
 
                 // Run the kernel 4 pixels at a time
                 var launchDimensions = output.Dimensions / 2;
@@ -216,7 +217,8 @@ namespace Octopus.Player.Core.Playback
                 program.Run2D(queue, kernel, launchDimensions);
 
                 // Release access to GL texture
-                queue.ReleaseTextureObject(output);
+                if (output.Texture != null)
+                    queue.ReleaseTextureObject(output);
 
                 if (postProcessAction != null)
                     postProcessAction();

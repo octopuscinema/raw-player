@@ -38,11 +38,19 @@ namespace Octopus.Player.Core.Playback
 
 	public readonly struct ExportedFrame
 	{
-		public readonly byte[] data;
-		public readonly Vector2i dimensions;
-		public readonly GPU.Format format;
-		public readonly uint frameNumber;
-	}
+		public byte[] Data { get; }
+		public Vector2i Dimensions { get; }
+		public GPU.Format Format { get; }
+		public uint FrameNumber { get; }
+
+		public ExportedFrame(byte[] data, in Vector2i dimensions, GPU.Format format, uint frameNumber)
+		{
+			Data = data;
+			Dimensions = dimensions;
+			Format = format;
+			FrameNumber = frameNumber;
+		}
+    }
 
 	public interface IPlayback : IDisposable
 	{

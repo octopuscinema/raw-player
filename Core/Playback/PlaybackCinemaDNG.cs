@@ -124,7 +124,7 @@ namespace Octopus.Player.Core.Playback
 
             // Attempt to decode first frame as preview, if that fails bail out
             var gpuFormat = clip.Metadata.DecodedBitDepth <= 8 ? GPU.Format.R8 : GPU.Format.R16;
-            var gpuDisplayFormat = GPU.Format.RGBX8;
+            var gpuDisplayFormat = GPU.Format.RGBA8;
             var previewFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, clip, gpuFormat);
             previewFrame.frameNumber = cinemaDNGMetadata.FirstFrame;
             var decodeError = previewFrame.Decode(clip);
@@ -560,7 +560,7 @@ namespace Octopus.Player.Core.Playback
             if (processResult != Error.None)
                 return processResult;
 
-            var data = ComputeContext.DefaultQueue.ReadImage(frameOut);
+            frame = new ExportedFrame(ComputeContext.DefaultQueue.ReadImage(frameOut), frameOut.Dimensions, frameOut.Format, frameIn.frameNumber);
 
             return Error.None;
         }

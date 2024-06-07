@@ -50,6 +50,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
         {
             Format = texture.Format;
             Dimensions = texture.Dimensions;
+            Texture = texture;
             Name = texture.Name;
             MemoryDeviceAccess = memoryDeviceAccess;
             MemoryHostAccess = MemoryHostAccess.NoAccess;
@@ -76,6 +77,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 Debug.CheckError(Context.Handle.ReleaseMemObject(NativeHandle));
                 NativeHandle = 0;
             }
+            Texture = null;
         }
     }
 }

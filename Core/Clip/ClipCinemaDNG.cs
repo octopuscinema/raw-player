@@ -189,22 +189,25 @@ namespace Octopus.Player.Core
                 // Determine the sequencing field
                 // Travel backwards from where digits start to where digits end
                 var dngPath = dngFiles.Min();
-                uint? sequenceEndPosition = null;
-                for (int i = dngPath.Length - 1; i >= 0; i--)
+                if (dngPath != null)
                 {
-                    var character = dngPath[i];
-                    bool isDigit = char.IsDigit(character);
-                    if (isDigit && sequenceEndPosition == null)
-                        sequenceEndPosition = (uint)i + 1;
-                    if (!isDigit && sequenceEndPosition != null)
+                    uint? sequenceEndPosition = null;
+                    for (int i = dngPath.Length - 1; i >= 0; i--)
                     {
-                        SequencingFieldPosition = (uint)i + 1;
-                        SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
-                        CachedFramePath = dngPath;
-                        FirstFrame = dngPath;
-                        LastFrame = dngFiles.Max();
-                        Valid = true;
-                        return Error.None;
+                        var character = dngPath[i];
+                        bool isDigit = char.IsDigit(character);
+                        if (isDigit && sequenceEndPosition == null)
+                            sequenceEndPosition = (uint)i + 1;
+                        if (!isDigit && sequenceEndPosition != null)
+                        {
+                            SequencingFieldPosition = (uint)i + 1;
+                            SequencingFieldLength = sequenceEndPosition.Value - SequencingFieldPosition;
+                            CachedFramePath = dngPath;
+                            FirstFrame = dngPath;
+                            LastFrame = dngFiles.Max();
+                            Valid = true;
+                            return Error.None;
+                        }
                     }
                 }
                 

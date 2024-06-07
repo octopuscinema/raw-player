@@ -9,6 +9,8 @@ namespace Octopus.Player.GPU.Compute
     {
         Format Format { get; }
         int SizeBytes { get; }
+
+        Render.ITexture Texture { get; }
     }
 
     public interface IImage1D : IImage

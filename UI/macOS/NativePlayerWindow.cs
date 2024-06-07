@@ -279,22 +279,22 @@ namespace Octopus.Player.UI.macOS
 
 			try
 			{
-				using (var colorSpace = CoreGraphics.CGColorSpace.CreateItuR_709())
-				using (var dataProvider = new CoreGraphics.CGDataProvider(data))
-				using (var nsUrl = new NSUrl(path))
-				{
-					var imageDestination = ImageIO.CGImageDestination.Create(nsUrl, MobileCoreServices.UTType.PNG, imageCount: 1);
-					var image = new CoreGraphics.CGImage(dimensions.X, dimensions.Y, format.ComponentBitDepth(), format.SizeBits(), dimensions.X * format.SizeBytes(), colorSpace,
-						ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipLast : CoreGraphics.CGBitmapFlags.Last, dataProvider, null, false, CoreGraphics.CGColorRenderingIntent.Default);
-					imageDestination.AddImage(image);
-					imageDestination.Close();
-					image.Dispose();
-					return Core.Error.None;
-				}
+				using var nsUrl = NSUrl.FromFilename(path);
+				using var colorSpace = CoreGraphics.CGColorSpace.CreateDeviceRGB();
+				using var dataProvider = new CoreGraphics.CGDataProvider(data);
+				
+				using var imageDestination = ImageIO.CGImageDestination.Create(nsUrl, MobileCoreServices.UTType.PNG, imageCount: 1);
+				using var image = new CoreGraphics.CGImage(dimensions.X, dimensions.Y, format.ComponentBitDepth(), format.SizeBits(), dimensions.X * format.SizeBytes(), colorSpace,
+					ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipLast : CoreGraphics.CGBitmapFlags.Last, dataProvider, null, false, CoreGraphics.CGColorRenderingIntent.Default);
+				imageDestination.AddImage(image);
+				imageDestination.Close();
+
+				return Core.Error.None;
 			}
-			catch
-			{
-				return Core.Error.BadFile;
+            catch (Exception e)
+            {
+                Trace.WriteLine("Failed to save png: " + path + "\n" + e.Message);
+                return Core.Error.BadPath;
 			}
 		}
 
@@ -303,7 +303,9 @@ namespace Octopus.Player.UI.macOS
             throw new NotSupportedException();
         }
 
-        public void OpenContextMenu(List<string> mainMenuItems, List<(string,string)> additionalItems = null)
+#nullable enable
+        public void OpenContextMenu(List<string> mainMenuItems, List<(string,string)?>? additionalItems = null)
+#nullable disable
         {
             if (contextMenu != null)
                 contextMenu.Dispose();
@@ -316,11 +318,16 @@ namespace Octopus.Player.UI.macOS
 			if (additionalItems != null)
 			{
 				contextMenu.AddItem(NSMenuItem.SeparatorItem);
-
 				foreach (var additionalItem in additionalItems)
 				{
-					var item = new NSMenuItem(additionalItem.Item1);
-					item.Identifier = additionalItem.Item2;
+					if (!additionalItem.HasValue)
+					{
+                        contextMenu.AddItem(NSMenuItem.SeparatorItem);
+                        continue;
+					}
+
+					var item = new NSMenuItem(additionalItem.Value.Item1);
+					item.Identifier = additionalItem.Value.Item2;
 					item.Enabled = true;
 					item.Activated += (sender, e) => { PlayerWindow.MenuItemClick(item.Identifier); };
                     contextMenu.AddItem(item);
@@ -449,9 +456,11 @@ namespace Octopus.Player.UI.macOS
 				item.Title = name;
 		}
 
+#nullable enable
         public void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null)
+#nullable disable
         {
-			var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
+            var parentMenu = FindMenuItem(NSApplication.SharedApplication.MainMenu, parentId).Submenu;
 			var menuItem = new NSMenuItem(name);
 			menuItem.Activated += (sender, e) => { onClick(); };
 			if (id != null)
@@ -623,16 +632,18 @@ namespace Octopus.Player.UI.macOS
 			});
 		}
 
-		public void Notification(string title, string caption)
-		{
+#nullable enable
+        public void Notification(string title, string caption)
+#nullable disable
+        {
             // Trigger a local notification after the time has elapsed
-            var notification = new NSUserNotification();
+            using var notification = new NSUserNotification();
 
 			// Add text and sound to the notification
 			notification.Title = title;
 			notification.InformativeText = caption;
             notification.SoundName = NSUserNotification.NSUserNotificationDefaultSoundName;
-			notification.HasActionButton = true;
+			notification.HasActionButton = false;
 
             NSUserNotificationCenter.DefaultUserNotificationCenter.DeliverNotification(notification);
         }

@@ -138,7 +138,8 @@ namespace Octopus.Player.UI
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && Playback != null && Playback.State != Core.Playback.State.Empty &&
                 modifiers.Contains("Control") && modifiers.Count == 1 )
             {
-                NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, new List<(string, string)>() { ("Show .DNG frame in Finder", "navigateToFrame") });
+                var menuItems = new List<(string, string)?>() { ("Show .DNG frame in Finder", "navigateToFrame"), null, ("Export Frame...", "exportFrame") };
+                NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, menuItems);
             }
         }
 
@@ -154,7 +155,10 @@ namespace Octopus.Player.UI
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     NativeWindow.OpenContextMenu("PlayerContextMenu");
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, new List<(string, string)>() { ("Show .DNG frame in Finder", "navigateToFrame") });
+                {
+                    var menuItems = new List<(string, string)?>() { ("Show .DNG frame in Finder", "navigateToFrame"), null, ("Export Frame...","exportFrame") };
+                    NativeWindow.OpenContextMenu(new List<string>() { "Clip", "Help" }, menuItems);
+                }
             }
         }
 
@@ -509,6 +513,29 @@ namespace Octopus.Player.UI
             RenderContext.RequestRender();
         }
 
+        void ExportFrame()
+        {
+            var pngExtension = new Tuple<string, string>("*.png", "PNG image");
+            var savePath = NativeWindow.SaveFileDialogue("Export frame as PNG", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                 new List<Tuple<string, string>>() { pngExtension });
+
+            if (savePath != null)
+            {
+                var exportResult = Playback.ExportFrame(out ExportedFrame frame);
+
+                if (exportResult == Error.None)
+                {
+                    var saveResult = NativeWindow.SavePng(savePath, frame.Data, frame.Dimensions, frame.Format);
+                    if (saveResult == Error.None)
+                        NativeWindow.Notification("Frame Exported", "Saved '" + savePath + "'");
+                    else
+                        NativeWindow.Alert(AlertType.Error, "Failed to save to: '" + savePath + "'\nError: " + exportResult.ToString(), "Error exporting frame");
+                }
+                else
+                    NativeWindow.Alert(AlertType.Error, "Failed to process frame\nError: " + exportResult.ToString(), "Error exporting frame");
+            }
+        }
+
         public void MenuItemClick(string id)
         {
             lastInteraction = DateTime.Now;
@@ -667,10 +694,8 @@ namespace Octopus.Player.UI
 
                 // Export frame
                 case "exportFrame":
-                    var pngExtension = new Tuple<string, string>("*.png", "PNG image");
-                    string savePath = NativeWindow.SaveFileDialogue("Export frame as PNG", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                         new List<Tuple<string, string>>() { pngExtension });
-                    //Notification("Frame exported", "Saved to: '" + savePath + "'");
+                    if (Playback != null && Playback.Clip != null)
+                        ExportFrame();
                     break;
 
                 // Clip
