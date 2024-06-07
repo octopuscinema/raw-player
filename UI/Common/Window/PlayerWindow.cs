@@ -525,9 +525,12 @@ namespace Octopus.Player.UI
 
                 if (exportResult == Error.None)
                 {
-                    var saveResult = NativeWindow.SavePng(savePath, frame.Data, frame.Dimensions, frame.Format);
+                    var saveResult = NativeWindow.SavePng(savePath, frame.Data, frame.Dimensions, frame.Format, frame.Orientation);
                     if (saveResult == Error.None)
-                        NativeWindow.Notification("Frame Exported", "Saved '" + savePath + "'");
+                    {
+                        var arguments = new Dictionary<string, string>() { { "event", "exportFrame" }, { "path", savePath } };
+                        NativeWindow.Notification("Frame Exported", "Saved '" + savePath + "'", arguments);
+                    }
                     else
                         NativeWindow.Alert(AlertType.Error, "Failed to save to: '" + savePath + "'\nError: " + exportResult.ToString(), "Error exporting frame");
                 }

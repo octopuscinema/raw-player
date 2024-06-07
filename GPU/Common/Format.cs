@@ -2,6 +2,7 @@ namespace Octopus.Player.GPU
 {
     public enum Format
     {
+        BGRA8,
         RGBA8,
         RGBX8,
         RGB8,
@@ -18,6 +19,7 @@ namespace Octopus.Player.GPU
         {
             switch (format)
             {
+                case Format.BGRA8:
                 case Format.RGBA8:
                 case Format.RGBX8:
                 case Format.R8:
@@ -42,6 +44,7 @@ namespace Octopus.Player.GPU
         {
             switch (format)
             {
+                case Format.BGRA8:
                 case Format.RGBA8:
                 case Format.RGBX8:
                     return 4;

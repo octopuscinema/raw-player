@@ -41,13 +41,15 @@ namespace Octopus.Player.Core.Playback
 		public byte[] Data { get; }
 		public Vector2i Dimensions { get; }
 		public GPU.Format Format { get; }
+		public GPU.Orientation Orientation { get; }
 		public uint FrameNumber { get; }
 
-		public ExportedFrame(byte[] data, in Vector2i dimensions, GPU.Format format, uint frameNumber)
+		public ExportedFrame(byte[] data, in Vector2i dimensions, GPU.Format format, GPU.Orientation orientation, uint frameNumber)
 		{
 			Data = data;
 			Dimensions = dimensions;
 			Format = format;
+			Orientation = orientation;
 			FrameNumber = frameNumber;
 		}
     }

@@ -19,6 +19,7 @@ namespace Octopus.Player.Core.Playback
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
         private static readonly List<string> pipelineKernels = new List<string> { "ProcessBayer", "ProcessBayerLUT", "Process", "ProcessLUT" };
+        private static readonly GPU.Format exportFrameFormat = GPU.Format.BGRA8;
 
         private Worker<Error> SeekWork { get; set; }
         private SequenceFrameDNG SeekFrame { get; set; }
@@ -548,7 +549,7 @@ namespace Octopus.Player.Core.Playback
             frame = new ExportedFrame();
 
             using var frameIn = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
-            using var frameOut = ComputeContext.CreateImage(displayFrameCompute.Dimensions, displayFrameCompute.Format, MemoryDeviceAccess.WriteOnly, MemoryHostAccess.ReadOnly);
+            using var frameOut = ComputeContext.CreateImage(displayFrameCompute.Dimensions, exportFrameFormat, MemoryDeviceAccess.WriteOnly, MemoryHostAccess.ReadOnly);
 
             frameIn.frameNumber = frameNumber.GetValueOrDefault(LastDisplayedFrame.GetValueOrDefault());
 
@@ -560,7 +561,7 @@ namespace Octopus.Player.Core.Playback
             if (processResult != Error.None)
                 return processResult;
 
-            frame = new ExportedFrame(ComputeContext.DefaultQueue.ReadImage(frameOut), frameOut.Dimensions, frameOut.Format, frameIn.frameNumber);
+            frame = new ExportedFrame(ComputeContext.DefaultQueue.ReadImage(frameOut), frameOut.Dimensions, frameOut.Format, Clip.Metadata.Orientation, frameIn.frameNumber);
 
             return Error.None;
         }

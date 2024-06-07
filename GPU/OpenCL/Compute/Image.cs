@@ -26,6 +26,10 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             ImageFormat imageFormat = new ImageFormat();
             switch (format)
             {
+                case GPU.Format.BGRA8:
+                    imageFormat.ImageChannelDataType = ChannelType.UnormInt8;
+                    imageFormat.ImageChannelOrder = ChannelOrder.Bgra;
+                    break;
                 case GPU.Format.RGBA8:
                     imageFormat.ImageChannelDataType = ChannelType.UnormInt8;
                     imageFormat.ImageChannelOrder = ChannelOrder.Rgba;

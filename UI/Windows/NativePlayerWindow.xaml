@@ -92,12 +92,15 @@
             <Separator />
             <MenuItem Header="_About OCTOPUS RAW Player" Name="about" Click="MenuItem_Click"/>
         </MenuItem>
+        <MenuItem x:Key="exportframe" x:Shared="False" Header="_Export Frame..." Name="exportFrame" Click="MenuItem_Click"/>
         <ContextMenu x:Key="PlayerContextMenu">
             <StaticResourceExtension ResourceKey="clip"/>
             <StaticResourceExtension ResourceKey="view"/>
             <StaticResourceExtension ResourceKey="help"/>
             <Separator />
             <MenuItem Header="_Show .DNG frame in Explorer" Name="navigateToFrame" Click="MenuItem_Click"/>
+            <Separator />
+            <StaticResourceExtension ResourceKey="exportframe"/>
         </ContextMenu>
         <Style x:Key="SliderRepeatButton" TargetType="RepeatButton">
             <Setter Property="SnapsToDevicePixels" Value="true" />
@@ -280,7 +283,7 @@
                     <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="_Export Frame..." Name="exportFrame" Click="MenuItem_Click"/>
+                <StaticResourceExtension ResourceKey="exportframe"/>
                 <Separator />
                 <MenuItem Header="_Check for Updates..." Name="checkForUpdates" Click="MenuItem_Click"/>
                 <Separator />

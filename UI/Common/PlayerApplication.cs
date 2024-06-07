@@ -321,5 +321,19 @@ namespace Octopus.Player.UI
             else if (interactive)
                 window.NativeWindow.Alert(AlertType.Information, "You have the latest version: " + currentVersion, "Check for Updates");
         }
+
+        public void OnNotificationClicked(INativeWindow nativeWindow, IDictionary<string,string> arguments)
+        {
+            if ( arguments.TryGetValue("event", out string eventName))
+            {
+                switch(eventName)
+                {
+                    case "exportFrame":
+                        if (nativeWindow != null && arguments.TryGetValue("path", out string path) )
+                            nativeWindow.ShowInNavigator(new List<string>() { path });
+                        break;
+                }
+            }
+        }
     }
 }

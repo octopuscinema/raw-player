@@ -73,7 +73,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             if (imageCL == null)
                 throw new ArgumentException("Invalid image object");
 
-            var imageData = new byte[image.Format.BytesPerPixel() * image.Dimensions.Area()];
+            var imageData = new byte[image.Format.SizeBytes() * image.Dimensions.Area()];
             var originArray = new nuint[] { 0, 0, 0 };
             var sizeArray = new nuint[] { (nuint)image.Dimensions.X, (nuint)image.Dimensions.Y, 1 };
 

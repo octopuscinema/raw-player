@@ -1,4 +1,5 @@
 ﻿using Octopus.Player.Core.Maths;
+using Octopus.Player.GPU;
 using Octopus.Player.GPU.Render;
 using OpenTK.Mathematics;
 using System;
@@ -147,7 +148,7 @@ namespace Octopus.Player.Core.Playback
                 var decodedMaxlevel = (1 << (int)metadata.DecodedBitDepth) - 1;
                 var linearMaxLevel = decodedMaxlevel;
                 if (metadata.LinearizationTable != null && metadata.LinearizationTable.Length > 0 && linearizeTable != null)
-                    linearMaxLevel = (1 << (linearizeTable.Format.BytesPerPixel() * 8)) - 1;
+                    linearMaxLevel = (1 << (linearizeTable.Format.SizeBytes() * 8)) - 1;
                 program.SetArgument(kernel, argumentIndex++, blackWhiteLevel / linearMaxLevel);
 
                 // Calculate and apply exposure

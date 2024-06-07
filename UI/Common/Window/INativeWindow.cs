@@ -44,8 +44,10 @@ namespace Octopus.Player.UI
 		bool MenuItemIsChecked(string id);
 		void ToggleMenuItemChecked(string id);
 		void SetMenuItemTitle(string id, string name);
-		void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null);
-		void RemoveMenuItem(string parentId, string id);
+#nullable enable
+        void AddMenuItem(string parentId, string name, uint? index, Action onClick, string? id = null);
+#nullable disable
+        void RemoveMenuItem(string parentId, string id);
 		bool MenuItemExists(string id);
         void AddMenuSeperator(string parentId, uint? index);
         void SetLabelContent(string id, string content, Vector3? colour = null, bool? fixedWidthDigitHint = null);
@@ -54,7 +56,7 @@ namespace Octopus.Player.UI
 		void SetSliderValue(string id, float value);
 		void SetSliderEnabled(string id, bool enabled);
         AlertResponse Alert(AlertType alertType, string message, string title);
-		Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, bool ignoreAlpha = true);
+		Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, GPU.Orientation orientation, bool ignoreAlpha = true);
         void OpenContextMenu(string id);
 #nullable enable
         void OpenContextMenu(List<string> mainMenuItems, List<(string, string)?>? additionalItems = null);
@@ -64,7 +66,7 @@ namespace Octopus.Player.UI
 		void OpenTextEditor(string textFilePath);
 		void AnimateInControls();
 		void AnimateOutControls();
-		void Notification(string title, string caption);
+		void Notification(string title, string caption, IDictionary<string, string> arguments = null);
         ControlsAnimationState ControlsAnimationState { get; }
 		void Exit();
 		Vector2i FramebufferSize { get; }

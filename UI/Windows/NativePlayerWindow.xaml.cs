@@ -12,6 +12,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Xml.Linq;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Octopus.Player.Core;
 using Octopus.Player.Core.Maths;
 using Octopus.Player.GPU;
@@ -328,9 +329,61 @@ namespace Octopus.Player.UI.Windows
             return dialog.ShowDialog() == Microsoft.WindowsAPICodePack.Dialogs.CommonFileDialogResult.Ok ? dialog.FileName : null;
         }
 
-        Error INativeWindow.SavePng(string path, byte[] data, in Vector2i dimensions, Format format, bool ignoreAlpha)
+        Error INativeWindow.SavePng(string path, byte[] data, in Vector2i dimensions, Format format, GPU.Orientation orientation, bool ignoreAlpha)
         {
-            throw new NotImplementedException();
+            System.Drawing.Imaging.PixelFormat nativeFormat;
+            switch (format)
+            {
+                case Format.BGRA8:
+                    nativeFormat = System.Drawing.Imaging.PixelFormat.Format32bppRgb;
+                    if (!ignoreAlpha)
+                        Trace.WriteLine("Warning, alpha channel unsupported for BGRA formats when writing PNG on Windows");
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported image format for png");
+            }
+            
+            unsafe
+            {
+                fixed (byte* pData = data)
+                {
+                    try
+                    {
+                        using var bitmap = new System.Drawing.Bitmap(dimensions.X, dimensions.Y, format.SizeBytes() * dimensions.X, nativeFormat, (nint)pData);
+                        switch(orientation)
+                        {
+                            case GPU.Orientation.TopRight:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipX);
+                                break;
+                            case GPU.Orientation.BottomLeft:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
+                                break;
+                            case GPU.Orientation.BottomRight:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipXY);
+                                break;
+                            case GPU.Orientation.LeftBottom:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipNone);
+                                break;
+                            case GPU.Orientation.RightBottom:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipX);
+                                break;
+                            case GPU.Orientation.LeftTop:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipY);
+                                break;
+                            case GPU.Orientation.RightTop:
+                                bitmap.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipXY);
+                                break;
+                        }
+                        bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+                        return Error.None;
+                    }
+                    catch(Exception ex) 
+                    {
+                        Trace.TraceError("Could not save Png to: '" + path + "'\n" + ex.Message);
+                        return Error.BadPath;
+                    }
+                }
+            }
         }
 
         public void Exit()
@@ -625,8 +678,9 @@ namespace Octopus.Player.UI.Windows
             var contextMenu = (ContextMenu)FindResource(id);
             contextMenu.IsOpen = true;
         }
-
-        public void OpenContextMenu(List<string> mainMenuItems, List<(string, string)> additionalItems = null)
+#nullable enable
+        public void OpenContextMenu(List<string> mainMenuItems, List<(string, string)?>? additionalItems = null)
+#nullable disable
         {
             throw new NotSupportedException();
         }
@@ -840,6 +894,17 @@ namespace Octopus.Player.UI.Windows
             // Only fire callback if slider isnt actively from another source
             if ( !activeSliders.Contains(slider))
                 PlayerWindow.SliderSetValue(slider.Name, e.NewValue);
+        }
+
+        public void Notification(string title, string caption, IDictionary<string, string> arguments = null)
+        {
+            var notification = new ToastContentBuilder();
+
+            if (arguments != null)
+                foreach (var argument in arguments)
+                    notification.AddArgument(argument.Key, argument.Value);
+           
+            notification.AddText(title).AddText(caption).Show();
         }
     }
 }
