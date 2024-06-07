@@ -68,7 +68,7 @@ PRIVATE RGBHalf4 HighlightRollOff709(RGBHalf4 toneMapped, half4 luminance, eRoll
     for(int i = 0; i < 4; i++)
     {
 	    half rolloff = smoothstep(rollOffParams.UnderLevel, rollOffParams.OverLevel, IndexHalf4(luminance,i));
-        half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, 0.0f, 1.0f);
+        half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, (half)0.0f, (half)1.0f);
 	    out.RGB[i] = mix(toneMapped.RGB[i], make_half3(IndexHalf4(luminance,i)), rolloffMixer);
     }
 
@@ -82,7 +82,7 @@ PRIVATE half3 ShadowRollOff(half3 rgbLinear, half3 cameraWhiteNormalised, half r
     // Create a saturation roll-off towards the shadows by blending towards neutral cameraWhite based on the luminance
     half3 neutral = cameraWhiteNormalised * rgbLuminance;
 	half rolloff = smoothstep(rollOffParams.UnderLevel, rollOffParams.OverLevel, rgbLuminance);
-    half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, 0.0f, 1.0f);
+    half rolloffMixer = clamp(pow(rolloff,rollOffParams.Power) * rollOffParams.Strength, (half)0.0f, (half)1.0f);
 	
     rgbLinear = mix(neutral, rgbLinear, rolloffMixer);
     half incorrectLuminance = LuminanceWeight(rgbLinear, rawLuminanceWeight);

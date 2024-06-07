@@ -42,7 +42,7 @@ PRIVATE half3 SynthesiseTwoChannels(half3 rgb, half3 cameraWhite, eRGBChannel fi
 	}
 
 	// Blend towards three channel version
-	half blendThreeChannels = smoothstep(HIGHLIGHT_RECOVERY_STOPS_UNDER, RAW_CLIP_LEVEL_NORMALISED, IndexHalf3(rgb,unclippedChannel));
+	half blendThreeChannels = smoothstep((half)HIGHLIGHT_RECOVERY_STOPS_UNDER, (half)RAW_CLIP_LEVEL_NORMALISED, IndexHalf3(rgb,unclippedChannel));
 
 	return mix(make_half3(rgbOut3[0], rgbOut3[1], rgbOut3[2]), SynthesiseThreeChannels(cameraWhite), blendThreeChannels);
 }
@@ -67,7 +67,7 @@ PRIVATE half3 SynthesiseOneChannel(half3 rgb, half3 cameraWhite, eRGBChannel cli
 	// Use the 2 channel synthesis on the highest two channels
     // Interpolate based on which channel of the two is higher
     half channelDiffStops = log2(IndexHalf3(rgb,firstUnclipped) / IndexHalf3(rgb,secondUnclipped));
-    half channelDiffLerp = smoothstep(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * -0.5f, HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * 0.5f, channelDiffStops);
+    half channelDiffLerp = smoothstep((half)(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * -0.5f), (half)(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * 0.5f), channelDiffStops);
     half3 synthesisedHighestChannels = mix(SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, secondUnclipped, firstUnclipped),
         SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, firstUnclipped, secondUnclipped), channelDiffLerp);
 
@@ -154,7 +154,7 @@ PRIVATE half3 HighlightRecovery(half3 rgbLinear, half3 cameraWhite)
 				firstChannelUnclipped = RGB_CHANNEL_RED;
 				secondChannelUnclipped = RGB_CHANNEL_GREEN;
 			}
-			synthesisedMix = smoothstep(HIGHLIGHT_RECOVERY_BLEND_STOPS_UNDER, RAW_CLIP_LEVEL_NORMALISED, maxChannel);
+			synthesisedMix = smoothstep((half)HIGHLIGHT_RECOVERY_BLEND_STOPS_UNDER, (half)RAW_CLIP_LEVEL_NORMALISED, maxChannel);
 		}
 
 		half3 rgbLinearSynthesised = SynthesiseOneChannel(rgbLinear, cameraWhite, firstChannelClipped, firstChannelUnclipped, secondChannelUnclipped);
