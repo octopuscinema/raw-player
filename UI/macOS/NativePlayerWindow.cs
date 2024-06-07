@@ -272,10 +272,25 @@ namespace Octopus.Player.UI.macOS
             }
 		}
 
-		public Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, bool ignoreAlpha = true)
+		public Core.Error SavePng(string path, byte[] data, in Vector2i dimensions, GPU.Format format, GPU.Orientation orientation, bool ignoreAlpha = true)
 		{
-			if (format == Format.RGBX8 || format == Format.RGBX16)
-				ignoreAlpha = true;
+			CoreGraphics.CGBitmapFlags bitmapFlags;
+            switch (format)
+			{
+				case Format.RGBX8:
+				case Format.RGBX16:
+					bitmapFlags = CoreGraphics.CGBitmapFlags.NoneSkipLast;
+                    break;
+				case Format.BGRA8:
+					bitmapFlags = CoreGraphics.CGBitmapFlags.ByteOrder32Little | (ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipFirst : CoreGraphics.CGBitmapFlags.First);
+                    break;
+				case Format.RGBA16:
+				case Format.RGBA8:
+                    bitmapFlags = ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipLast : CoreGraphics.CGBitmapFlags.Last;
+					break;
+                default:
+					throw new ArgumentException("Unsupported pixel format for png");
+			}
 
 			try
 			{
@@ -284,9 +299,37 @@ namespace Octopus.Player.UI.macOS
 				using var dataProvider = new CoreGraphics.CGDataProvider(data);
 				
 				using var imageDestination = ImageIO.CGImageDestination.Create(nsUrl, MobileCoreServices.UTType.PNG, imageCount: 1);
-				using var image = new CoreGraphics.CGImage(dimensions.X, dimensions.Y, format.ComponentBitDepth(), format.SizeBits(), dimensions.X * format.SizeBytes(), colorSpace,
-					ignoreAlpha ? CoreGraphics.CGBitmapFlags.NoneSkipLast : CoreGraphics.CGBitmapFlags.Last, dataProvider, null, false, CoreGraphics.CGColorRenderingIntent.Default);
-				imageDestination.AddImage(image);
+				using var image = new CoreGraphics.CGImage(dimensions.X, dimensions.Y, format.ComponentBitDepth(), format.SizeBits(), dimensions.X * format.SizeBytes(),
+					colorSpace, bitmapFlags, dataProvider, null, false, CoreGraphics.CGColorRenderingIntent.Default);
+
+                var options = new ImageIO.CGImageDestinationOptions();
+
+				switch(orientation)
+				{
+					case Orientation.TopRight:
+						options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.UpMirrored);
+						break;
+                    case Orientation.BottomLeft:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.Down);
+                        break;
+                    case Orientation.BottomRight:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.DownMirrored);
+                        break;
+                    case Orientation.LeftTop:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.LeftMirrored);
+                        break;
+                    case Orientation.LeftBottom:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.Left);
+                        break;
+                    case Orientation.RightTop:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.RightMirrored);
+                        break;
+                    case Orientation.RightBottom:
+                        options.Dictionary[ImageIO.CGImageProperties.Orientation] = new NSNumber((int)ImageIO.CGImagePropertyOrientation.Right);
+                        break;
+                }
+
+                imageDestination.AddImage(image, options);
 				imageDestination.Close();
 
 				return Core.Error.None;
@@ -632,9 +675,7 @@ namespace Octopus.Player.UI.macOS
 			});
 		}
 
-#nullable enable
-        public void Notification(string title, string caption)
-#nullable disable
+        public void Notification(string title, string caption, IDictionary<string,string> arguments = null)
         {
             // Trigger a local notification after the time has elapsed
             using var notification = new NSUserNotification();
