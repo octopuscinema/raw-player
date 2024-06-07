@@ -124,10 +124,18 @@ KERNEL void ProcessBayer(__read_only image2d_t rawImage, float2 blackWhiteLevel,
 	int2 inputCoord = workCoord * 2;
 
 	// Linearise and/or debayer
+#ifdef BAYER_XGGX
 #ifdef LINEARIZE
 	RGBHalf4 cameraRgb = LineariseDebayerBGGR(rawImage, inputCoord, linearizeTable, linearizeTableRange);
 #else
 	RGBHalf4 cameraRgb = DebayerBGGR(rawImage, inputCoord);
+#endif
+#else
+#ifdef LINEARIZE
+	RGBHalf4 cameraRgb = LineariseDebayerGBRG(rawImage, inputCoord, linearizeTable, linearizeTableRange);
+#else
+	RGBHalf4 cameraRgb = DebayerGBRG(rawImage, inputCoord);
+#endif
 #endif
 #ifdef BAYER_RB
 	for (int i = 0; i < 4; i++)
@@ -158,10 +166,18 @@ KERNEL void ProcessBayerLUT(__read_only image2d_t rawImage, float2 blackWhiteLev
 	int2 inputCoord = workCoord * 2;
 
 	// Linearise and/or debayer
+#ifdef BAYER_XGGX
 #ifdef LINEARIZE
 	RGBHalf4 cameraRgb = LineariseDebayerBGGR(rawImage, inputCoord, linearizeTable, linearizeTableRange);
 #else
 	RGBHalf4 cameraRgb = DebayerBGGR(rawImage, inputCoord);
+#endif
+#else
+#ifdef LINEARIZE
+	RGBHalf4 cameraRgb = LineariseDebayerGBRG(rawImage, inputCoord, linearizeTable, linearizeTableRange);
+#else
+	RGBHalf4 cameraRgb = DebayerGBRG(rawImage, inputCoord);
+#endif
 #endif
 #ifdef BAYER_RB
 	for (int i = 0; i < 4; i++)

@@ -123,7 +123,7 @@ PRIVATE half4 LineariseBayerTile(__read_only image2d_t rawImage, int2 inputCoord
 		read_imageh(linearizeTable, lineariseSampler, (float)nonLinear.w).x);
 }
 
-PRIVATE RGBHalf4 LineariseDebayerGRBG(__read_only image2d_t rawImage, int2 inputCoord, __read_only image1d_t linearizeTable, float linearizeTableRange)
+PRIVATE RGBHalf4 LineariseDebayerGBRG(__read_only image2d_t rawImage, int2 inputCoord, __read_only image1d_t linearizeTable, float linearizeTableRange)
 {
 	// Lookup and linearise bayer tiles
 	half4 tile = LineariseBayerTile(rawImage, inputCoord, linearizeTable, linearizeTableRange);
@@ -135,6 +135,61 @@ PRIVATE RGBHalf4 LineariseDebayerGRBG(__read_only image2d_t rawImage, int2 input
 	half4 tileBelowLeft = LineariseBayerTile(rawImage, inputCoord + make_int2(-2, 2), linearizeTable, linearizeTableRange);
 	half4 tileBelow = LineariseBayerTile(rawImage, inputCoord + make_int2(0, 2), linearizeTable, linearizeTableRange);
 	half4 tileBelowRight = LineariseBayerTile(rawImage, inputCoord + make_int2(2, 2), linearizeTable, linearizeTableRange);
+
+	// Top left (Green pixel)
+	half2 topLeftRB = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
+		tileAbove.z, tile.z, tileLeft.y, tile.y);
+	half3 topLeft = make_half3(topLeftRB.x, tile.x, topLeftRB.y);
+
+	// TODO: Top right (Red pixel)
+	half3 topRight = make_half3(0, 0, 0);
+
+	// TODO: Bottom left (Blue pixel)
+	half3 bottomLeft = make_half3(0, 0, 0);
+
+	// Bottom right (Green pixel)
+	half2 bottomRightBR = SynthesiseNonGreen(tile.w, tile.x, tileRight.x, tileBelow.x, tileBelowRight.x,
+		tile.y, tileBelow.y, tile.z, tileRight.z);
+	half3 bottomRight = make_half3(bottomRightBR.x, tile.x, bottomRightBR.y);
+/*
+	// Top left (Blue pixel)
+	half2 topLeftGR = SynthesiseGreenAndRed(tile, tileAboveLeft, tileAbove, tileLeft, tileRight, tileBelow);
+	half3 topLeft = make_half3(topLeftGR.y, topLeftGR.x, tile.x);
+
+	// Top right (Green pixel)
+	half2 topRightBR = SynthesiseNonGreen(tile.y, tileAbove.z, tileAboveRight.z, tile.z, tileRight.z,
+		tileAbove.w, tile.w, tile.x, tileRight.x);
+	half3 topRight = make_half3(topRightBR.y, tile.y, topRightBR.x);
+
+	// Bottom left (Green pixel)
+	half2 bottomLeftRB = SynthesiseNonGreen(tile.z, tileLeft.y, tile.y, tileBelowLeft.y, tileBelow.y,
+		tile.x, tileBelow.x, tileLeft.w, tile.w);
+	half3 bottomLeft = make_half3(bottomLeftRB.x, tile.z, bottomLeftRB.y);
+
+	// Bottom right (Red pixel)
+	half2 bottomRightGB = SynthesiseGreenAndBlue(tile, tileAbove, tileLeft, tileRight, tileBelow, tileBelowRight);
+	half3 bottomRight = make_half3(tile.w, bottomRightGB.x, bottomRightGB.y);
+*/
+	RGBHalf4 CameraRGB;
+	CameraRGB.RGB[0] = topLeft;
+	CameraRGB.RGB[1] = topRight;
+	CameraRGB.RGB[2] = bottomLeft;
+	CameraRGB.RGB[3] = bottomRight;
+	return CameraRGB;
+}
+
+PRIVATE RGBHalf4 DebayerGBRG(__read_only image2d_t rawImage, int2 inputCoord)
+{
+	// Lookup bayer tiles
+	half4 tile = BayerTile(rawImage, inputCoord);
+	half4 tileAboveLeft = BayerTile(rawImage, inputCoord + make_int2(-2, -2));
+	half4 tileAbove = BayerTile(rawImage, inputCoord + make_int2(0, -2));
+	half4 tileAboveRight = BayerTile(rawImage, inputCoord + make_int2(2, -2));
+	half4 tileLeft = BayerTile(rawImage, inputCoord + make_int2(-2, 0));
+	half4 tileRight = BayerTile(rawImage, inputCoord + make_int2(2, 0));
+	half4 tileBelowLeft = BayerTile(rawImage, inputCoord + make_int2(-2, 2));
+	half4 tileBelow = BayerTile(rawImage, inputCoord + make_int2(0, 2));
+	half4 tileBelowRight = BayerTile(rawImage, inputCoord + make_int2(2, 2));
 
 	// Top left (Green pixel)
 	half2 topLeftRB = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
