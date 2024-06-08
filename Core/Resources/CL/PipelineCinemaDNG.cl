@@ -285,12 +285,15 @@ KERNEL void ProcessLUT(__read_only image2d_t rawImage, float2 blackWhiteLevel, f
 #endif
 
 	// Process
-	half4 displayMono = ProcessMono(cameraMono, blackWhiteLevel, exposure, toneMappingOperator, gamma);
+	half4 logMono = ProcessMono(cameraMono, blackWhiteLevel, exposure, toneMappingOperator, gamma);
+
+	// Apply lut
+	RGBHalf4 displayRgb = ApplyLUTMono(logMono, logToDisplay);
 
 	// Write out image data
 	int2 outputCoord = inputCoord;
-	write_imageh(output, outputCoord, make_half4(displayMono.xxx, 0.0f));
-	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayMono.yyy, 0.0f));
-	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayMono.zzz, 0.0f));
-	write_imageh(output, outputCoord + make_int2(1, 1), make_half4(displayMono.www, 0.0f));
+	write_imageh(output, outputCoord, make_half4(displayRgb.RGB[0], 0.0f));
+	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayRgb.RGB[1], 0.0f));
+	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayRgb.RGB[2], 0.0f));
+	write_imageh(output, outputCoord + make_int2(1, 1), make_half4(displayRgb.RGB[3], 0.0f));
 }

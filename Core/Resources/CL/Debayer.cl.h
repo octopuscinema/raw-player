@@ -23,6 +23,27 @@ PRIVATE half SynthesiseGreen(half4 greenAboveBelowLeftRight, half centre, half4 
 		return (hvGradients.x > hvGradients.y) ? possibleOutputs.x : possibleOutputs.y;
 }
 
+PRIVATE half2 SynthesiseGR(half blue, half4 greenAboveBelowLeftRight, half4 blueAboveBelowLeftRight, half4 redTopLeftRightBottomLeftRight)
+{
+	// Synthesise GREEN by sampling the adjacent BLUEs
+	half green = SynthesiseGreen(greenAboveBelowLeftRight, blue, blueAboveBelowLeftRight);
+
+	// Synthesise RED by sampling adjacent GREENs and newly created green
+	half4 greenTopLeftRightBottomLeftRight = make_half4(greenAboveBelowLeftRight.x + greenAboveBelowLeftRight.z,
+		greenAboveBelowLeftRight.x + greenAboveBelowLeftRight.w,
+		greenAboveBelowLeftRight.y + greenAboveBelowLeftRight.z,
+		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
+
+	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
+	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
+	greenCornerWeights /= maxWeight;
+	half4 redWeights = redTopLeftRightBottomLeftRight * greenCornerWeights;
+	half red = redWeights.x + redWeights.y + redWeights.z + redWeights.w;
+
+	return make_half2(green, red);
+}
+
 PRIVATE half2 SynthesiseGreenAndRed(half4 tile, half4 tileAboveLeft, half4 tileAbove, half4 tileLeft, half4 tileRight, half4 tileBelow)
 {
 	// Home colour is BLUE
@@ -49,6 +70,27 @@ PRIVATE half2 SynthesiseGreenAndRed(half4 tile, half4 tileAboveLeft, half4 tileA
 	half red = redWeights.x + redWeights.y + redWeights.z + redWeights.w;
 
 	return make_half2(green, red);
+}
+
+PRIVATE half2 SynthesiseGB(half red, half4 greenAboveBelowLeftRight, half4 redAboveBelowLeftRight, half4 blueTopLeftRightBottomLeftRight)
+{
+	// Synthesise GREEN by sampling the adjacent REDs
+	half green = SynthesiseGreen(greenAboveBelowLeftRight, red, redAboveBelowLeftRight);
+
+	// Synthesise BLUE by sampling adjacent GREENs and newly created green
+	half4 greenTopLeftRightBottomLeftRight = make_half4(greenAboveBelowLeftRight.x + greenAboveBelowLeftRight.z,
+		greenAboveBelowLeftRight.x + greenAboveBelowLeftRight.w,
+		greenAboveBelowLeftRight.y + greenAboveBelowLeftRight.z,
+		greenAboveBelowLeftRight.w + greenAboveBelowLeftRight.y) * (half)0.5f;
+
+	half4 greenCornerDiffs = fabs(make_half4(green) - greenTopLeftRightBottomLeftRight);
+	half4 greenCornerWeights = make_half4((half)1.0f) / fmax(make_half4(DEBAYER_DIFF_EPSILON), greenCornerDiffs);
+	half maxWeight = greenCornerWeights.x + greenCornerWeights.y + greenCornerWeights.z + greenCornerWeights.w;
+	greenCornerWeights /= maxWeight;
+	half4 blueWeights = blueTopLeftRightBottomLeftRight * greenCornerWeights;
+	half blue = blueWeights.x + blueWeights.y + blueWeights.z + blueWeights.w;
+
+	return make_half2(green, blue);
 }
 
 PRIVATE half2 SynthesiseGreenAndBlue(half4 tile, half4 tileAbove, half4 tileLeft, half4 tileRight, half4 tileBelow, half4 tileBelowRight)
@@ -137,39 +179,25 @@ PRIVATE RGBHalf4 LineariseDebayerGBRG(__read_only image2d_t rawImage, int2 input
 	half4 tileBelowRight = LineariseBayerTile(rawImage, inputCoord + make_int2(2, 2), linearizeTable, linearizeTableRange);
 
 	// Top left (Green pixel)
-	half2 topLeftRB = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
+	half2 topLeftBR = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
 		tileAbove.z, tile.z, tileLeft.y, tile.y);
-	half3 topLeft = make_half3(topLeftRB.x, tile.x, topLeftRB.y);
+	half3 topLeft = make_half3(topLeftBR.y, tile.x, topLeftBR.x);
 
-	// TODO: Top right (Red pixel)
-	half3 topRight = make_half3(0, 0, 0);
+	// Top right (Blue pixel)
+	half2 topRightGR = SynthesiseGR(tile.y, make_half4(tileAbove.w, tile.w, tile.x, tileRight.x), make_half4(tileAbove.y, tileBelow.y, tileLeft.y, tileRight.y),
+		make_half4(tileAbove.z, tileAboveRight.z, tile.z, tileRight.z));
+	half3 topRight = make_half3(topRightGR.y, topRightGR.x, tile.y);
 
-	// TODO: Bottom left (Blue pixel)
-	half3 bottomLeft = make_half3(0, 0, 0);
+	// Bottom left (Red pixel)
+	half2 bottomLeftGB = SynthesiseGB(tile.z, make_half4(tile.x, tileBelow.x, tileLeft.w, tile.w), make_half4(tileAbove.z, tileBelow.z, tileLeft.z, tileRight.z),
+		make_half4(tileLeft.y, tile.y, tileBelowLeft.y, tileBelow.y));
+	half3 bottomLeft = make_half3(tile.z, bottomLeftGB.x, bottomLeftGB.y);
 
 	// Bottom right (Green pixel)
-	half2 bottomRightBR = SynthesiseNonGreen(tile.w, tile.x, tileRight.x, tileBelow.x, tileBelowRight.x,
+	half2 bottomRightRB = SynthesiseNonGreen(tile.w, tile.x, tileRight.x, tileBelow.x, tileBelowRight.x,
 		tile.y, tileBelow.y, tile.z, tileRight.z);
-	half3 bottomRight = make_half3(bottomRightBR.x, tile.x, bottomRightBR.y);
-/*
-	// Top left (Blue pixel)
-	half2 topLeftGR = SynthesiseGreenAndRed(tile, tileAboveLeft, tileAbove, tileLeft, tileRight, tileBelow);
-	half3 topLeft = make_half3(topLeftGR.y, topLeftGR.x, tile.x);
+	half3 bottomRight = make_half3(bottomRightRB.x, tile.w, bottomRightRB.y);
 
-	// Top right (Green pixel)
-	half2 topRightBR = SynthesiseNonGreen(tile.y, tileAbove.z, tileAboveRight.z, tile.z, tileRight.z,
-		tileAbove.w, tile.w, tile.x, tileRight.x);
-	half3 topRight = make_half3(topRightBR.y, tile.y, topRightBR.x);
-
-	// Bottom left (Green pixel)
-	half2 bottomLeftRB = SynthesiseNonGreen(tile.z, tileLeft.y, tile.y, tileBelowLeft.y, tileBelow.y,
-		tile.x, tileBelow.x, tileLeft.w, tile.w);
-	half3 bottomLeft = make_half3(bottomLeftRB.x, tile.z, bottomLeftRB.y);
-
-	// Bottom right (Red pixel)
-	half2 bottomRightGB = SynthesiseGreenAndBlue(tile, tileAbove, tileLeft, tileRight, tileBelow, tileBelowRight);
-	half3 bottomRight = make_half3(tile.w, bottomRightGB.x, bottomRightGB.y);
-*/
 	RGBHalf4 CameraRGB;
 	CameraRGB.RGB[0] = topLeft;
 	CameraRGB.RGB[1] = topRight;
@@ -192,39 +220,25 @@ PRIVATE RGBHalf4 DebayerGBRG(__read_only image2d_t rawImage, int2 inputCoord)
 	half4 tileBelowRight = BayerTile(rawImage, inputCoord + make_int2(2, 2));
 
 	// Top left (Green pixel)
-	half2 topLeftRB = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
+	half2 topLeftBR = SynthesiseNonGreen(tile.x, tileAboveLeft.w, tileAbove.w, tileLeft.w, tile.w,
 		tileAbove.z, tile.z, tileLeft.y, tile.y);
-	half3 topLeft = make_half3(topLeftRB.x, tile.x, topLeftRB.y);
+	half3 topLeft = make_half3(topLeftBR.y, tile.x, topLeftBR.x);
 
-	// TODO: Top right (Red pixel)
-	half3 topRight = make_half3(0, 0, 0);
+	// Top right (Blue pixel)
+	half2 topRightGR = SynthesiseGR(tile.y, make_half4(tileAbove.w, tile.w, tile.x, tileRight.x), make_half4(tileAbove.y, tileBelow.y, tileLeft.y, tileRight.y),
+		make_half4(tileAbove.z, tileAboveRight.z, tile.z, tileRight.z));
+	half3 topRight = make_half3(topRightGR.y, topRightGR.x, tile.y);
 
-	// TODO: Bottom left (Blue pixel)
-	half3 bottomLeft = make_half3(0, 0, 0);
+	// Bottom left (Red pixel)
+	half2 bottomLeftGB = SynthesiseGB(tile.z, make_half4(tile.x, tileBelow.x, tileLeft.w, tile.w), make_half4(tileAbove.z, tileBelow.z, tileLeft.z, tileRight.z),
+		make_half4(tileLeft.y, tile.y, tileBelowLeft.y, tileBelow.y));
+	half3 bottomLeft = make_half3(tile.z, bottomLeftGB.x, bottomLeftGB.y);
 
 	// Bottom right (Green pixel)
-	half2 bottomRightBR = SynthesiseNonGreen(tile.w, tile.x, tileRight.x, tileBelow.x, tileBelowRight.x,
+	half2 bottomRightRB = SynthesiseNonGreen(tile.w, tile.x, tileRight.x, tileBelow.x, tileBelowRight.x,
 		tile.y, tileBelow.y, tile.z, tileRight.z);
-	half3 bottomRight = make_half3(bottomRightBR.x, tile.x, bottomRightBR.y);
-/*
-	// Top left (Blue pixel)
-	half2 topLeftGR = SynthesiseGreenAndRed(tile, tileAboveLeft, tileAbove, tileLeft, tileRight, tileBelow);
-	half3 topLeft = make_half3(topLeftGR.y, topLeftGR.x, tile.x);
+	half3 bottomRight = make_half3(bottomRightRB.x, tile.w, bottomRightRB.y);
 
-	// Top right (Green pixel)
-	half2 topRightBR = SynthesiseNonGreen(tile.y, tileAbove.z, tileAboveRight.z, tile.z, tileRight.z,
-		tileAbove.w, tile.w, tile.x, tileRight.x);
-	half3 topRight = make_half3(topRightBR.y, tile.y, topRightBR.x);
-
-	// Bottom left (Green pixel)
-	half2 bottomLeftRB = SynthesiseNonGreen(tile.z, tileLeft.y, tile.y, tileBelowLeft.y, tileBelow.y,
-		tile.x, tileBelow.x, tileLeft.w, tile.w);
-	half3 bottomLeft = make_half3(bottomLeftRB.x, tile.z, bottomLeftRB.y);
-
-	// Bottom right (Red pixel)
-	half2 bottomRightGB = SynthesiseGreenAndBlue(tile, tileAbove, tileLeft, tileRight, tileBelow, tileBelowRight);
-	half3 bottomRight = make_half3(tile.w, bottomRightGB.x, bottomRightGB.y);
-*/
 	RGBHalf4 CameraRGB;
 	CameraRGB.RGB[0] = topLeft;
 	CameraRGB.RGB[1] = topRight;
