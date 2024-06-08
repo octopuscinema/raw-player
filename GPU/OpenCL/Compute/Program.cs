@@ -148,15 +148,16 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             return source;
         }
 
-        public void Run2D(IQueue queue, string function, in Vector2i dimensions)
+        public void Run2D(IQueue queue, string function, in Vector2i dimensions, in Vector2i? offset = null)
         {
             var queueCL = (Queue)queue;
             nuint[] globalDimensions = new nuint[2] { (nuint)dimensions.X, (nuint)dimensions.Y };
+            nuint[] globalOffset =  offset.HasValue ? new nuint[2] { (nuint)offset.Value.X, (nuint)offset.Value.Y } : new nuint[2] { 0, 0 };
             unsafe
             {
-                fixed (nuint* p = globalDimensions)
+                fixed (nuint* pGlobalDimensions = globalDimensions, pGlobalOffset = globalOffset)
                 {
-                    Debug.CheckError(Context.Handle.EnqueueNdrangeKernel(queueCL.NativeHandle, Kernels[function], 2u, null, p, null, 0, null, null));
+                    Debug.CheckError(Context.Handle.EnqueueNdrangeKernel(queueCL.NativeHandle, Kernels[function], 2u, pGlobalOffset, pGlobalDimensions, null, 0, null, null));
                 }
             }
         }
