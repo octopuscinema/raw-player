@@ -40,7 +40,7 @@
                 <MenuItem Header="_sRGB" Name="gammaSRGB" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
                 <Separator />
                 <MenuItem Header="_ARRI LogC3" Name="gammaLogC3" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
-                <MenuItem Header="_RED LOG3G10" Name="gammaLog3G10" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                <MenuItem Header="_RED Log3G10" Name="gammaLog3G10" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
                 <MenuItem Header="_Blackmagic Film Gen. 5" Name="gammaBMFilmG5" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
             </MenuItem>
             <MenuItem Header="_LUT" Name="lut">
@@ -54,6 +54,7 @@
                 <MenuItem Header="_Highlight Recovery" Name="highlightRecovery" Click="MenuItem_Click" IsChecked="True" StaysOpenOnClick="True"/>
                 <MenuItem Header="_Highlight Roll-Off" Name="highlightRollOff">
                     <MenuItem Header="_Low" Name="highlightRollOffLow" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
+                    <MenuItem Header="_Medium" Name="highlightRollOffMedium" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
                     <MenuItem Header="_High" Name="highlightRollOffHigh" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
                     <Separator />
                     <MenuItem Header="_None" Name="highlightRollOffNone" Click="MenuItem_Click" IsChecked="False" StaysOpenOnClick="True"/>
