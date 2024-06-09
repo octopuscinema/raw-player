@@ -126,6 +126,8 @@
 #ifdef COMPUTE_PLATFORM_OPENCL
 #define GLOBAL_ID_X get_global_id(0)
 #define GLOBAL_ID_Y get_global_id(1)
+#define GLOBAL_ID_OFFSET_X get_global_offset(0)
+#define GLOBAL_ID_OFFSET_Y get_global_offset(1)
 #endif
 #ifdef COMPUTE_PLATFORM_CUDA
 #define GLOBAL_ID_X (blockIdx.x * blockDim.x + threadIdx.x)

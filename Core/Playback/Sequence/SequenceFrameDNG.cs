@@ -212,10 +212,9 @@ namespace Octopus.Player.Core.Playback
                     queue.AcquireTextureObject(renderContext, output);
 
                 // Run the kernel 4 pixels at a time
+                var launchOffset = (metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Xy : Vector2i.Zero) / 2;
                 var launchDimensions = output.Dimensions / 2;
-                var clipDisplayDimensions = metadata.DefaultCrop.HasValue ? metadata.DefaultCrop.Value.Zw : metadata.Dimensions;
-                //Debug.Assert(clipDisplayDimensions == (launchDimensions * 2));
-                program.Run2D(queue, kernel, launchDimensions);
+                program.Run2D(queue, kernel, launchDimensions, launchOffset);
 
                 // Release access to GL texture
                 if (output.Texture != null)

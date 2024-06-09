@@ -147,7 +147,7 @@ KERNEL void ProcessBayer(__read_only image2d_t rawImage, float2 blackWhiteLevel,
 		highlightRollOff, gamutCompression, toneMappingOperator, gamma);
 
 	// Write out image data
-	int2 outputCoord = inputCoord;
+	int2 outputCoord = (workCoord - make_int2(GLOBAL_ID_OFFSET_X, GLOBAL_ID_OFFSET_Y)) * 2;
 	write_imageh(output, outputCoord, make_half4(displayRgb.RGB[0], 0.0f));
 	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayRgb.RGB[1], 0.0f));
 	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayRgb.RGB[2], 0.0f));
@@ -192,7 +192,7 @@ KERNEL void ProcessBayerLUT(__read_only image2d_t rawImage, float2 blackWhiteLev
 	RGBHalf4 displayRgb = ApplyLUT(logRgb, logToDisplay);
 
 	// Write out image data
-	int2 outputCoord = inputCoord;
+	int2 outputCoord = (workCoord - make_int2(GLOBAL_ID_OFFSET_X, GLOBAL_ID_OFFSET_Y)) * 2;
 	write_imageh(output, outputCoord, make_half4(displayRgb.RGB[0], 0.0f));
 	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayRgb.RGB[1], 0.0f));
 	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayRgb.RGB[2], 0.0f));
@@ -240,7 +240,7 @@ KERNEL void Process(__read_only image2d_t rawImage, float2 blackWhiteLevel, floa
 	half4 displayMono = ProcessMono(cameraMono, blackWhiteLevel, exposure, toneMappingOperator, gamma);
 
 	// Write out image data
-	int2 outputCoord = inputCoord;
+	int2 outputCoord = (workCoord - make_int2(GLOBAL_ID_OFFSET_X, GLOBAL_ID_OFFSET_Y)) * 2;
 	write_imageh(output, outputCoord, make_half4(displayMono.xxx, 0.0f));
 	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayMono.yyy, 0.0f));
 	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayMono.zzz, 0.0f));
@@ -291,7 +291,7 @@ KERNEL void ProcessLUT(__read_only image2d_t rawImage, float2 blackWhiteLevel, f
 	RGBHalf4 displayRgb = ApplyLUTMono(logMono, logToDisplay);
 
 	// Write out image data
-	int2 outputCoord = inputCoord;
+	int2 outputCoord = (workCoord - make_int2(GLOBAL_ID_OFFSET_X, GLOBAL_ID_OFFSET_Y)) * 2;
 	write_imageh(output, outputCoord, make_half4(displayRgb.RGB[0], 0.0f));
 	write_imageh(output, outputCoord + make_int2(1, 0), make_half4(displayRgb.RGB[1], 0.0f));
 	write_imageh(output, outputCoord + make_int2(0, 1), make_half4(displayRgb.RGB[2], 0.0f));

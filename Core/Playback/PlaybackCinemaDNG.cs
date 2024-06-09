@@ -164,9 +164,10 @@ namespace Octopus.Player.Core.Playback
             }
 
             // Create display frame compute and render image
+            var outputDimensions = cinemaDNGClip.Metadata.DefaultCrop.HasValue ? cinemaDNGClip.Metadata.DefaultCrop.Value.Zw : cinemaDNGClip.Metadata.Dimensions;
             if (displayFrameGPU != null)
                 displayFrameGPU.Dispose();
-            displayFrameGPU = RenderContext.CreateTexture(cinemaDNGClip.Metadata.PaddedDimensions, gpuDisplayFormat, null, TextureFilter.Linear, "displayFrame");
+            displayFrameGPU = RenderContext.CreateTexture(outputDimensions, gpuDisplayFormat, null, TextureFilter.Linear, "displayFrame");
             if (displayFrameCompute != null)
                 displayFrameCompute.Dispose();
             displayFrameCompute = ComputeContext.CreateImage(RenderContext, displayFrameGPU, MemoryDeviceAccess.ReadWrite);
