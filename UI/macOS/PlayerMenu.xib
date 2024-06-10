@@ -211,7 +211,7 @@
                                                 <action selector="doClick:" target="-1" id="XZA-6Q-haV"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="RED LOG3G10" identifier="gammaLog3G10" id="tT0-S8-N5X">
+                                        <menuItem title="RED Log3G10" identifier="gammaLog3G10" id="tT0-S8-N5X">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="doClick:" target="-1" id="9Ci-6G-Okd"/>
