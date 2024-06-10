@@ -68,7 +68,7 @@ Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Ma
 The OCTOPUS RAW Player application for macOS is built from the ```raw-player/Player.macOS.sln``` C# solution file. Visual Studio for Mac does not support C++ projects - native library dependencies must be built manually from the ```raw-player/Decoders/Decoders.macOS.xcworkspace``` Xcode workspace prior to building the C# solution.
 
 # Included in this repository
-Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL GPU kernel source (GLSL)
+Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL and OpenCL GPU kernel source.
 
 # License
 The contents of this repository are licensed under the MIT License (https://mit-license.org)
