@@ -1,5 +1,5 @@
 # Introduction to OCTOPUS RAW Player
-OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playback application for reviewing RAW video footage from professional cameras. Currently the player supports CinemaDNG RAW ```.dng``` sequences. The OCTOPUS RAW Player leverages native C++ code for low-level decoding and implements our unique sophisticated colour science processing pipeline in GLSL (OpenGL shading language).
+OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playback application for reviewing RAW video footage from professional cameras. Currently the player supports CinemaDNG RAW ```.dng``` sequences. The OCTOPUS RAW Player leverages native C++ code for low-level decoding and implements our unique sophisticated colour science processing pipeline in OpenCL.
 
 &nbsp;
 <p align="center">
@@ -8,12 +8,14 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 &nbsp;
 
 **Features**
-- Modern minimal interface
-- Efficient real-time CinemaDNG playback for 8,10,12,14,16-bit bayer or monochrome, uncompressed or lossless compressed ```.dng``` sequences.
+- Efficient real-time CinemaDNG playback for 8,10,12,14,16-bit bayer or monochrome, uncompressed or lossless compressed ```.dng``` sequences
 - Professional RAW controls (White balance, exposure)
 - Advanced colour science control (Highlight recovery/roll-off, SDR Tone-Mapping)
+- Advanced gamma/gamut control (ARRI LogC3, RED Log3G10, Blackmagic Film Gen. 5)
+- Built-in manufacturer Rec.709 LUTs and custom ```.cube``` LUT loading
 - Timecode and metadata display
-- Support for real-time 8K playback
+- Modern minimal interface
+- PNG frame export
 
 **Tested Cameras & Software**
 - Sigma Fp
@@ -33,7 +35,7 @@ https://www.octopuscinema.com/raw-player
 
 ## Basic system requirements
 - Windows 10 / macOS 10.10 or newer
-- GPU with support for OpenGL 3.2 or greater (Native Apple Metal API support in progress)
+- GPU with support for OpenGL 3.2+ and OpenCL 1.2+
 
 ## Installation
 OCTOPUS RAW Player [releases](https://github.com/octopuscinema/raw-player/releases) are usually installed by launching the Windows ```.msi``` or macOS ```.pkg``` installer file. Alternatively, OCTOPUS RAW Player can be run as a portable single-file executable without installation.
