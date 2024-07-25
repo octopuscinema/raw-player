@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GPU\Common\Player.GPU.csproj" />
+    <ProjectReference Include="..\Audio\Common\Player.Audio.csproj" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

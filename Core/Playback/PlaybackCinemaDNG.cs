@@ -34,6 +34,8 @@ namespace Octopus.Player.Core.Playback
 
         private IO.LUT.LUT3D LUT { get; set; }
 
+        private HashSet<Audio.ITrack> AudioTracks { get; set; }
+
         public override event EventHandler ClipOpened;
         public override event EventHandler ClipClosed;
 
@@ -57,6 +59,8 @@ namespace Octopus.Player.Core.Playback
 
         public override void Dispose()
         {
+            Debug.Assert(!IsOpen());
+
             PlayerWindow.RawParameterChanged -= OnRawParameterChanged;
             
             LUT?.Dispose();
@@ -100,6 +104,13 @@ namespace Octopus.Player.Core.Playback
                 LinearizeTable = null;
             }
 
+            if (AudioTracks != null)
+            {
+                foreach (var track in AudioTracks)
+                    track.Dispose();
+                AudioTracks = null;
+            }
+
             State = State.Empty;
             ClipClosed?.Invoke(this, new EventArgs());
             Clip = null;
@@ -138,6 +149,9 @@ namespace Octopus.Player.Core.Playback
             // We can consider clip succesfully opened at this point
             State = State.Stopped;
             ClipOpened?.Invoke(this, new EventArgs());
+
+            // Fetch audio tracks
+            AudioTracks = PlayerWindow.AudioContext.FetchTracks(clip);
 
             // Rebuild the compute program if the defines have changed
             var requiredGpuDefines = GpuDefinesForClip(clip);
@@ -297,6 +311,12 @@ namespace Octopus.Player.Core.Playback
             base.Stop();
             SequenceStream.CancelAllRequests();
             SequenceStream.ReclaimReadyFrames();
+
+            if (AudioTracks != null)
+            {
+                foreach (var track in AudioTracks)
+                    track.Stop();
+            }
         }
 
         public override void Pause()
@@ -304,6 +324,15 @@ namespace Octopus.Player.Core.Playback
             base.Pause();
             SequenceStream.CancelAllRequests();
             SequenceStream.ReclaimReadyFrames();
+
+            if (AudioTracks != null)
+            {
+                foreach (var track in AudioTracks)
+                {
+                    if ( track.Playing )
+                        track.Pause();
+                }
+            }
         }
 
         public void OnRawParameterChanged()
@@ -407,6 +436,8 @@ namespace Octopus.Player.Core.Playback
                 Vector2i rectSize;
                 RenderContext.FramebufferSize.FitAspectRatio(Clip.Metadata.AspectRatio, out rectPos, out rectSize);
                 RenderContext.Blit2D(displayFrameGPU, rectPos, rectSize, Clip.Metadata.Orientation);
+
+                SynchroniseAudio();
             }
         }
 
@@ -479,6 +510,23 @@ namespace Octopus.Player.Core.Playback
             }
 
             return ret;
+        }
+
+        private void SynchroniseAudio()
+        {
+            if ((State == State.Playing || State == State.PlayingFromBuffer) && AudioTracks != null && AudioSyncFrame.HasValue)
+            {
+                var audioFrame = (double)(AudioSyncFrame.Value - FirstFrame);
+                double audioTime = audioFrame / Framerate.ToDouble();
+
+                foreach (var track in AudioTracks)
+                {
+                    if ((int)Velocity < 0)
+                        track.Position = audioTime;
+                    if (!track.Playing)
+                        track.Play(audioTime, Math.Abs((float)Velocity));
+                }
+            }
         }
 
         public override void RemoveLUT()

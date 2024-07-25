@@ -76,6 +76,7 @@ namespace Octopus.Player.UI
 		bool DropAreaVisible { get; set; }
 		void ShowInNavigator(List<string> paths);
         bool RenderContinuouslyHint { set; }
+        Audio.IContext AudioContext { get; }
     }
 }
 

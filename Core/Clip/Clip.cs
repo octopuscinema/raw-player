@@ -8,6 +8,7 @@ namespace Octopus.Player.Core
 		{
 		}
 
+        public abstract Audio.Codec AudioCodec { get; }
         public string Path { get; protected set; }
         public abstract Essence Essence { get; }
         public IMetadata Metadata { get; protected set; }

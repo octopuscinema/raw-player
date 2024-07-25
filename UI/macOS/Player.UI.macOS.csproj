@@ -111,6 +111,10 @@
     <Compile Include="AppDelegate.cs" />
     <Compile Include="OpenGLLayer.cs" />
     <Compile Include="PlaybackControlsView.cs" />
+    <Compile Include="SeekSlider.cs" />
+    <Compile Include="SeekSlider.designer.cs">
+      <DependentUpon>SeekSlider.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="PlayerMenu.xib" />
@@ -141,6 +145,12 @@
     </ProjectReference>
     <ProjectReference Include="..\..\GPU\OpenCL\Player.GPU.OpenCL.csproj">
       <Name>Player.GPU.OpenCL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Audio\macOS\Player.Audio.macOS.csproj">
+      <Name>Player.Audio.macOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Audio\Common\Player.Audio.csproj">
+      <Name>Player.Audio</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

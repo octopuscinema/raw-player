@@ -35,6 +35,14 @@ namespace Octopus.Player.UI
         public RecentFiles RecentFiles { get; private set; }
         private RawParameters? PersistantClipParameters { get; set; }
 
+        public Audio.IContext AudioContext
+        {
+            get
+            {
+                return NativeWindow.AudioContext;
+            }
+        }
+
         private DateTime lastInteraction;
         private float playhead;
         public event IPlayerWindow.ClipOpenedEventHandler ClipOpened;

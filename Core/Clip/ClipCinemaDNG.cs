@@ -10,6 +10,7 @@ namespace Octopus.Player.Core
 	public class ClipCinemaDNG : Clip
 	{
         public override Essence Essence { get { return Essence.Sequence; } }
+        public override Audio.Codec AudioCodec { get { return Audio.Codec.Wav; } }
 
         public override IClip NextClip
         {

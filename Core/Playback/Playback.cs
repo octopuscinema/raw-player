@@ -14,6 +14,8 @@ namespace Octopus.Player.Core.Playback
 
         public uint? LastDisplayedFrame { get; protected set; }
 
+        protected uint? AudioSyncFrame { get; private set; }
+
         protected uint BufferDurationFrames { get; private set; }
         public State? PreSeekState { get; private set; }
         private PlaybackVelocity velocity;
@@ -83,7 +85,6 @@ namespace Octopus.Player.Core.Playback
             Velocity = PlaybackVelocity.Forward1x;
         }
 
-
         public abstract void Close();
         public abstract Error Open(IClip clip);
         public bool IsOpen()
@@ -149,6 +150,7 @@ namespace Octopus.Player.Core.Playback
 
             requestFrame = null;
             displayFrame = null;
+            AudioSyncFrame = null;
         }
 
         public virtual void Play()
@@ -169,6 +171,7 @@ namespace Octopus.Player.Core.Playback
             else if (!requestFrame.HasValue)
                 requestFrame = FirstFrame;
             displayFrame = requestFrame;
+            AudioSyncFrame = displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
 
             // Start frame request/display timer
             var frameDuration = TimeSpan.FromSeconds(1.0 / Framerate.ToDouble());
@@ -257,6 +260,7 @@ namespace Octopus.Player.Core.Playback
                 var displayFrameResult = DisplayFrame((uint)displayFrame.Value, out frameDisplayed, out frameTimeCode, Velocity);
                 if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
+                AudioSyncFrame = frameDisplayed;
                 switch (displayFrameResult)
                 {
                     case Error.None:
@@ -330,6 +334,8 @@ namespace Octopus.Player.Core.Playback
                 }
                 FrameDisplayTimer = null;
             }
+
+            AudioSyncFrame = null;
         }
 
         public abstract Error RequestFrame(uint frameNumber);

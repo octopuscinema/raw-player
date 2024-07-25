@@ -2,9 +2,8 @@
 
 namespace Octopus.Player.Core
 {
-	public interface IClip
+	public interface IClip : Audio.IContainer
 	{
-		string Path { get; }
 		Essence Essence { get; }
 		bool Valid { get; }
 

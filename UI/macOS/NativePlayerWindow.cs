@@ -30,7 +30,9 @@ namespace Octopus.Player.UI.macOS
 
         public bool MouseInsidePlaybackControls { get; private set; }
 
-		private Dictionary<NSTextField, NSFont> labelFonts = new Dictionary<NSTextField, NSFont>();
+		public HashSet<string> ActiveSliders { get; set; } = new HashSet<string>();
+
+        private Dictionary<NSTextField, NSFont> labelFonts = new Dictionary<NSTextField, NSFont>();
 
 		private PlaybackControlsView PlaybackControls { get; set; }
 
@@ -48,6 +50,8 @@ namespace Octopus.Player.UI.macOS
 		{
 			set { }
 		}
+
+        public Audio.IContext AudioContext { get; private set; }
 
         private IDisposable appearanceObserver;
 
@@ -70,7 +74,10 @@ namespace Octopus.Player.UI.macOS
         {
             ControlsAnimationState = ControlsAnimationState.In;
 
-			// Create platform independant window logic
+			// Create audio context
+			AudioContext = new Audio.macOS.Context();
+
+            // Create platform independant window logic
             PlayerWindow = new PlayerWindow(this, (IsDarkMode) ? (ITheme)new DefaultThemeDark() : null);
             PlayerWindow.OnLoad();
             WillClose += OnClose;
