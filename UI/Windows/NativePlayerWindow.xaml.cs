@@ -97,6 +97,8 @@ namespace Octopus.Player.UI.Windows
             set { GLControl.RenderContinuously = value; }
         }
 
+        public Audio.IContext AudioContext { get; private set; }
+
         private IntPtr? hwnd;
 
         private HashSet<Slider> activeSliders = new HashSet<Slider>();
@@ -108,6 +110,9 @@ namespace Octopus.Player.UI.Windows
         {
             ControlsAnimationState = ControlsAnimationState.In;
             InitializeComponent();
+
+            // Create audio context
+            AudioContext = new Audio.Windows.Context();
 
             // Create cross platform Window
             PlayerWindow = new PlayerWindow(this, ShouldSystemUseDarkMode() ? new DefaultWindowsThemeDark() : new DefaultWindowsTheme());

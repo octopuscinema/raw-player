@@ -33,6 +33,7 @@
     <PackageReference Include="OpenTK.GLWpfControl" Version="4.2.3" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Audio\Windows\Player.Audio.Windows.csproj" />
     <ProjectReference Include="..\..\GPU\OpenCL\Player.GPU.OpenCL.Windows.csproj" />
     <ProjectReference Include="..\..\GPU\OpenGL\Player.GPU.OpenGL.csproj" />
     <ProjectReference Include="..\Common\Player.UI.csproj" />

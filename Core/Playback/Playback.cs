@@ -171,7 +171,6 @@ namespace Octopus.Player.Core.Playback
             else if (!requestFrame.HasValue)
                 requestFrame = FirstFrame;
             displayFrame = requestFrame;
-            AudioSyncFrame = displayFrame.HasValue ? (uint)displayFrame.Value : FirstFrame;
 
             // Start frame request/display timer
             var frameDuration = TimeSpan.FromSeconds(1.0 / Framerate.ToDouble());

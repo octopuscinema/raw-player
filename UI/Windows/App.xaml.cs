@@ -1,4 +1,5 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
@@ -14,6 +15,7 @@ namespace Octopus.Player.UI.Windows
 
         App() : base()
         {
+            AppContext.SetSwitch("Switch.System.Threading.UseNetCoreTimer", true);
             PlayerApplication = new PlayerApplication();
         }
 
