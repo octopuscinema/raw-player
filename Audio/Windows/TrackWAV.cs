@@ -24,6 +24,11 @@ namespace Octopus.Player.Audio.Windows
         public bool Playing { get; private set; }
 
         private MediaPlayer Player { get; set; }
+        public bool Muted 
+        { 
+            get { return Player.IsMuted; }
+            set {  Player.IsMuted = value; }
+        }
 
         public TrackWAV(string wavPath)
         {
