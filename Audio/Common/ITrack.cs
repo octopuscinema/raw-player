@@ -10,6 +10,7 @@ namespace Octopus.Player.Audio
         float Volume { get; set; }
 
         bool Playing { get; }
+        bool Muted { get; set; }
 
         void Play(float speed = 1.0f);
         void Play(double position, float speed = 1.0f);

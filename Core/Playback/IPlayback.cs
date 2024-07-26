@@ -92,6 +92,11 @@ namespace Octopus.Player.Core.Playback
         event FrameDisplayedEventHandler SeekFrameDisplayed;
         event FrameMissingEventHandler SeekFrameMissing;
 
+		// Audio
+		bool HasAudio { get; }
+		void Mute();
+		void Unmute();
+
         // LUT
         Error ApplyLUT(string resourceName);
         Error ApplyLUT(Uri path);

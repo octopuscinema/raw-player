@@ -33,6 +33,8 @@ namespace Octopus.Player.Core.Playback
         }
         public event EventHandler VelocityChanged;
 
+        public abstract bool HasAudio { get; }
+     
         Timer FrameRequestTimer { get; set; }
         Timer FrameDisplayTimer { get; set; }
 
@@ -84,6 +86,9 @@ namespace Octopus.Player.Core.Playback
             BufferDurationFrames = bufferDurationFrames;
             Velocity = PlaybackVelocity.Forward1x;
         }
+
+        public abstract void Mute();
+        public abstract void Unmute();
 
         public abstract void Close();
         public abstract Error Open(IClip clip);

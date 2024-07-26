@@ -149,6 +149,30 @@
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
+                                    <button identifier="muteButton" hidden="YES" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ZH-z3-rkq">
+                                        <rect key="frame" x="360" y="33.5" width="23.5" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSTouchBarAudioOutputVolumeHighTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="6mZ-YS-xOJ">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="0.85" green="0.85" blue="0.85" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="skC-2L-HB5"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="unmuteButton" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7LD-rc-dp2">
+                                        <rect key="frame" x="359" y="33.5" width="22.5" height="37.5"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="NSTouchBarAudioOutputMuteTemplate" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="J3H-sX-1H0">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="16"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="0.85" green="0.85" blue="0.85" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="faA-Tw-IyL"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
@@ -188,11 +212,13 @@
         </window>
     </objects>
     <resources>
-        <image name="NSTouchBarSkipToEndTemplate" width="15" height="13"/>
-        <image name="NSTouchBarSkipToStartTemplate" width="15" height="13"/>
+        <image name="NSTouchBarAudioOutputMuteTemplate" width="17" height="20"/>
+        <image name="NSTouchBarAudioOutputVolumeHighTemplate" width="27" height="19"/>
+        <image name="NSTouchBarSkipToEndTemplate" width="19" height="17"/>
+        <image name="NSTouchBarSkipToStartTemplate" width="19" height="17"/>
         <image name="backward.fill" catalog="system" width="19" height="12"/>
         <image name="forward.fill" catalog="system" width="19" height="12"/>
-        <image name="pause.fill" catalog="system" width="11" height="13"/>
+        <image name="pause.fill" catalog="system" width="14" height="17"/>
         <image name="play.fill" catalog="system" width="12" height="13"/>
     </resources>
 </document>

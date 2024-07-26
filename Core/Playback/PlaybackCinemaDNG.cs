@@ -46,6 +46,8 @@ namespace Octopus.Player.Core.Playback
 
         public override uint? ActiveSeekRequest { get; protected set; }
 
+        public override bool HasAudio { get { return AudioTracks != null && AudioTracks.Count > 0; } }
+      
         ITexture displayFrameGPU;
         IImage2D displayFrameCompute;
 
@@ -70,6 +72,24 @@ namespace Octopus.Player.Core.Playback
 
             SeekFrameMutex.Dispose();
             SeekFrameMutex = null;
+        }
+
+        public override void Mute()
+        {
+            if (AudioTracks != null)
+            {
+                foreach (var track in AudioTracks)
+                    track.Muted = true;
+            }
+        }
+
+        public override void Unmute()
+        {
+            if (AudioTracks != null)
+            {
+                foreach (var track in AudioTracks)
+                    track.Muted = false;
+            }
         }
 
         public override void Close()
@@ -145,13 +165,13 @@ namespace Octopus.Player.Core.Playback
                 previewFrame.Dispose();
                 return decodeError;
             }
-            
-            // We can consider clip succesfully opened at this point
-            State = State.Stopped;
-            ClipOpened?.Invoke(this, new EventArgs());
 
             // Fetch audio tracks
             AudioTracks = PlayerWindow.AudioContext.FetchTracks(clip);
+
+            // We can consider clip succesfully opened at this point
+            State = State.Stopped;
+            ClipOpened?.Invoke(this, new EventArgs());
 
             // Rebuild the compute program if the defines have changed
             var requiredGpuDefines = GpuDefinesForClip(clip);

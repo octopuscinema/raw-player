@@ -26,6 +26,26 @@ namespace Octopus.Player.Audio.macOS
 
         public bool Playing { get { return Player.Playing; } }
 
+        public bool Muted
+        {
+            get { return Volume == 0.0f && unmutedVolume.HasValue; }
+            set
+            {
+                if ( value )
+                {
+                    unmutedVolume = Volume;
+                    Volume = 0.0f;
+                }
+                else if ( unmutedVolume.HasValue )
+                {
+                    Volume = unmutedVolume.Value;
+                    unmutedVolume = null;
+                }
+            }
+        }
+
+        private float? unmutedVolume;
+
         private AVAudioPlayer Player { get; set; }
 
         public TrackWAV(string wavPath)

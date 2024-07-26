@@ -70,6 +70,8 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("fastRewindButton", false);
             NativeWindow.SetButtonEnabled("nextButton", false);
             NativeWindow.SetButtonEnabled("previousButton", false);
+            NativeWindow.SetButtonEnabled("muteButton", false);
+            NativeWindow.SetButtonEnabled("unmuteButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
 
             // Setup recent files menu items
@@ -836,6 +838,22 @@ namespace Octopus.Player.UI
                         }
                     }
                     break;
+                case "muteButton":
+                    if (Playback.HasAudio)
+                    {
+                        Playback.Mute();
+                        NativeWindow.SetButtonVisibility("muteButton", false);
+                        NativeWindow.SetButtonVisibility("unmuteButton", true);
+                    }
+                    break;
+                case "unmuteButton":
+                    if (Playback.HasAudio)
+                    {
+                        Playback.Unmute();
+                        NativeWindow.SetButtonVisibility("muteButton", true);
+                        NativeWindow.SetButtonVisibility("unmuteButton", false);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -1099,6 +1117,10 @@ namespace Octopus.Player.UI
             if (Playback.Clip != null)
                 SavePersistantClipParameters(Playback.Clip);
 
+            NativeWindow.SetButtonEnabled("muteButton", false);
+            NativeWindow.SetButtonEnabled("unmuteButton", false);
+            NativeWindow.SetButtonVisibility("muteButton", false);
+            NativeWindow.SetButtonVisibility("unmuteButton", true);
             NativeWindow.SetButtonEnabled("playButton", false);
             NativeWindow.SetButtonEnabled("pauseButton", false);
             NativeWindow.SetButtonEnabled("fastRewindButton", false);
@@ -1126,7 +1148,13 @@ namespace Octopus.Player.UI
             bool isLogGamma = (Playback.Clip.RawParameters.HasValue && Playback.Clip.RawParameters.Value.gammaSpace.HasValue) ?
                 Playback.Clip.RawParameters.Value.gammaSpace.Value.IsLog() : false;
 
+            bool hasAudio = Playback.HasAudio;
+
             playhead = 0.0f;
+            NativeWindow.SetButtonEnabled("muteButton", hasAudio);
+            NativeWindow.SetButtonEnabled("unmuteButton", hasAudio);
+            NativeWindow.SetButtonVisibility("muteButton", hasAudio);
+            NativeWindow.SetButtonVisibility("unmuteButton", !hasAudio);
             NativeWindow.SetButtonEnabled("playButton", true);
             NativeWindow.SetButtonEnabled("pauseButton", true);
             NativeWindow.SetButtonEnabled("fastRewindButton", true);
@@ -1141,7 +1169,7 @@ namespace Octopus.Player.UI
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
             NativeWindow.DropAreaVisible = false;
-
+            
             bool isColour = false;
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)
