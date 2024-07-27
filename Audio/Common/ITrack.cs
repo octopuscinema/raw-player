@@ -2,7 +2,7 @@
 
 namespace Octopus.Player.Audio
 {
-    public interface ITrack : IDisposable
+    public interface ITrack : IDisposable, IMediaClock
     {
         string Name { get; }
         double Duration { get; }

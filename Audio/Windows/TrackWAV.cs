@@ -27,8 +27,14 @@ namespace Octopus.Player.Audio.Windows
         public bool Muted 
         { 
             get { return Player.IsMuted; }
-            set {  Player.IsMuted = value; }
+            set { Player.IsMuted = value; }
         }
+
+        public event EventHandler ActiveChanged;
+
+        public bool Active { get { return Playing; } }
+
+        public double Time { get { return Position; } }
 
         public TrackWAV(string wavPath)
         {
@@ -48,6 +54,7 @@ namespace Octopus.Player.Audio.Windows
         {
             Player.Pause();
             Playing = false;
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Play(float speed = 1.0f)
@@ -55,6 +62,7 @@ namespace Octopus.Player.Audio.Windows
             Player.SpeedRatio = speed;
             Player.Play();
             Playing = true;
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Play(double position, float speed = 1.0f)
@@ -65,6 +73,7 @@ namespace Octopus.Player.Audio.Windows
                 Player.SpeedRatio = speed;
                 Player.Play();
                 Playing = true;
+                ActiveChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -72,6 +81,7 @@ namespace Octopus.Player.Audio.Windows
         {
             Player.Stop();
             Playing = false;
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
             Position = 0;
         }
     }

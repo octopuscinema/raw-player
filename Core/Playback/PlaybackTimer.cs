@@ -1,14 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Octopus.Player.Core.Playback
 {
-    public interface IMediaClock
-    {
-        bool Active { get; }
-        double Time { get; }
-    }
-
 	public class PlaybackTimer : IDisposable
 	{
         public TimeSpan? Offset { get; private set; }
@@ -17,29 +12,45 @@ namespace Octopus.Player.Core.Playback
         private Action Action { get; set; }
         private Thread Thread { get; set; }
 
-        private volatile bool terminate = false;
 
-        private System.Diagnostics.Stopwatch Stopwatch { get; set; }
+        private Stopwatch Stopwatch { get; set; }
 
-        private IMediaClock Clock { get; set; }
+        private AutoResetEvent Sleep { get; set; }
+
+        private Audio.IMediaClock Clock { get; set; }
         private double? clockOffset;
 
-        public PlaybackTimer(Action action, TimeSpan? offset, Maths.Rational rate, IMediaClock clock = null)
+        private volatile bool terminate = false;
+
+        public PlaybackTimer(Action action, TimeSpan? offset, Maths.Rational rate, Audio.IMediaClock clock = null)
 		{
+            Clock = clock;
             Offset = offset;
             Rate = rate;
 			Action = action;
+            Sleep = new AutoResetEvent(false);
+            Stopwatch = new Stopwatch();
             Stopwatch.Start();
+
+            if ( Clock !=  null )
+                Clock.ActiveChanged += OnClockActiveChanged;
+
             Thread = new Thread(Work);
             Thread.Start();
 		}
 
         public void Dispose()
         {
+            if (Clock != null)
+                Clock.ActiveChanged -= OnClockActiveChanged;
+
             terminate = true;
+            Sleep.Set();
             Thread.Join();
             Thread = null;
             Action = null;
+            Sleep.Dispose();
+            Sleep = null;
         }
 
         private double Time()
@@ -54,6 +65,14 @@ namespace Octopus.Player.Core.Playback
             return Stopwatch.Elapsed.TotalSeconds;
         }
 
+        private void OnClockActiveChanged(object sender, EventArgs e)
+        {
+            if (Clock.Active)
+                clockOffset = Clock.Time - Stopwatch.Elapsed.TotalSeconds;
+            else
+                clockOffset = null;
+        }
+
         private void Work()
         {
             uint count = 0;
@@ -63,8 +82,11 @@ namespace Octopus.Player.Core.Playback
                 if (Offset.HasValue)
                     nextInvokeTime += Offset.Value.TotalSeconds;
                 var sleepDuration = nextInvokeTime - Time();
-                if (sleepDuration > 0.0 )
-                    Thread.Sleep(TimeSpan.FromSeconds(sleepDuration));
+                if (sleepDuration > 0.0)
+                    Sleep.WaitOne(TimeSpan.FromSeconds(sleepDuration));
+
+                if (terminate)
+                    return;
 
                 Action.Invoke();
                 count++;

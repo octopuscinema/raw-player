@@ -34,9 +34,9 @@ namespace Octopus.Player.Core.Playback
         public event EventHandler VelocityChanged;
 
         public abstract bool HasAudio { get; }
-     
-        Timer FrameRequestTimer { get; set; }
-        Timer FrameDisplayTimer { get; set; }
+
+        PlaybackTimer FrameRequestTimer { get; set; }
+        PlaybackTimer FrameDisplayTimer { get; set; }
 
         protected long? requestFrame;
         protected long? displayFrame;
@@ -134,22 +134,14 @@ namespace Octopus.Player.Core.Playback
             // Dispose the frame request timer
             if (FrameRequestTimer != null)
             {
-                using (var waitHandle = new ManualResetEvent(false))
-                {
-                    FrameRequestTimer.Dispose(waitHandle);
-                    waitHandle.WaitOne();
-                }
+                FrameRequestTimer.Dispose();
                 FrameRequestTimer = null;
             }
 
             // Dispose the frame displaytimer
             if (FrameDisplayTimer != null)
             {
-                using (var waitHandle = new ManualResetEvent(false))
-                {
-                    FrameDisplayTimer.Dispose(waitHandle);
-                    waitHandle.WaitOne();
-                }
+                FrameDisplayTimer.Dispose();
                 FrameDisplayTimer = null;
             }
 
@@ -178,14 +170,13 @@ namespace Octopus.Player.Core.Playback
             displayFrame = requestFrame;
 
             // Start frame request/display timer
-            var frameDuration = TimeSpan.FromSeconds(1.0 / Framerate.ToDouble());
-            FrameRequestTimer = new Timer(new TimerCallback(OnFrameRequest), null, TimeSpan.Zero, frameDuration);
-            FrameDisplayTimer = new Timer(new TimerCallback(OnFrameDisplay), null, TimeSpan.FromSeconds(BufferDurationFrames / Framerate.ToDouble()), frameDuration);
+            FrameRequestTimer = new PlaybackTimer(() => { OnFrameRequest(); }, TimeSpan.Zero, Framerate);
+            FrameDisplayTimer = new PlaybackTimer(() => { OnFrameDisplay(); }, TimeSpan.FromSeconds(BufferDurationFrames / Framerate.ToDouble()), Framerate);
 
             State = State.Buffering;
         }
 
-        private void OnFrameRequest(object obj)
+        private void OnFrameRequest()
         {
             PlayerWindow.InvokeOnUIThread(() =>
             {
@@ -252,7 +243,7 @@ namespace Octopus.Player.Core.Playback
             }
         }
 
-        private void OnFrameDisplay(object obj)
+        private void OnFrameDisplay()
         {
             PlayerWindow.InvokeOnUIThread(() =>
             {
@@ -264,18 +255,20 @@ namespace Octopus.Player.Core.Playback
                 var displayFrameResult = DisplayFrame((uint)displayFrame.Value, out frameDisplayed, out frameTimeCode, Velocity);
                 if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
-                AudioSyncFrame = frameDisplayed;
                 switch (displayFrameResult)
                 {
                     case Error.None:
                         Debug.Assert(frameDisplayed == displayFrame.Value);
                         FrameDisplayed?.Invoke(frameDisplayed, frameTimeCode.Value);
                         LastDisplayedFrame = frameDisplayed;
+                        AudioSyncFrame = frameDisplayed;
                         break;
                     case Error.FrameNotReady:
+                        AudioSyncFrame = null;
                         FrameSkipped?.Invoke((uint)displayFrame.Value, frameDisplayed, frameTimeCode.Value);
                         break;
                     case Error.FrameNotPresent:
+                        AudioSyncFrame = (uint)displayFrame.Value;
                         FrameMissing?.Invoke((uint)displayFrame.Value, frameTimeCode.Value);
                         break;
                     default:
@@ -320,22 +313,14 @@ namespace Octopus.Player.Core.Playback
             // Dispose the frame request timer
             if (FrameRequestTimer != null)
             {
-                using (var waitHandle = new ManualResetEvent(false))
-                {
-                    FrameRequestTimer.Dispose(waitHandle);
-                    waitHandle.WaitOne();
-                }
+                FrameRequestTimer.Dispose();
                 FrameRequestTimer = null;
             }
 
             // Dispose the frame displaytimer
             if (FrameDisplayTimer != null)
             {
-                using (var waitHandle = new ManualResetEvent(false))
-                {
-                    FrameDisplayTimer.Dispose(waitHandle);
-                    waitHandle.WaitOne();
-                }
+                FrameDisplayTimer.Dispose();
                 FrameDisplayTimer = null;
             }
 
