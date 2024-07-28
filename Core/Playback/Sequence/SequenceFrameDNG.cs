@@ -58,7 +58,7 @@ namespace Octopus.Player.Core.Playback
             switch (DNGReader.Compression)
             {
                 case IO.DNG.Compression.None:
-                case IO.DNG.Compression.LosslessJPEG:
+                case IO.DNG.Compression.Jpeg:
                     var bytesPerPixel = clip.Metadata.BitDepth <= 8 ? 1 : 2;
 
                     // Decode and copy to GPU

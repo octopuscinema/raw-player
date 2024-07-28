@@ -17,7 +17,7 @@ namespace Octopus.Player.Core.IO.DNG
     {
         Unknown = -1,
         None = 1,
-        LosslessJPEG = 7
+        Jpeg = 7
     }
 
     public enum PhotometricInterpretation

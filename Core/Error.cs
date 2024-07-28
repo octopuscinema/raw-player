@@ -11,6 +11,7 @@ namespace Octopus.Player.Core
         BadMetadata,
         NoVideoStream,
         FrameNotPresent,
+        LibraryError,
         BadFrame,
         BadImageData,
         BadFrameIndex,

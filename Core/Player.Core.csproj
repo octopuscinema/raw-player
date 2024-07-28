@@ -75,7 +75,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Decoders\" />
     <Folder Include="IO\LUT\" />
   </ItemGroup>
   <ItemGroup>

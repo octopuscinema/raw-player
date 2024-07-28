@@ -127,7 +127,7 @@ namespace Octopus.Player.Core.IO.DNG
             
             switch (Compression)
             {
-                case Compression.LosslessJPEG:
+                case Compression.Jpeg:
                     return DecodeCompressedImageDataMulticore(ref offsets, ref byteCounts, dataOut);
                 case Compression.None:
                     return DecodeUncompressedImageData(ref offsets, ref byteCounts, dataOut);
@@ -431,7 +431,7 @@ namespace Octopus.Player.Core.IO.DNG
                         case Compression.None:
                             CachedDecodedBitDepth = BitDepth > 8u ? 16u : 8u;
                             break;
-                        case Compression.LosslessJPEG:
+                        case Compression.Jpeg:
                             CachedDecodedBitDepth = 16u;
                             break;
                         default:

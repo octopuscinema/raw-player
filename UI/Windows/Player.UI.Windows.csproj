@@ -25,6 +25,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>LJ92.dll</TargetPath>
     </ContentWithTargetPath>
+	<ContentWithTargetPath Include="..\..\Decoders\Jpeg\jpeg62.dll">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  <TargetPath>jpeg62.dll</TargetPath>
+	</ContentWithTargetPath>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
