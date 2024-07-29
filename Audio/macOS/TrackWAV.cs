@@ -48,6 +48,12 @@ namespace Octopus.Player.Audio.macOS
 
         private AVAudioPlayer Player { get; set; }
 
+        public event EventHandler ActiveChanged;
+
+        public bool Active { get { return Playing; } }
+
+        public double Time { get { return Position; } }
+
         public TrackWAV(string wavPath)
         {
             Name = System.IO.Path.GetFileNameWithoutExtension(wavPath);
@@ -69,12 +75,14 @@ namespace Octopus.Player.Audio.macOS
         public void Pause()
         {
             Player.Pause();
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Play(float speed = 1.0f)
         {
             Player.Rate = speed;
             Player.Play();
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Play(double position, float speed = 1.0f)
@@ -84,6 +92,7 @@ namespace Octopus.Player.Audio.macOS
                 Position = position;
                 Player.Rate = speed;
                 Player.Play();
+                ActiveChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -91,6 +100,7 @@ namespace Octopus.Player.Audio.macOS
         {
             Player.Stop();
             Position = 0;
+            ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnFinishedPlaying(object sender, AVStatusEventArgs e)
