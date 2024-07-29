@@ -154,7 +154,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\..\Decoders\LJ92\Build\Products\Release\libLJ92.dylib">
+    <NativeReference Include="..\..\Decoders\Jpeg\Build\Products\Release\libJpeg.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

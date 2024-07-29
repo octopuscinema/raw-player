@@ -37,14 +37,14 @@ bin
 *.user
 *.nupkg
 packages
-Decoders/LJ92/LJ92.macOS.xcodeproj/xcuserdata
-Decoders/LJ92/LJ92.macOS.xcodeproj/project.xcworkspace/xcuserdata
-Decoders/LJ92/DerivedData
+Decoders/Jpeg/Jpeg.macOS.xcodeproj/xcuserdata
+Decoders/Jpeg/Jpeg.macOS.xcodeproj/project.xcworkspace/xcuserdata
+Decoders/Jpeg/DerivedData
 *.pdb
 *.tlog
 *.idb
 *.log
-Decoders/LJ92/x64
+Decoders/Jpeg/x64
 Decoders/Unpack/DerivedData
 Decoders/Unpack/Unpack.macOS.xcodeproj/xcuserdata
 Decoders/Unpack/Unpack.macOS.xcodeproj/project.xcworkspace/xcuserdata
@@ -52,6 +52,6 @@ Decoders/Unpack/Unpack.macOS.xcodeproj/project.xcworkspace/xcuserdata
 Decoders/Unpack/x64
 Decoders/Decoders.macOS.xcworkspace/xcuserdata
 *.msi
-Decoders/LJ92/Build
+Decoders/Jpeg/Build
 Decoders/Unpack/Build
 Decoders/Build

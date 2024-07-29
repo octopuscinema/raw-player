@@ -1,4 +1,4 @@
-#include "LJ92.h"
+#include "LosslessJpeg.h"
 
 // Adapted from Adobe DNG SDK 1.5.1: https://github.com/shahminfikri/dng_sdk_1.5.1_-_gpr_sdk_1.0.0/blob/master/dng_sdk/dng_lossless_jpeg.cpp
 
@@ -33,7 +33,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 #endif
 #endif
 
-namespace Octopus::Player::Decoders::LJ92
+namespace Octopus::Player::Decoders::Jpeg
 {
 	static FORCE_INLINE void ThrowBadFormat()
 	{
@@ -1518,7 +1518,7 @@ namespace Octopus::Player::Decoders::LJ92
 		int32_t bitsLeft;
 	};
     
-	extern "C" Core::eError Decode(uint8_t* pOut16Bit, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
+	extern "C" Core::eError DecodeLossless(uint8_t* pOut16Bit, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height, uint32_t bitDepth)
 	{
 		
         DecoderInput stream(pInCompressed);

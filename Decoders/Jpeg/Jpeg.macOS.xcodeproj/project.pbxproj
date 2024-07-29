@@ -8,15 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = 11943B4229CA2A0A00078EC3 /* JpegMarker.h */; };
-		11C9169E285637D20016B35B /* LJ92.h in Headers */ = {isa = PBXBuildFile; fileRef = 11C9169D285637D20016B35B /* LJ92.h */; };
-		11C916A2285637D20016B35B /* LJ92.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11C916A1285637D20016B35B /* LJ92.cpp */; };
+		11C9169E285637D20016B35B /* LosslessJpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 11C9169D285637D20016B35B /* LosslessJpeg.h */; };
+		11C916A2285637D20016B35B /* LosslessJpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11C916A1285637D20016B35B /* LosslessJpeg.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		11943B4229CA2A0A00078EC3 /* JpegMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JpegMarker.h; sourceTree = "<group>"; };
-		11C9169A285637D20016B35B /* libLJ92.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLJ92.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		11C9169D285637D20016B35B /* LJ92.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LJ92.h; sourceTree = "<group>"; };
-		11C916A1285637D20016B35B /* LJ92.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LJ92.cpp; sourceTree = "<group>"; };
+		11C9169A285637D20016B35B /* libJpeg.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libJpeg.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		11C9169D285637D20016B35B /* LosslessJpeg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LosslessJpeg.h; sourceTree = "<group>"; };
+		11C916A1285637D20016B35B /* LosslessJpeg.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LosslessJpeg.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,8 +34,8 @@
 			isa = PBXGroup;
 			children = (
 				11943B4229CA2A0A00078EC3 /* JpegMarker.h */,
-				11C9169D285637D20016B35B /* LJ92.h */,
-				11C916A1285637D20016B35B /* LJ92.cpp */,
+				11C9169D285637D20016B35B /* LosslessJpeg.h */,
+				11C916A1285637D20016B35B /* LosslessJpeg.cpp */,
 				11C9169B285637D20016B35B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,7 +43,7 @@
 		11C9169B285637D20016B35B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				11C9169A285637D20016B35B /* libLJ92.dylib */,
+				11C9169A285637D20016B35B /* libJpeg.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -56,16 +56,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */,
-				11C9169E285637D20016B35B /* LJ92.h in Headers */,
+				11C9169E285637D20016B35B /* LosslessJpeg.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		11C91699285637D20016B35B /* LJ92 */ = {
+		11C91699285637D20016B35B /* Jpeg */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92" */;
+			buildConfigurationList = 11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "Jpeg" */;
 			buildPhases = (
 				11C91696285637D20016B35B /* Headers */,
 				11C91697285637D20016B35B /* Sources */,
@@ -75,9 +75,9 @@
 			);
 			dependencies = (
 			);
-			name = LJ92;
+			name = Jpeg;
 			productName = Player.Decoders.LJ92.macOS;
-			productReference = 11C9169A285637D20016B35B /* libLJ92.dylib */;
+			productReference = 11C9169A285637D20016B35B /* libJpeg.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -94,7 +94,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 11C91695285637D20016B35B /* Build configuration list for PBXProject "LJ92.macOS" */;
+			buildConfigurationList = 11C91695285637D20016B35B /* Build configuration list for PBXProject "Jpeg.macOS" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -107,7 +107,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				11C91699285637D20016B35B /* LJ92 */,
+				11C91699285637D20016B35B /* Jpeg */,
 			);
 		};
 /* End PBXProject section */
@@ -117,7 +117,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11C916A2285637D20016B35B /* LJ92.cpp in Sources */,
+				11C916A2285637D20016B35B /* LosslessJpeg.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,7 +279,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		11C91695285637D20016B35B /* Build configuration list for PBXProject "LJ92.macOS" */ = {
+		11C91695285637D20016B35B /* Build configuration list for PBXProject "Jpeg.macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11C916A3285637D20016B35B /* Debug */,
@@ -288,7 +288,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "LJ92" */ = {
+		11C916A5285637D20016B35B /* Build configuration list for PBXNativeTarget "Jpeg" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				11C916A6285637D20016B35B /* Debug */,

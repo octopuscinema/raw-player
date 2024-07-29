@@ -1,4 +1,4 @@
-namespace Octopus::Player::Decoders::LJ92
+namespace Octopus::Player::Decoders::Jpeg
 {
 	enum JpegMarker
 	{

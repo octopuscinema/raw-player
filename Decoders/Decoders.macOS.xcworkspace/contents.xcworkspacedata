@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:LJ92/LJ92.macOS.xcodeproj">
+      location = "group:Jpeg/Jpeg.macOS.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Unpack/Unpack.macOS.xcodeproj">

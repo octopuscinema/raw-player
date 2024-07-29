@@ -2,7 +2,7 @@ try {
 	$tempPath = '.\temp'
 	New-Item -Force -Path $tempPath -ItemType Directory
 	
-	$version = [IO.File]::ReadAllText((Resolve-Path '.\Version'))
+	$version = [IO.File]::ReadAllText((Resolve-Path '.\libjpeg-turbo-version'))
 	$libUrl = 'https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/' + $version + '/libjpeg-turbo-' + $version + '-vc64.exe'
 
 	$path = $tempPath + '\libjpeg-turbo64.exe'

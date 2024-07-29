@@ -3,6 +3,6 @@
 tempPath = '.\temp'
 mkdir tempPath
 
-version=`cat Version`
+version=`cat libjpeg-turbo-version`
 #wip
 #libUrl = 'https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/' + $version + '/libjpeg-turbo-' + $version + '-d.exe'

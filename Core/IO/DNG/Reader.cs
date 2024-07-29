@@ -262,7 +262,7 @@ namespace Octopus.Player.Core.IO.DNG
                         {
                             fixed (byte* pCompressedData = &compressedData[taskMemoryStart], pDataOut = &dataOut[dataOutOffset])
                             {
-                                decodeError = LJ92.Decode(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                             }
                         }
                         if (decodeError != Error.None)
@@ -314,7 +314,7 @@ namespace Octopus.Player.Core.IO.DNG
                     {
                         fixed (byte* pCompressedData = &compressedData[0], pDataOut = &dataOut[dataOutOffset])
                         {
-                            decodeError = LJ92.Decode(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                            decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                         }
                     }
                     dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;

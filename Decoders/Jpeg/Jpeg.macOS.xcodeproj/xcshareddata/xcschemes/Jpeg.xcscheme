@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "11C91699285637D20016B35B"
-               BuildableName = "libLJ92.dylib"
-               BlueprintName = "LJ92"
-               ReferencedContainer = "container:LJ92.macOS.xcodeproj">
+               BuildableName = "libJpeg.dylib"
+               BlueprintName = "Jpeg"
+               ReferencedContainer = "container:Jpeg.macOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -51,9 +51,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "11C91699285637D20016B35B"
-            BuildableName = "libLJ92.dylib"
-            BlueprintName = "LJ92"
-            ReferencedContainer = "container:LJ92.macOS.xcodeproj">
+            BuildableName = "libJpeg.dylib"
+            BlueprintName = "Jpeg"
+            ReferencedContainer = "container:Jpeg.macOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
