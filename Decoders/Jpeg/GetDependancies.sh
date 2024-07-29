@@ -1,8 +1,15 @@
 #!/bin/sh
 
-tempPath = '.\temp'
-mkdir tempPath
+tempPath='./temp'
+mkdir -p $tempPath
 
 version=`cat libjpeg-turbo-version`
-#wip
-#libUrl = 'https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/' + $version + '/libjpeg-turbo-' + $version + '-d.exe'
+libUrl="https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${version}/libjpeg-turbo-${version}.dmg"
+
+path="${tempPath}/libjpeg-turbo.dmg"
+curl $libUrl -o $path -L
+
+mountPoint='/Volumes/libjpeg-turbo'
+hdiutil mount $path -mountpoint $mountPoint
+sudo installer -pkg "${mountPoint}/libjpeg-turbo.pkg" -target /
+hdiutil unmount $mountPoint

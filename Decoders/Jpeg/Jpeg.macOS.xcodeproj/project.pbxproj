@@ -10,6 +10,7 @@
 		11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = 11943B4229CA2A0A00078EC3 /* JpegMarker.h */; };
 		11C9169E285637D20016B35B /* LosslessJpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 11C9169D285637D20016B35B /* LosslessJpeg.h */; };
 		11C916A2285637D20016B35B /* LosslessJpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11C916A1285637D20016B35B /* LosslessJpeg.cpp */; };
+		11F414472C58125D00E26C3A /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F414462C58125D00E26C3A /* libjpeg.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +18,7 @@
 		11C9169A285637D20016B35B /* libJpeg.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libJpeg.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		11C9169D285637D20016B35B /* LosslessJpeg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LosslessJpeg.h; sourceTree = "<group>"; };
 		11C916A1285637D20016B35B /* LosslessJpeg.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LosslessJpeg.cpp; sourceTree = "<group>"; };
+		11F414462C58125D00E26C3A /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = "../../../../../../opt/libjpeg-turbo/lib/libjpeg.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -24,6 +26,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11F414472C58125D00E26C3A /* libjpeg.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +40,7 @@
 				11C9169D285637D20016B35B /* LosslessJpeg.h */,
 				11C916A1285637D20016B35B /* LosslessJpeg.cpp */,
 				11C9169B285637D20016B35B /* Products */,
+				11F414452C58125D00E26C3A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -46,6 +50,14 @@
 				11C9169A285637D20016B35B /* libJpeg.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		11F414452C58125D00E26C3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				11F414462C58125D00E26C3A /* libjpeg.a */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,6 +265,10 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/opt/libjpeg-turbo/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = NO;
 			};
@@ -271,6 +287,10 @@
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/opt/libjpeg-turbo/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = NO;
 			};
