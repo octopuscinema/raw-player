@@ -21,9 +21,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <TargetPath>Unpack.dll</TargetPath>
     </ContentWithTargetPath>
-    <ContentWithTargetPath Include="bin\$(Configuration)\net6.0-windows\runtimes\win-x64\native\LJ92.dll">
+    <ContentWithTargetPath Include="bin\$(Configuration)\net6.0-windows\runtimes\win-x64\native\Jpeg.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <TargetPath>LJ92.dll</TargetPath>
+      <TargetPath>Jpeg.dll</TargetPath>
     </ContentWithTargetPath>
 	<ContentWithTargetPath Include="..\..\Decoders\Jpeg\jpeg62.dll">
 	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -262,7 +262,11 @@ namespace Octopus.Player.Core.IO.DNG
                         {
                             fixed (byte* pCompressedData = &compressedData[taskMemoryStart], pDataOut = &dataOut[dataOutOffset])
                             {
-                                decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                var isLossy = Jpeg.IsLossy(new IntPtr(pCompressedData), (uint)byteCount);
+                                if (isLossy)
+                                    decodeError = Jpeg.DecodeLossy(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
+                                else
+                                    decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
                             }
                         }
                         if (decodeError != Error.None)
