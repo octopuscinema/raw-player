@@ -62,6 +62,7 @@ namespace Octopus.Player.Core.IO.DNG
         public Vector2i CFARepeatPatternDimensions { get; private set; }
         public CFAPattern CFAPattern { get; private set; }
         public Compression Compression { get; private set; }
+        public bool IsLossy { get; private set; }
         public uint TileCount { get; private set; }
         public Vector2i TileDimensions { get; private set; }
         public ushort[] LinearizationTable { get; private set; }
@@ -93,6 +94,7 @@ namespace Octopus.Player.Core.IO.DNG
             CFAPattern = reader.CFAPattern;
             CFARepeatPatternDimensions = reader.CFARepeatPatternDimensions;
             Compression = reader.Compression;
+            IsLossy = reader.IsLossy;
             TileCount = reader.IsTiled ? reader.TileCount : 0;
             TileDimensions = reader.IsTiled ? reader.TileDimensions : new Vector2i(0, 0);
             LinearizationTable = reader.LinearizationTable;

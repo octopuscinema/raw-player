@@ -33,6 +33,7 @@ namespace Octopus.Player.Core.IO.DNG
         private CFAPattern? CachedCFAPattern { get; set; }
         private Vector2i? CachedCFARepeatPatternDimensions { get; set; }
         private Compression? CachedCompression { get; set; }
+        private bool? CachedIsLossy { get; set; }
         private PhotometricInterpretation? CachedPhotometricInterpretation { get; set; }
         private bool? CachedIsTiled { get; set; }
         private uint? CachedTileCount { get; set; }
@@ -66,6 +67,7 @@ namespace Octopus.Player.Core.IO.DNG
         private bool? CachedContainsActiveArea { get; set; }
         private Vector4i? CachedActiveArea { get; set; }
         private TiffOrientation? CachedOrientation { get; set; }
+
         public Reader(string filePath)
         {
             // Open TIFF file
@@ -99,7 +101,7 @@ namespace Octopus.Player.Core.IO.DNG
             }
         }
 
-        public Error DecodeImageData(byte[] dataOut, byte[] workingBuffer = null)
+        public Error DecodeImageData(byte[] dataOut, bool isLossy)
         {
             CachedIsTiled = false;
             Valid = false;
@@ -128,7 +130,7 @@ namespace Octopus.Player.Core.IO.DNG
             switch (Compression)
             {
                 case Compression.Jpeg:
-                    return DecodeCompressedImageDataMulticore(ref offsets, ref byteCounts, dataOut);
+                    return DecodeCompressedImageDataMulticore(ref offsets, ref byteCounts, dataOut, isLossy);
                 case Compression.None:
                     return DecodeUncompressedImageData(ref offsets, ref byteCounts, dataOut);
                 default:
@@ -136,7 +138,7 @@ namespace Octopus.Player.Core.IO.DNG
             }
         }
 
-        private Error DecodeUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut/*, bool multithread = false*/)
+        private Error DecodeUncompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
         {
             using var contentReader = Tiff.CreateContentReader();
             var offsetsCount = offsets.Count;
@@ -222,11 +224,11 @@ namespace Octopus.Player.Core.IO.DNG
             return Error.None;
         }
 
-        private Error DecodeCompressedImageDataMulticore(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
+        private Error DecodeCompressedImageDataMulticore(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut, bool isLossy)
         {
             // Use single threaded version if there is only one segment
             if (offsets.Count <= 1)
-                return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut);
+                return DecodeCompressedImageData(ref offsets, ref byteCounts, dataOut, isLossy);
 
             using var contentReader = Tiff.CreateContentReader();
             var expectedDataOutSize = (PaddedDimensions.Area() * DecodedBitDepth) / 8;
@@ -257,18 +259,9 @@ namespace Octopus.Player.Core.IO.DNG
                         var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
                         var dataOutOffset = ((segmentDimensions.Area() * (int)DecodedBitDepth) / 8) * segmentIndex;
 
-                        Error decodeError;
-                        unsafe
-                        {
-                            fixed (byte* pCompressedData = &compressedData[taskMemoryStart], pDataOut = &dataOut[dataOutOffset])
-                            {
-                                var isLossy = Jpeg.IsLossy(new IntPtr(pCompressedData), (uint)byteCount);
-                                if (isLossy)
-                                    decodeError = Jpeg.DecodeLossy(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
-                                else
-                                    decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
-                            }
-                        }
+                        var decodeError = isLossy ? Jpeg.DecodeLossy(compressedData, byteCount, taskMemoryStart, dataOut, dataOutOffset, segmentDimensions, BitDepth)
+                            : Jpeg.DecodeLossless(compressedData, byteCount, taskMemoryStart, dataOut, dataOutOffset, segmentDimensions, BitDepth);
+
                         if (decodeError != Error.None)
                             lastError = decodeError;
                     }
@@ -289,7 +282,7 @@ namespace Octopus.Player.Core.IO.DNG
             return lastError;
         }
 
-        private Error DecodeCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut)
+        private Error DecodeCompressedImageData(ref TiffValueCollection<ulong> offsets, ref TiffValueCollection<ulong> byteCounts, byte[] dataOut, bool isLossy)
         {
             using var contentReader = Tiff.CreateContentReader();
             var offsetsCount = offsets.Count;
@@ -313,14 +306,9 @@ namespace Octopus.Player.Core.IO.DNG
                     contentReader.Read(offset, compressedData.AsMemory(0, byteCount));
                     var segmentDimensions = IsTiled ? TileDimensions : (PaddedDimensions / new Vector2i(1, (int)StripCount));
 
-                    Error decodeError;
-                    unsafe
-                    {
-                        fixed (byte* pCompressedData = &compressedData[0], pDataOut = &dataOut[dataOutOffset])
-                        {
-                            decodeError = Jpeg.DecodeLossless(new IntPtr(pDataOut), new IntPtr(pCompressedData), (uint)byteCount, (uint)segmentDimensions.X, (uint)segmentDimensions.Y, BitDepth);
-                        }
-                    }
+                    var decodeError = isLossy ? Jpeg.DecodeLossy(compressedData, byteCount, 0, dataOut, dataOutOffset, segmentDimensions, BitDepth)
+                            : Jpeg.DecodeLossless(compressedData, byteCount, 0, dataOut, dataOutOffset, segmentDimensions, BitDepth);
+
                     dataOutOffset += (segmentDimensions.Area() * (int)DecodedBitDepth) / 8;
                     if (decodeError != Error.None)
                         return decodeError;
@@ -505,6 +493,49 @@ namespace Octopus.Player.Core.IO.DNG
                         (Compression)tiffCompression : Compression.Unknown;
                 }
                 return CachedCompression.Value;
+            }
+        }
+
+
+        public bool IsLossy
+        {
+            get
+            {
+                if (!CachedIsLossy.HasValue )
+                {
+                    if (Compression == Compression.Jpeg && BitDepth == 12)
+                    {
+                        // Get offset/size of the first strip/tile data
+                        ulong offset, byteCount;
+                        if (ImageDataIfd.Contains(TiffTag.TileOffsets))
+                        {
+                            offset = ImageDataTagReader.ReadTileOffsets().First();
+                            byteCount = ImageDataTagReader.ReadTileByteCounts().First();
+                        }
+                        else if (ImageDataIfd.Contains(TiffTag.StripOffsets))
+                        {
+                            offset = ImageDataTagReader.ReadStripOffsets().First();
+                            byteCount = ImageDataTagReader.ReadStripByteCounts().First();
+                        }
+                        else
+                        {
+                            CachedIsLossy = false;
+                            return false;
+                        }
+
+                        byte[] compressedData = new byte[byteCount];
+                        using (var contentReader = Tiff.CreateContentReader())
+                        {
+                            contentReader.Read((long)offset, compressedData.AsMemory(0, (int)byteCount));
+                        }
+
+                        CachedIsLossy = Jpeg.IsLossy(compressedData, (int)byteCount);
+                    }
+                    else
+                        CachedIsLossy = false;
+                }
+
+                return CachedIsLossy.Value;
             }
         }
 

@@ -7,15 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1102E16C2C59B672008331A4 /* libturbojpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1102E16B2C59B672008331A4 /* libturbojpeg.a */; };
 		11943B4329CA2A0A00078EC3 /* JpegMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = 11943B4229CA2A0A00078EC3 /* JpegMarker.h */; };
 		119B82992C59410700C5FFDC /* LossyJpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 119B82972C59410700C5FFDC /* LossyJpeg.cpp */; };
 		119B829A2C59410700C5FFDC /* LossyJpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 119B82982C59410700C5FFDC /* LossyJpeg.h */; };
 		11C9169E285637D20016B35B /* LosslessJpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 11C9169D285637D20016B35B /* LosslessJpeg.h */; };
 		11C916A2285637D20016B35B /* LosslessJpeg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11C916A1285637D20016B35B /* LosslessJpeg.cpp */; };
-		11F414472C58125D00E26C3A /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11F414462C58125D00E26C3A /* libjpeg.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1102E16B2C59B672008331A4 /* libturbojpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libturbojpeg.a; path = "../../../../../../opt/libjpeg-turbo/lib/libturbojpeg.a"; sourceTree = "<group>"; };
 		11943B4229CA2A0A00078EC3 /* JpegMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JpegMarker.h; sourceTree = "<group>"; };
 		119B82972C59410700C5FFDC /* LossyJpeg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LossyJpeg.cpp; sourceTree = "<group>"; };
 		119B82982C59410700C5FFDC /* LossyJpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LossyJpeg.h; sourceTree = "<group>"; };
@@ -30,7 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11F414472C58125D00E26C3A /* libjpeg.a in Frameworks */,
+				1102E16C2C59B672008331A4 /* libturbojpeg.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +62,7 @@
 		11F414452C58125D00E26C3A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1102E16B2C59B672008331A4 /* libturbojpeg.a */,
 				11F414462C58125D00E26C3A /* libjpeg.a */,
 			);
 			name = Frameworks;

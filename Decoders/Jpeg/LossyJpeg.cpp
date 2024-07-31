@@ -33,63 +33,61 @@ namespace Octopus::Player::Decoders::Jpeg
 {
     extern "C" bool IsLossy(uint8_t* pInCompressed, uint32_t compressedSizeBytes)
 	{
-		struct jpeg_decompress_struct dinfo;
-		struct jpeg_error_mgr jerr;
+		jpeg_decompress_struct context;
+		jpeg_error_mgr errorManager;
+        
+		context.err = jpeg_std_error(&errorManager);
+		jpeg_create_decompress(&context);
 
-		dinfo.err = jpeg_std_error(&jerr);
-		jpeg_create_decompress(&dinfo);
+		jpeg_mem_src(&context, pInCompressed, compressedSizeBytes);
 
-		jpeg_mem_src(&dinfo, pInCompressed, compressedSizeBytes);
-
-		if ( jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK)
+		if ( jpeg_read_header(&context, TRUE) != JPEG_HEADER_OK)
 		{
-			jpeg_destroy_decompress(&dinfo);
+			jpeg_destroy_decompress(&context);
 			return false;
 		}
 
-		const auto lossy = dinfo.data_precision == 12 && !dinfo.master->lossless;
+		const auto lossy = context.data_precision == 12 && !context.master->lossless;
 
-		jpeg_destroy_decompress(&dinfo);
+		jpeg_destroy_decompress(&context);
 		return lossy;
 	}
 
 	extern "C" Core::eError DecodeLossy(uint8_t* pOut16Bit, uint8_t* pInCompressed, uint32_t compressedSizeBytes, uint32_t width, uint32_t height,
         uint32_t bitDepth)
 	{
-		jpeg_decompress_struct dinfo;
-		jpeg_error_mgr jerr;
+		jpeg_decompress_struct context;
+		jpeg_error_mgr errorManager;
 
-		dinfo.err = jpeg_std_error(&jerr);
-		jpeg_create_decompress(&dinfo);
+		context.err = jpeg_std_error(&errorManager);
+		jpeg_create_decompress(&context);
 
-		jpeg_mem_src(&dinfo, pInCompressed, compressedSizeBytes);
+		jpeg_mem_src(&context, pInCompressed, compressedSizeBytes);
 
-		if ( jpeg_read_header(&dinfo, TRUE) != JPEG_HEADER_OK )
+		if ( jpeg_read_header(&context, TRUE) != JPEG_HEADER_OK )
 		{
-			jpeg_destroy_decompress(&dinfo);
-			return Core::eError::BadFile;
+			jpeg_destroy_decompress(&context);
+			return Core::eError::BadImageData;
 		}
 
-		jpeg_start_decompress(&dinfo);
-		const auto stride = dinfo.output_width * dinfo.output_components * sizeof(J12SAMPLE);
-
-
-		while (dinfo.output_scanline < dinfo.output_height) {
-			uint8_t* buffer_array[2];
-			buffer_array[0] = pOut16Bit + (dinfo.output_scanline * stride);
-			buffer_array[1] = buffer_array[0] + stride;
-
-			if (jpeg12_read_scanlines(&dinfo, J12SAMPARRAY(buffer_array), 2) == 0 )
+		jpeg_start_decompress(&context);
+		const auto stride = context.output_width * context.output_components * sizeof(J12SAMPLE);
+		while (context.output_scanline < context.output_height)
+        {
+			uint8_t* scanlines[2];
+			scanlines[0] = pOut16Bit + (context.output_scanline * stride);
+			scanlines[1] = scanlines[0] + stride;
+            
+			if (jpeg12_read_scanlines(&context, J12SAMPARRAY(scanlines), 2) == 0 )
 			{
-				jpeg_abort_decompress(&dinfo);
-				jpeg_destroy_decompress(&dinfo);
+				jpeg_abort_decompress(&context);
+				jpeg_destroy_decompress(&context);
 				return Core::eError::BadImageData;
 			}
-
 		}
-		jpeg_finish_decompress(&dinfo);
-
-		jpeg_destroy_decompress(&dinfo);
+		jpeg_finish_decompress(&context);
+        
+		jpeg_destroy_decompress(&context);
 		return Core::eError::None;
 	}
 }

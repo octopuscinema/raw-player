@@ -64,7 +64,7 @@ namespace Octopus.Player.Core.Playback
                     // Decode and copy to GPU
                     Debug.Assert(decodedImageGpu != null && decodedImageGpu.Dimensions == clip.Metadata.PaddedDimensions);
                     var decodedImage = System.Buffers.ArrayPool<byte>.Shared.Rent(bytesPerPixel * clip.Metadata.PaddedDimensions.Area());
-                    decodeDataError = DNGReader.DecodeImageData(decodedImage, workingBuffer);
+                    decodeDataError = DNGReader.DecodeImageData(decodedImage, dngMetadata.IsLossy);
                     try
                     {
                         if (decodeDataError == Error.None)
