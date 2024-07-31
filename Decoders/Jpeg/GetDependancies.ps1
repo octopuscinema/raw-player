@@ -14,7 +14,7 @@ try {
 	Invoke-WebRequest $libUrl -OutFile $path
 
 	$extractLibArgs = 'e ' + $path + ' -aoa lib\jpeg-static.lib'
-	Write-Host $extractLibArgs.Split()
+
 	& 'C:\Program Files\7-Zip\7z.exe' $extractLibArgs.Split()
 	
 	$extractHeadersArgs = 'e ' + $path + ' -aoa include\*.h'
