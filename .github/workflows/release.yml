@@ -20,6 +20,7 @@ jobs:
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
+      JPEG_DEPENDANCY_PATH: "${{ github.workspace }}\\Decoders\\Jpeg"
       INSTALLER_PROJECT_PATH: Installer/Installer.vdproj
       PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
       STANDALONE_ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
@@ -55,6 +56,11 @@ jobs:
         name: version
         path: "${{ github.workspace }}\\Version"
         if-no-files-found: error
+
+    - name: Install dependancies
+      shell: pwsh
+      working-directory: ${{ env.JPEG_DEPENDANCY_PATH }}
+      run: .\GetDependancies.ps1
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -122,6 +128,7 @@ jobs:
     
     env:
       SOLUTION_FILE_PATH: Player.macOS.sln
+      JPEG_DEPENDANCY_PATH: "${{ github.workspace }}/Decoders/Jpeg"
       DECODER_WORKSPACE_PATH: Decoders/Decoders.macOS.xcworkspace
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
@@ -158,6 +165,11 @@ jobs:
         echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
         pkg_path="${{ env.INSTALLER_BUILD_PKG_PATH }}-${{ steps.version.outputs.content }}.pkg"
         echo "INSTALLER_BUILD_PKG_PATH=$pkg_path" >> $GITHUB_ENV
+
+    - name: Install dependancies
+      working-directory: ${{env.JPEG_DEPENDANCY_PATH}}
+      shell: bash
+      run: ./GetDependancies.sh
 
     - name: "Import distribution certificate"
       uses: apple-actions/import-codesign-certs@v2

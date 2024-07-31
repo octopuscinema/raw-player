@@ -21,6 +21,7 @@ jobs:
     env:
       SOLUTION_FILE_PATH: Player.Windows.sln
       PROJECT_FILE_PATH: UI/Windows/Player.UI.Windows.csproj
+      JPEG_DEPENDANCY_PATH: "${{ github.workspace }}\\Decoders\\Jpeg"
       PUBLISH_PATH: "bin/Release/net6.0-windows/publish/"
       ARTIFACT_PATH: "${{ github.workspace }}\\UI\\Windows\\bin\\Release\\net6.0-windows\\publish\\"
       BUILD_PLATFORM: x64
@@ -36,10 +37,15 @@ jobs:
 
     - uses: microsoft/setup-msbuild@v1.3.1
 
+    - name: Install dependancies
+      shell: pwsh
+      working-directory: ${{ env.JPEG_DEPENDANCY_PATH }}
+      run: .\GetDependancies.ps1
+
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild -t:restore ${{env.SOLUTION_FILE_PATH}} -p:PublishReadyToRun=true
-
+      
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
@@ -68,6 +74,7 @@ jobs:
     
     env:
       SOLUTION_FILE_PATH: Player.macOS.sln
+      JPEG_DEPENDANCY_PATH: "${{ github.workspace }}/Decoders/Jpeg"
       DECODER_WORKSPACE_PATH: Decoders/Decoders.macOS.xcworkspace
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
@@ -100,6 +107,11 @@ jobs:
         ./ApplyVersion.sh
         dmg_path="${{ env.STANDALONE_BUILD_DMG_PATH }} ${{ steps.version.outputs.content }}.dmg"
         echo "STANDALONE_BUILD_DMG_PATH=$dmg_path" >> $GITHUB_ENV
+        
+    - name: Install dependancies
+      working-directory: ${{env.JPEG_DEPENDANCY_PATH}}
+      shell: bash
+      run: ./GetDependancies.sh
     
     - name: "Import distribution certificate"
       uses: apple-actions/import-codesign-certs@v2
