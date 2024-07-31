@@ -503,7 +503,7 @@ namespace Octopus.Player.Core.IO.DNG
             {
                 if (!CachedIsLossy.HasValue )
                 {
-                    if (Compression == Compression.Jpeg && BitDepth == 12)
+                    if (Compression == Compression.Jpeg && (BitDepth == 12 || BitDepth == 16))
                     {
                         // Get offset/size of the first strip/tile data
                         ulong offset, byteCount;
