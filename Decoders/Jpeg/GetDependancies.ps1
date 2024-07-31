@@ -12,12 +12,12 @@ try {
 
 	$path = $tempPath + '\libjpeg-turbo64.exe'
 	Invoke-WebRequest $libUrl -OutFile $path
-	ls
-	$extractLibArgs = 'e ' + $path + ' -aoa ' + ' lib\jpeg-static.lib'
+
+	$extractLibArgs = 'e ' + $path + ' -aoa lib\jpeg-static.lib'
 	Write-Host $extractLibArgs.Split()
 	& 'C:\Program Files\7-Zip\7z.exe' $extractLibArgs.Split()
 	
-	$extractHeadersArgs = 'e ' + $path + ' -aoa ' + ' include\*.h'
+	$extractHeadersArgs = 'e ' + $path + ' -aoa include\*.h'
 	& 'C:\Program Files\7-Zip\7z.exe' $extractHeadersArgs.Split()
 	
 	rm $tempPath -r -force
