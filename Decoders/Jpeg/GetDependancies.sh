@@ -13,3 +13,5 @@ mountPoint='/Volumes/libjpeg-turbo'
 hdiutil mount $path -mountpoint $mountPoint
 sudo installer -pkg "${mountPoint}/libjpeg-turbo.pkg" -target /
 hdiutil unmount $mountPoint
+
+sudo mv /opt/libjpeg-turbo/lib/libjpeg.a /opt/libjpeg-turbo/lib/libjpeg-turbo.a
