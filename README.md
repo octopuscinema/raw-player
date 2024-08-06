@@ -56,6 +56,7 @@ Building OCTOPUS RAW Player requires Visual Studio 2022 with the C# desktop deve
 
 ### Building the solution
 The OCTOPUS RAW Player executable for Windows can be built from the ```raw-player/Player.Windows.sln``` solution file. The solution contains both C# and C++ projects (mixed managed/unmanaged code). C++ project dependencies are linked dynamically at run-time - please ensure the C++ projects ```raw-player/Decoders``` are built prior to publishing or launching the debug/release executable.
+The native C++ dependancies are statically linked against libjpeg-turbo. The appropriate ```.lib``` static library and header files can be downloaded and installed by running ```raw-player/Decoders/Jpeg/GetDependancies.ps1```
 
 #### Deployment
 The ```raw-player/Player.Windows.sln``` solution includes a publish profile to build a standalone single-file executable with an embedded .net runtime. This executable can be run on systems without .net runtimes installed.
@@ -66,6 +67,7 @@ Building OCTOPUS RAW Player requires Visual Studio 2022 for Mac (with Xamarin.Ma
 
 ### Building the solution
 The OCTOPUS RAW Player application for macOS is built from the ```raw-player/Player.macOS.sln``` C# solution file. Visual Studio for Mac does not support C++ projects - native library dependencies must be built manually from the ```raw-player/Decoders/Decoders.macOS.xcworkspace``` Xcode workspace prior to building the C# solution.
+The native C++ dependancies are statically linked against libjpeg-turbo. The appropriate ```.a``` static library and header files can be downloaded and installed by running ```raw-player/Decoders/Jpeg/GetDependancies.sh```
 
 # Included in this repository
 Cross platform (Windows/macOS) C# and C++ source code and projects/solutions/workspaces including OpenGL and OpenCL GPU kernel source.
