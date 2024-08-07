@@ -8,7 +8,7 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 &nbsp;
 
 **Features**
-- Efficient real-time CinemaDNG playback for 8,10,12,14,16-bit bayer or monochrome, uncompressed or lossless compressed ```.dng``` sequences
+- Efficient real-time CinemaDNG playback for 8,10,12,14,16-bit bayer or monochrome, lossless or lossy ```.dng``` sequences
 - Professional RAW controls (White balance, exposure)
 - Advanced colour science control (Highlight recovery/roll-off, SDR Tone-Mapping)
 - Advanced gamma/gamut control (ARRI LogC3, RED Log3G10, Blackmagic Film Gen. 5)
@@ -26,7 +26,8 @@ OCTOPUS RAW Player is a multi-platform (Windows/macOS) lightweight video playbac
 - Blackmagic Micro Cinema Camera
 - Blackmagic Ursa Mini 4K
 - OCTOPUS16
-- SlimRAW (Lossless)
+- SlimRAW
+- RAW Converter
 
 For more information, please visit:
 https://www.octopuscinema.com/raw-player
