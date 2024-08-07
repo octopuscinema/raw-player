@@ -230,15 +230,15 @@ namespace Octopus.Player.Core.Maths.Color
 
         public readonly Matrix3 CalculateCameraToXYZD65(Vector2? whiteXY = null)
         {
-            Debug.Assert(asShotWhiteXY.HasValue);
+            Debug.Assert(whiteXY != null || asShotWhiteXY.HasValue);
             if (!whiteXY.HasValue)
                 whiteXY = asShotWhiteXY.Value;
 
             // If there are forward matrices use camera to xyz based approach (forward matrices)
-            var AsShotWhiteXYZ = Temperature.ChromaticityXYtoXYZ(asShotWhiteXY.Value);
+            var AsShotWhiteXYZ = Temperature.ChromaticityXYtoXYZ(whiteXY.Value);
             if (hasForwardMatrix)
             {
-                var ColourTemperature = Temperature.ChromaticityToColourTemperature(asShotWhiteXY.Value);
+                var ColourTemperature = Temperature.ChromaticityToColourTemperature(whiteXY.Value);
                 var CameraToXYZMatrix = CameraToXYZ(ColourTemperature);
 
                 // Calculate camera neutral
@@ -258,7 +258,7 @@ namespace Octopus.Player.Core.Maths.Color
             else
             {
                 // Get color matrix (not forward)
-                var XYZToCameraMatrix = XYZToCamera(asShotWhiteXY.Value);
+                var XYZToCameraMatrix = XYZToCamera(whiteXY.Value);
 
                 // Create final camera to xyz50 matrix via D50 mapping
                 return Matrix.BradfordChromaticAdaptationD50toD65(Matrix3.Invert(XYZToCameraMatrix * Matrix.MapWhiteMatrix(Temperature.D50ChromaticityXYZ(), AsShotWhiteXYZ)));
