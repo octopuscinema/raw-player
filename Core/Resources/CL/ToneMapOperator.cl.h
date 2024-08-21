@@ -74,7 +74,7 @@ RGBHalf4 ToneMap(RGBHalf4 rgbLinearIn, eToneMappingOperator toneMapOperator)
 RGBHalf4 ToneMapAndHighlightRollOff(RGBHalf4 rgbLinearIn, eToneMappingOperator toneMapOperator, eRollOff rollOff)
 {
 	if ( rollOff == ROLL_OFF_NONE )
-		return ToneMap(rgbLinearIn, SDR_TONEMAP_LATTITUDE_BOOST);
+		return ToneMap(rgbLinearIn, toneMapOperator);
 
 	if ( toneMapOperator == TONE_MAP_SDR )
 		return ToneMapSDRAndHighlightRollOff(rgbLinearIn, SDR_TONEMAP_LATTITUDE_BOOST, rollOff);
