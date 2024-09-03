@@ -20,6 +20,8 @@
 // Feather in stops to interpolate between highest/lowest channels
 #define HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS (1.0f)
 
+#define HIGHLIGHT_RECOVERY_EPSILON ((half)0.0001f)
+
 PRIVATE half3 SynthesiseThreeChannels(half3 cameraWhite)
 {
 	return cameraWhite;
@@ -27,7 +29,7 @@ PRIVATE half3 SynthesiseThreeChannels(half3 cameraWhite)
 
 PRIVATE half3 SynthesiseTwoChannels(half3 rgb, half3 cameraWhite, eRGBChannel firstClipped, eRGBChannel secondClipped, eRGBChannel unclippedChannel)
 {
-	half scale = IndexHalf3(rgb,unclippedChannel) / IndexHalf3(cameraWhite, unclippedChannel);
+	half scale = IndexHalf3(rgb,unclippedChannel) / fmax(HIGHLIGHT_RECOVERY_EPSILON, IndexHalf3(cameraWhite, unclippedChannel));
 	half3 synthesised = cameraWhite * scale;
 	half3 rgbOut = fmax(rgb, synthesised);
 
@@ -36,7 +38,7 @@ PRIVATE half3 SynthesiseTwoChannels(half3 rgb, half3 cameraWhite, eRGBChannel fi
 	rgbOut3[unclippedChannel] = IndexHalf3(rgb,unclippedChannel);
 
 	if ( IndexHalf3(rgb,firstClipped) > IndexHalf3(synthesised,firstClipped) || IndexHalf3(rgb,secondClipped) > IndexHalf3(synthesised,secondClipped) ) {
-		half avgScale = ((IndexHalf3(rgb,firstClipped) / IndexHalf3(synthesised,firstClipped)) + (IndexHalf3(rgb,secondClipped) / IndexHalf3(synthesised,secondClipped))) * 0.5f;
+		half avgScale = ((IndexHalf3(rgb,firstClipped) / fmax(HIGHLIGHT_RECOVERY_EPSILON, IndexHalf3(synthesised,firstClipped))) + (IndexHalf3(rgb,secondClipped) / fmax(HIGHLIGHT_RECOVERY_EPSILON, IndexHalf3(synthesised,secondClipped)))) * 0.5f;
 		rgbOut3[firstClipped] = (rgbOut3[firstClipped] * 0.4f) + (IndexHalf3(synthesised,firstClipped) * avgScale * 0.6f);
 		rgbOut3[secondClipped] = (rgbOut3[secondClipped] * 0.4f) + (IndexHalf3(synthesised,secondClipped) * avgScale * 0.6f);
 	}
@@ -62,11 +64,11 @@ PRIVATE half3 SynthesiseOneChannel(half3 rgb, half3 cameraWhite, eRGBChannel cli
 	}
 
 	// Scale camera white based on middle channel
-	half3 cameraWhiteScaled = cameraWhite * (IndexHalf3(cameraWhite,midChannel) / IndexHalf3(rgb,midChannel));
+	half3 cameraWhiteScaled = cameraWhite * (IndexHalf3(cameraWhite,midChannel) / fmax(HIGHLIGHT_RECOVERY_EPSILON, IndexHalf3(rgb,midChannel)));
 	 
 	// Use the 2 channel synthesis on the highest two channels
     // Interpolate based on which channel of the two is higher
-    half channelDiffStops = log2(IndexHalf3(rgb,firstUnclipped) / IndexHalf3(rgb,secondUnclipped));
+    half channelDiffStops = log2(IndexHalf3(rgb,firstUnclipped) / fmax(HIGHLIGHT_RECOVERY_EPSILON, IndexHalf3(rgb,secondUnclipped)));
     half channelDiffLerp = smoothstep((half)(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * -0.5f), (half)(HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS * 0.5f), channelDiffStops);
     half3 synthesisedHighestChannels = mix(SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, secondUnclipped, firstUnclipped),
         SynthesiseTwoChannels(rgb, cameraWhite, clippedChannel, firstUnclipped, secondUnclipped), channelDiffLerp);

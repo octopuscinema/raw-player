@@ -128,14 +128,14 @@ PRIVATE half2 SynthesiseNonGreen(half Green, half TopLeftGreen, half TopRightGre
 	half SouthGreen = (BottomLeftGreen + BottomRightGreen) * (half)0.5f;
 	half NorthGreenDiff = fabs(NorthGreen - Green);
 	half SouthGreenDiff = fabs(SouthGreen - Green);
-	half VerticalWeight = NorthGreenDiff / (NorthGreenDiff + SouthGreenDiff);
+	half VerticalWeight = NorthGreenDiff / fmax(DEBAYER_DIFF_EPSILON, NorthGreenDiff + SouthGreenDiff);
 	half VerticalInterpolated = mix(Above, Below, clamp(VerticalWeight, (half)0.0f, (half)1.0f));
 
 	half WestGreen = (TopLeftGreen + BottomLeftGreen) * (half)0.5f;
 	half EastGreen = (TopRightGreen + BottomRightGreen) * (half)0.5f;
 	half WestGreenDiff = fabs(WestGreen - Green);
 	half EastGreenDiff = fabs(EastGreen - Green);
-	half HorizontalWeight = WestGreenDiff / (WestGreenDiff + EastGreenDiff);
+	half HorizontalWeight = WestGreenDiff / fmax(DEBAYER_DIFF_EPSILON, WestGreenDiff + EastGreenDiff);
 	half HorizontalInterpolated = mix(Left, Right, clamp(HorizontalWeight, (half)0.0f, (half)1.0f));
 
 	return make_half2(HorizontalInterpolated, VerticalInterpolated);
