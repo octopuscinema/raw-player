@@ -20,7 +20,7 @@
 // Feather in stops to interpolate between highest/lowest channels
 #define HIGHLIGHT_RECOVERY_CHANNEL_FEATHER_STOPS (1.0f)
 
-#define HIGHLIGHT_RECOVERY_EPSILON ((half)0.0001f)
+#define HIGHLIGHT_RECOVERY_EPSILON ((half)0.001f)
 
 PRIVATE half3 SynthesiseThreeChannels(half3 cameraWhite)
 {
