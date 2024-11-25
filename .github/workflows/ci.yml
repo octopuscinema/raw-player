@@ -150,7 +150,6 @@ jobs:
     - name: Create .DMG
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-      #brew install graphicsmagick imagemagick
         npm install --global create-dmg
         create-dmg "${{ env.STANDALONE_BUILD_PATH }}" "${{ env.STANDALONE_BUILD_DIR }}"
       #brew install create-dmg
