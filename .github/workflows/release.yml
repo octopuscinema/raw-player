@@ -194,9 +194,6 @@ jobs:
         cp ${{env.DECODER_JPEG_ARCHIVE_PATH}}/Products/usr/local/lib/libJpeg.dylib ${{ env.DECODER_JPEG_LIB_PATH }}
         cp ${{env.DECODER_UNPACK_ARCHIVE_PATH}}/Products/usr/local/lib/libUnpack.dylib ${{ env.DECODER_UNPACK_LIB_PATH }}
 
-    - name: Set Xamarin version
-      run: $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.12 --mac=8.12
-        
     - name: Restore NuGet packages
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
         
