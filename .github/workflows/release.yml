@@ -31,9 +31,9 @@ jobs:
       BUILD_INSTALLER_NAME: "OCTOPUS-RAW-Player-Windows.msi"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - uses: microsoft/setup-msbuild@v1.3.1
+    - uses: microsoft/setup-msbuild@v2
     - uses: seanmiddleditch/gha-setup-vsdevenv@v4
     
     - name: Read Version
@@ -51,7 +51,7 @@ jobs:
         "BUILD_INSTALLER_NAME=$installer_name" >> $env:GITHUB_ENV
         
     - name: Upload version artifact
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v4
       with:
         name: version
         path: "${{ github.workspace }}\\Version"
@@ -86,7 +86,7 @@ jobs:
         override: true
 
     - name: Upload standalone artifacts
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v4
       with:
         name: '${{env.BUILD_STANDALONE_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
         path: "${{ env.STANDALONE_ARTIFACT_PATH }}*.exe"
@@ -113,7 +113,7 @@ jobs:
         override: true
 
     - name: Upload installer artifacts
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v4
       with:
         name: '${{env.BUILD_INSTALLER_ARTIFACT_NAME}}-${{ steps.version.outputs.content }}'
         path: "${{ env.INSTALLER_ARTIFACT_PATH }}*.msi"
@@ -121,7 +121,7 @@ jobs:
 
   macos:
     name: macOS
-    runs-on: macOS-12
+    runs-on: macOS-13
     permissions:
       contents: read
     timeout-minutes: 20
@@ -147,7 +147,7 @@ jobs:
       INSTALLER_BUILD_PKG_PATH: "${{ github.workspace }}/UI/macOS/bin/Release/OCTOPUS-RAW-Player-macOS"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         lfs: 'true'
 
@@ -172,7 +172,7 @@ jobs:
       run: ./GetDependancies.sh
 
     - name: "Import distribution certificate"
-      uses: apple-actions/import-codesign-certs@v2
+      uses: apple-actions/import-codesign-certs@v3
       with:
         p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
@@ -219,7 +219,7 @@ jobs:
         xcrun stapler staple "${{ env.STANDALONE_BUILD_DMG_PATH }}"
 
     - name: "Import installer certificate"
-      uses: apple-actions/import-codesign-certs@v1
+      uses: apple-actions/import-codesign-certs@v3
       with: 
         p12-file-base64: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
         p12-password: ${{ secrets.INSTALLER_P12_PASSWORD }}
@@ -239,14 +239,14 @@ jobs:
         xcrun stapler staple "${{ env.INSTALLER_BUILD_PKG_PATH }}"
         
     - name: Upload .DMG artifact
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.BUILD_STANDALONE_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
         path: ${{ env.STANDALONE_BUILD_DMG_PATH }}
         if-no-files-found: error
 
     - name: Upload .PKG artifact
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.BUILD_INSTALLER_ARTIFACT_NAME }}-${{ steps.version.outputs.content }}
         path: ${{ env.INSTALLER_BUILD_PKG_PATH }}
@@ -310,7 +310,7 @@ jobs:
         asset_content_type: application/zip
         
     - name: Upload macOS installer release asset
-      id: upload-release-asset-mac-installer 
+      id: upload-release-asset-mac-installer
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
