@@ -271,6 +271,8 @@
                 <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="nextButton" Content="&#xE893;" Height="auto" Width="auto" FontSize="22" Margin="180,0,0,39" TabIndex="6" Grid.Row="0" ToolTip="Next"/>
                 <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="unmuteButton" Content="&#xE74F;" Height="auto" Width="auto" FontSize="16" Margin="285,0,0,42" TabIndex="7" Grid.Row="0" ToolTip="Unmute"/>
                 <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="muteButton" Visibility="Hidden" Content="&#xE767;" Height="auto" Width="auto" FontSize="16" Margin="285,0,0,42" TabIndex="8" Grid.Row="0" ToolTip="Mute"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="favButton" Content="&#xEB51;" Height="auto" Width="auto" FontSize="16" Margin="-285,0,0,42" TabIndex="7" Grid.Row="0" ToolTip="Add to favourites"/>
+                <Button Style="{StaticResource InterfaceButtonStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" Click="Button_Click" x:Name="unfavButton" Visibility="Hidden" Content="&#xEB52;" Height="auto" Width="auto" FontSize="16" Margin="-285,0,0,42" TabIndex="8" Grid.Row="0" ToolTip="Remove from favourites"/>
 
                 <!-- Seek bar -->
                 <Slider x:Name="seekBar" Style="{StaticResource SeekSliderStyle}" FocusVisualStyle="{DynamicResource InterfaceFocusStyle}" HorizontalAlignment="Center" Minimum="0" Maximum="1" 
@@ -284,6 +286,9 @@
                 <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" InputGestureText="Ctrl+O" Click="MenuItem_Click"/>
                 <MenuItem Header="_Open Recent" Name="openRecent" IsEnabled="False">
                     <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>
+                </MenuItem>
+                <MenuItem Header="_Favourites" Name="favourites" IsEnabled="False">
+                    <MenuItem Header="_Clear Favourites" Name="clearFavourites" Click="MenuItem_Click"/>
                 </MenuItem>
                 <Separator />
                 <StaticResourceExtension ResourceKey="exportframe"/>
