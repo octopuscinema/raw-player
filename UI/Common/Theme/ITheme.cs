@@ -18,6 +18,7 @@ namespace Octopus.Player.UI
         float DisabledOpacity { get; }
 
         float DropAreaOpacityMargin { get; }
+        float FeedOpacityMargin { get; }
 
         float PlaybackControlsMargin { get; }
         TimeSpan ControlsAnimation { get; }

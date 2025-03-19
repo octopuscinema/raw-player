@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Navigation;
 using System.Xml.Linq;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Octopus.Player.Core;
@@ -90,6 +91,12 @@ namespace Octopus.Player.UI.Windows
         {
             get { return dropArea.Visibility == Visibility.Visible; }
             set { dropArea.Visibility = value ? Visibility.Visible : Visibility.Hidden; }
+        }
+
+        public bool FeedVisible
+        {
+            get { return feed.Visibility == Visibility.Visible; }
+            set { feed.Visibility = value ? Visibility.Visible : Visibility.Hidden; }
         }
 
         public bool RenderContinuouslyHint
@@ -210,6 +217,11 @@ namespace Octopus.Player.UI.Windows
                 if ( files.Length > 0 )
                 PlayerWindow.DropFiles(files);
             }
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            OpenUrl(e.Uri.AbsoluteUri);
         }
 
         private void PlaybackControls_MouseDown(object sender, MouseButtonEventArgs e)
@@ -743,6 +755,15 @@ namespace Octopus.Player.UI.Windows
             // Hide drop area if it overlaps playback controls
             var dropAreaPlaybackControlsDist = dropArea.DistanceTo(playbackControls, this);
             dropArea.Opacity = Math.Clamp(dropAreaPlaybackControlsDist / Theme.DropAreaOpacityMargin, 0.0, 1.0);
+
+            // Also hide the feed
+            var feedDropAreaDist = feed.DistanceTo(dropArea, this);
+            var feedPlaybackControlsDist = feed.DistanceTo(playbackControls, this);
+            feed.Opacity = Math.Clamp(Math.Min(feedPlaybackControlsDist, feedDropAreaDist) / Theme.FeedOpacityMargin, 0.0, 1.0);
+            if (feed.Opacity == 0.0)
+                feed.IsEnabled = false;
+            else
+                feed.IsEnabled = true;
         }
 
         public void LockAspect(Rational ratio)

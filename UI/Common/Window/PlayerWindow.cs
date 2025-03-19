@@ -1185,6 +1185,7 @@ namespace Octopus.Player.UI
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
             NativeWindow.DropAreaVisible = true;
+            NativeWindow.FeedVisible = true;
             if (NativeWindow.AspectLocked)
                 NativeWindow.UnlockAspect();
         }
@@ -1224,7 +1225,8 @@ namespace Octopus.Player.UI
             NativeWindow.CheckMenuItem("exposureAsShot");
             NativeWindow.CheckMenuItem("toneMapping", true, false);
             NativeWindow.DropAreaVisible = false;
-            
+            NativeWindow.FeedVisible = false;
+
             bool isColour = false;
             Debug.Assert(Playback != null && Playback.Clip != null);
             if (Playback != null && Playback.Clip != null && Playback.Clip.Metadata != null)

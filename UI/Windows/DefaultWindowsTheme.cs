@@ -18,6 +18,7 @@ namespace Octopus.Player.UI.Windows
         public float DisabledOpacity { get { return 0.5f; } }
 
         public float DropAreaOpacityMargin { get { return 20.0f; } }
+        public float FeedOpacityMargin { get { return 20.0f; } }
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
         public TimeSpan ControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
@@ -38,6 +39,7 @@ namespace Octopus.Player.UI.Windows
         public float DisabledOpacity { get { return 0.5f; } }
 
         public float DropAreaOpacityMargin { get { return 20.0f; } }
+        public float FeedOpacityMargin { get { return 20.0f; } }
 
         public float PlaybackControlsMargin { get { return 20.0f; } }
         public TimeSpan ControlsAnimation { get { return TimeSpan.FromSeconds(0.25); } }
