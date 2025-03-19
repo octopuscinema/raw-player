@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="22690"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -80,6 +80,18 @@
                                         <menuItem title="Clear Menu" identifier="clearRecent" id="126">
                                             <connections>
                                                 <action selector="doClick:" target="-1" id="gdJ-xF-vNc"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Favourites" identifier="favourites" id="Ooj-UD-tiD">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Favourites" autoenablesItems="NO" id="34H-T7-mRu">
+                                    <items>
+                                        <menuItem title="Clear Favourites" identifier="clearFavourites" id="4Tu-NW-wHn">
+                                            <connections>
+                                                <action selector="doClick:" target="-1" id="Nmg-F6-SUa"/>
                                             </connections>
                                         </menuItem>
                                     </items>

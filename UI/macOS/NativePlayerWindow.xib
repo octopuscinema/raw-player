@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="22690"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -40,7 +40,7 @@
                                         </connections>
                                     </slider>
                                     <button identifier="fastForwardButton" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TsM-4K-wgY">
-                                        <rect key="frame" x="262" y="32" width="27.5" height="40"/>
+                                        <rect key="frame" x="262" y="32.5" width="27.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="forward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="S0o-x3-Jf1">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -76,7 +76,7 @@
                                         </connections>
                                     </button>
                                     <button identifier="fastRewindButton" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kMk-bL-YGD">
-                                        <rect key="frame" x="190" y="32" width="27.5" height="40"/>
+                                        <rect key="frame" x="190" y="32.5" width="27.5" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="backward.fill" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="ZVu-TT-ZiP">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -156,7 +156,7 @@
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system" size="40"/>
                                         </buttonCell>
-                                        <color key="contentTintColor" red="0.85" green="0.85" blue="0.85" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <color key="contentTintColor" red="0.84999999999999998" green="0.84999999999999998" blue="0.84999999999999998" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
                                             <action selector="ButtonClick:" target="8" id="skC-2L-HB5"/>
                                         </connections>
@@ -168,9 +168,35 @@
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system" size="16"/>
                                         </buttonCell>
-                                        <color key="contentTintColor" red="0.85" green="0.85" blue="0.85" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <color key="contentTintColor" red="0.84999999999999998" green="0.84999999999999998" blue="0.84999999999999998" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <connections>
                                             <action selector="ButtonClick:" target="8" id="faA-Tw-IyL"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="favButton" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m8c-EU-8ei">
+                                        <rect key="frame" x="106" y="38.5" width="23" height="29"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="Q42-uJ-Si9">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                            <imageReference key="image" image="heart" catalog="system" symbolScale="medium"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="0.84999999999999998" green="0.84999999999999998" blue="0.84999999999999998" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="dfx-AA-C7e"/>
+                                        </connections>
+                                    </button>
+                                    <button identifier="unfavButton" hidden="YES" autoresizesSubviews="NO" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zO8-pf-AOE">
+                                        <rect key="frame" x="106" y="38.5" width="23" height="29"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="dAR-4l-cQB">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system" size="40"/>
+                                            <imageReference key="image" image="heart.fill" catalog="system" symbolScale="medium"/>
+                                        </buttonCell>
+                                        <color key="contentTintColor" red="0.84999999999999998" green="0.84999999999999998" blue="0.84999999999999998" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <connections>
+                                            <action selector="ButtonClick:" target="8" id="sd1-EJ-37D"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -214,11 +240,13 @@
     <resources>
         <image name="NSTouchBarAudioOutputMuteTemplate" width="17" height="20"/>
         <image name="NSTouchBarAudioOutputVolumeHighTemplate" width="27" height="19"/>
-        <image name="NSTouchBarSkipToEndTemplate" width="19" height="17"/>
-        <image name="NSTouchBarSkipToStartTemplate" width="19" height="17"/>
-        <image name="backward.fill" catalog="system" width="19" height="12"/>
-        <image name="forward.fill" catalog="system" width="19" height="12"/>
-        <image name="pause.fill" catalog="system" width="14" height="17"/>
-        <image name="play.fill" catalog="system" width="12" height="13"/>
+        <image name="NSTouchBarSkipToEndTemplate" width="19" height="16"/>
+        <image name="NSTouchBarSkipToStartTemplate" width="19" height="16"/>
+        <image name="backward.fill" catalog="system" width="20" height="12"/>
+        <image name="forward.fill" catalog="system" width="20" height="12"/>
+        <image name="heart" catalog="system" width="16" height="14"/>
+        <image name="heart.fill" catalog="system" width="16" height="14"/>
+        <image name="pause.fill" catalog="system" width="11" height="13"/>
+        <image name="play.fill" catalog="system" width="15" height="17"/>
     </resources>
 </document>

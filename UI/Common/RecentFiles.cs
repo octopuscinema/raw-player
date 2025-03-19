@@ -36,15 +36,16 @@ namespace Octopus.Player.UI
     {
         public IReadOnlyCollection<RecentFileEntry> Entries { get { return entries; } }
         private List<RecentFileEntry> entries;
-        private string jsonPath;
+        private string JsonPath { get; set; }
 
         public static readonly uint maxEntries = 10;
 
-        public RecentFiles(PlayerWindow playerWindow)
+        public RecentFiles(PlayerWindow playerWindow, string jsonPath, bool automatic = true)
         {
             entries = new List<RecentFileEntry>();
-            playerWindow.ClipOpened += OnClipOpened;
-            jsonPath = playerWindow.NativeWindow.PlayerApplication.RecentFilesJsonPath;
+            if (automatic)
+                playerWindow.ClipOpened += Add;
+            JsonPath = jsonPath;
             Deserialise();
         }
 
@@ -54,7 +55,7 @@ namespace Octopus.Player.UI
             OnChanged();
         }
 
-        public void OnClipOpened(IClip clip)
+        public void Add(IClip clip)
         {
             for (int i = 0; i < entries.Count; i++)
             {
@@ -74,17 +75,32 @@ namespace Octopus.Player.UI
             OnChanged();
         }
 
+        public void Remove(IClip clip)
+        {
+            entries.RemoveAll(e => ( e.Path == clip.Path) );
+        }
+
+        public bool Contains(IClip clip)
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i].Path == clip.Path)
+                    return true;
+            }
+            return false;
+        }
+
         private void Serialise()
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(jsonPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(JsonPath));
                 var json = JsonConvert.SerializeObject(entries);
-                File.WriteAllText(jsonPath, json);
+                File.WriteAllText(JsonPath, json);
             }
             catch
             {
-                Trace.WriteLine("Failed to write recent files json to: '" + jsonPath + "'");
+                Trace.WriteLine("Failed to write recent files json to: '" + JsonPath + "'");
             }
         }
 
@@ -92,16 +108,16 @@ namespace Octopus.Player.UI
         {
             try
             {
-                if (File.Exists(jsonPath))
+                if (File.Exists(JsonPath))
                 {
-                    string json = File.ReadAllText(jsonPath);
+                    string json = File.ReadAllText(JsonPath);
                     entries = JsonConvert.DeserializeObject<List<RecentFileEntry>>(json);
                     entries.RemoveAll(entry => (string.IsNullOrEmpty(entry.Path) || string.IsNullOrEmpty(entry.Type))) ;
                 }
             }
             catch
             {
-                Trace.WriteLine("Failed to read recent files json from: '" + jsonPath + "'");
+                Trace.WriteLine("Failed to read recent files json from: '" + JsonPath + "'");
             }
         }
 

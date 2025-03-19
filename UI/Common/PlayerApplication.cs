@@ -50,6 +50,11 @@ namespace Octopus.Player.UI
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player recent files.json"); }
         }
 
+        public virtual string FavouritesJsonPath
+        {
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OCTOPUS RAW Player favourites.json"); }
+        }
+
         public virtual string ProductName { get { return Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute)).OfType<AssemblyProductAttribute>().FirstOrDefault().Product; } }
         public virtual string ProductVersion { 
             get

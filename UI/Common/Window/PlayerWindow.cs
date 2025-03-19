@@ -33,6 +33,7 @@ namespace Octopus.Player.UI
             }
         }
         public RecentFiles RecentFiles { get; private set; }
+        public RecentFiles Favourites { get; private set; }
         private RawParameters? PersistantClipParameters { get; set; }
 
         public Audio.IContext AudioContext
@@ -53,7 +54,8 @@ namespace Octopus.Player.UI
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             lastInteraction = DateTime.Now;
-            RecentFiles = new RecentFiles(this);
+            RecentFiles = new RecentFiles(this, NativeWindow.PlayerApplication.RecentFilesJsonPath);
+            Favourites = new RecentFiles(this, NativeWindow.PlayerApplication.FavouritesJsonPath, false);
         }
 
         public void OnLoad()
@@ -72,6 +74,8 @@ namespace Octopus.Player.UI
             NativeWindow.SetButtonEnabled("previousButton", false);
             NativeWindow.SetButtonEnabled("muteButton", false);
             NativeWindow.SetButtonEnabled("unmuteButton", false);
+            NativeWindow.SetButtonEnabled("favButton", false);
+            NativeWindow.SetButtonEnabled("unfavButton", false);
             NativeWindow.SetSliderEnabled("seekBar", false);
 
             // Setup recent files menu items
@@ -92,6 +96,25 @@ namespace Octopus.Player.UI
             }
             else
                 NativeWindow.EnableMenuItem("openRecent", false);
+
+            // Populate favourites
+            if ( Favourites.Entries.Count > 0 )
+            {
+                uint favouriteIndex = 0;
+                foreach (var favourite in Favourites.Entries)
+                {
+                    Action openClip = () =>
+                    {
+                        if (favourite.Type == typeof(ClipCinemaDNG).ToString())
+                            OpenCinemaDNG(favourite.Path);
+                    };
+                    NativeWindow.AddMenuItem("favourites", PlayerApplication.ShortenPath(favourite.Path), favouriteIndex++, openClip);
+                }
+                NativeWindow.AddMenuSeperator("favourites", favouriteIndex);
+                NativeWindow.EnableMenuItem("favourites", true);
+            }
+            else
+                NativeWindow.EnableMenuItem("favourites", false);
 
             // Create the animate controls timer
             AnimateOutControlsTimer = new Timer(new TimerCallback(AnimateOutControls), null, TimeSpan.Zero, TimeSpan.FromSeconds(1.0));
@@ -700,6 +723,12 @@ namespace Octopus.Player.UI
                     NativeWindow.EnableMenuItem("openRecent", false);
                     break;
 
+                // Clear favourites
+                case "clearFavourites":
+                    Favourites.Clear();
+                    NativeWindow.EnableMenuItem("favourites", false);
+                    break;
+
                 // Check for updates
                 case "checkForUpdates":
                     NativeWindow.PlayerApplication.CheckForUpdates(this, true);
@@ -852,6 +881,22 @@ namespace Octopus.Player.UI
                         Playback.Unmute();
                         NativeWindow.SetButtonVisibility("muteButton", true);
                         NativeWindow.SetButtonVisibility("unmuteButton", false);
+                    }
+                    break;
+                case "favButton":
+                    if (Playback != null)
+                    {
+                        NativeWindow.SetButtonVisibility("favButton", false);
+                        NativeWindow.SetButtonVisibility("unfavButton", true);
+                        Favourites.Add(Playback.Clip);
+                    }
+                    break;
+                case "unfavButton":
+                    if (Playback != null)
+                    {
+                        NativeWindow.SetButtonVisibility("favButton", true);
+                        NativeWindow.SetButtonVisibility("unfavButton", false);
+                        Favourites.Remove(Playback.Clip);
                     }
                     break;
                 default:
@@ -1117,6 +1162,10 @@ namespace Octopus.Player.UI
             if (Playback.Clip != null)
                 SavePersistantClipParameters(Playback.Clip);
 
+            NativeWindow.SetButtonEnabled("favButton", false);
+            NativeWindow.SetButtonEnabled("unfavButton", false);
+            NativeWindow.SetButtonVisibility("favButton", true);
+            NativeWindow.SetButtonVisibility("unfavButton", false);
             NativeWindow.SetButtonEnabled("muteButton", false);
             NativeWindow.SetButtonEnabled("unmuteButton", false);
             NativeWindow.SetButtonVisibility("muteButton", false);
@@ -1149,8 +1198,14 @@ namespace Octopus.Player.UI
                 Playback.Clip.RawParameters.Value.gammaSpace.Value.IsLog() : false;
 
             bool hasAudio = Playback.HasAudio;
+            bool isFav = (Playback != null && Playback.Clip != null) ? Favourites.Contains(Playback.Clip) : false;
 
             playhead = 0.0f;
+
+            NativeWindow.SetButtonEnabled("favButton", true);
+            NativeWindow.SetButtonEnabled("unfavButton", true);
+            NativeWindow.SetButtonVisibility("favButton", !isFav);
+            NativeWindow.SetButtonVisibility("unfavButton", isFav);
             NativeWindow.SetButtonEnabled("muteButton", hasAudio);
             NativeWindow.SetButtonEnabled("unmuteButton", hasAudio);
             NativeWindow.SetButtonVisibility("muteButton", hasAudio);
@@ -1277,6 +1332,9 @@ namespace Octopus.Player.UI
         {
             RecentFiles.Dispose();
             RecentFiles = null;
+
+            Favourites.Dispose();
+            Favourites = null;
 
             if (AnimateOutControlsTimer != null)
             {
