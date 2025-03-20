@@ -727,6 +727,8 @@ namespace Octopus.Player.UI
                 case "clearFavourites":
                     Favourites.Clear();
                     NativeWindow.EnableMenuItem("favourites", false);
+                    NativeWindow.SetButtonVisibility("favButton", true);
+                    NativeWindow.SetButtonVisibility("unfavButton", false);
                     break;
 
                 // Check for updates
