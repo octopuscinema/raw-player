@@ -45,6 +45,16 @@ namespace Octopus.Player.UI.macOS
 			get { return !FindView(ContentView, "dropArea").Hidden; }
 			set { FindView(ContentView, "dropArea").Hidden = !value; }
 		}
+
+		public bool FeedVisible
+		{
+            get { return feedVisible; }
+            set
+			{
+				feedVisible = value;
+                FindView(ContentView, "feed").Hidden = !feedVisible;
+			}
+        }
 		
 		public bool RenderContinuouslyHint
 		{
@@ -52,6 +62,8 @@ namespace Octopus.Player.UI.macOS
 		}
 
         public Audio.IContext AudioContext { get; private set; }
+
+		private bool feedVisible;
 
         private IDisposable appearanceObserver;
 
@@ -72,6 +84,7 @@ namespace Octopus.Player.UI.macOS
 
 		private void OnCreate()
         {
+            feedVisible = !FindView(ContentView, "feed").Hidden;
             ControlsAnimationState = ControlsAnimationState.In;
 
 			// Create audio context

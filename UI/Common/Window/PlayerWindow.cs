@@ -899,6 +899,9 @@ namespace Octopus.Player.UI
                         Favourites.Remove(Playback.Clip);
                     }
                     break;
+                case "feedUrl":
+                    NativeWindow.OpenUrl("https://www.octopuscinema.com/raw-studio");
+                    break;
                 default:
                     break;
             }

@@ -6,9 +6,8 @@ using CoreGraphics;
 using Foundation;
 using AppKit;
 using CoreAnimation;
-using OpenGL;
 using OpenTK.Mathematics;
-//using GameController;
+using Octopus.Player.Core.Playback;
 
 namespace Octopus.Player.UI.macOS
 {
@@ -52,7 +51,14 @@ namespace Octopus.Player.UI.macOS
             WantsLayer = true;
 
             // Register for drag/drop
-            RegisterForDraggedTypes(new string[] { NSPasteboard.NSFilenamesType }); 
+            RegisterForDraggedTypes(new string[] { NSPasteboard.NSFilenamesType });
+
+            // Apply feed view style
+            var feed = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "feed") as AppKit.NSVisualEffectView;
+            feed.Appearance = NSAppearance.GetAppearance(NSAppearance.NameVibrantDark);
+            feed.BlendingMode = NSVisualEffectBlendingMode.WithinWindow;
+            feed.Material = NSVisualEffectMaterial.Menu;
+            feed.State = NSVisualEffectState.FollowsWindowActiveState;
         }
 
         public override void UpdateTrackingAreas()
@@ -85,6 +91,8 @@ namespace Octopus.Player.UI.macOS
         {
             if ( NativePlayerWindow != null )
             {
+                var theme = NativePlayerWindow.PlayerWindow.Theme;
+
                 var playbackControls = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "playbackControls");
                 var playbackControlsFrame = playbackControls.Frame;
                 playbackControlsFrame.Location = new CGPoint(Frame.Width/2 - playbackControlsFrame.Width/2, NativePlayerWindow.PlayerWindow.Theme.PlaybackControlsMargin);
@@ -93,7 +101,15 @@ namespace Octopus.Player.UI.macOS
                 // Hide drop area of overlapping with playback controls
                 var dropArea = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "dropArea");
                 var dropAreaFrame = dropArea.Frame;
-                dropArea.AlphaValue = dropAreaFrame.IntersectsWith(playbackControlsFrame) ? 0.0f : 1.0f;
+                var dropAreaPlaybackControlsDist = dropArea.Frame.DistanceTo(playbackControlsFrame);
+                dropArea.AlphaValue = (float)Math.Clamp(dropAreaPlaybackControlsDist / theme.DropAreaOpacityMargin, 0.0, 1.0);
+
+                // Also hide the feed
+                var feed = NativePlayerWindow.FindView(NativePlayerWindow.ContentView, "feed");
+                var feedDropAreaDist = feed.Frame.DistanceTo(dropAreaFrame);
+                var feedPlaybackControlsDist = feed.Frame.DistanceTo(playbackControlsFrame);
+                feed.AlphaValue = (float)Math.Clamp(Math.Min(feedPlaybackControlsDist, feedDropAreaDist) / theme.FeedOpacityMargin, 0.0, 1.0);
+                feed.Hidden = feed.AlphaValue == 0 ? true : !NativePlayerWindow.FeedVisible;
             }
         }
 

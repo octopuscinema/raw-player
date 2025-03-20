@@ -115,6 +115,7 @@
     <Compile Include="SeekSlider.designer.cs">
       <DependentUpon>SeekSlider.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="PlayerMenu.xib" />
