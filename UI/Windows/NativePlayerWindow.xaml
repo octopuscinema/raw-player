@@ -228,6 +228,7 @@
             <Setter Property="FontWeight" Value="Normal"/>
         </Style>
         <SolidColorBrush x:Key="PlaybackControlsBackground" Color="Black" Opacity="0.5" />
+        <SolidColorBrush x:Key="FeedBackground" Color="Black" Opacity="0.5" />
     </Window.Resources>
     <Grid x:Name="PlayerGrid">
         <Grid.RowDefinitions>
@@ -251,6 +252,18 @@
                 </Grid.RowDefinitions>
                 <Label FontFamily="Segoe MDL2 Assets" HorizontalContentAlignment="Center" FontSize="40" Content="&#xE896;" Foreground="LightGray" Grid.Row="0"/>
                 <Label HorizontalContentAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="LightGray" Content="Drop CinemaDNG sequence here" Grid.Row="1"/>
+            </Grid>
+        </Border>
+
+        <Border x:Name="feed" HorizontalAlignment="Right" Padding="15" VerticalAlignment="Top" Width="270" Background="{StaticResource FeedBackground}" Opacity="1.0" BorderThickness="0" CornerRadius="8" Margin="0,40,20,0"  Grid.Row="0">
+            <Grid>
+                <TextBlock x:Name="feedTitle" FontSize="14" Foreground="White" FontWeight="DemiBold" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    Adobe Premiere Pro user?
+                </TextBlock>
+                <TextBlock x:Name="feedCaption" FontSize="14" Foreground="White" Margin="0,20,0,0" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    Try our plugin:
+                    <Hyperlink FontWeight="DemiBold" Foreground="#ff8028" NavigateUri="https://www.octopuscinema.com/raw-studio" RequestNavigate="Hyperlink_RequestNavigate">OCTOPUS RAW Studio</Hyperlink>
+                </TextBlock>
             </Grid>
         </Border>
 
