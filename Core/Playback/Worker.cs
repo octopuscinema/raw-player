@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Octopus.Player.Core.Playback
 {
-    internal class Worker<T> : IDisposable
+    public class Worker<T> : IDisposable
     {
         public bool IsSleeping { get { return !Sleep.WaitOne(0); } }
         public bool IsBusy { get { return !IsSleeping || !Busy.WaitOne(0); } }

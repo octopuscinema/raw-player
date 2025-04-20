@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Octopus.Player.Core.Pro</RootNamespace>
+	<NrtRevisionFormat>{semvertag+chash}</NrtRevisionFormat>
+	<AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+	<ReleaseVersion>1.0.2</ReleaseVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Player.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -5,6 +5,7 @@ namespace Octopus.Player.Core
 	public enum Error
     {
         None,
+        UnsupportedFormat,
         ClipNotValidated,
         BadPath,
         BadFile,

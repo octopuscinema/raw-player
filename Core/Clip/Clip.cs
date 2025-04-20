@@ -19,6 +19,11 @@ namespace Octopus.Player.Core
 
         public abstract Error ReadMetadata(uint? frame = null);
         public abstract Error Validate();
+
+        static IClip FromPath(string path)
+        {
+            return null;
+        }
     }
 }
 
