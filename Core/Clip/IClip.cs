@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Octopus.Player.Core.Playback;
+using System;
 
 namespace Octopus.Player.Core
 {
@@ -15,6 +16,8 @@ namespace Octopus.Player.Core
 		RawParameters? RawParameters { get; set; }
 		IClip NextClip { get; }
 		IClip PreviousClip { get; }
+
+		IPlayback CreatePlayback(IPlayerWindow window, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext);
 	}
 }
 

@@ -17,7 +17,5 @@ namespace Octopus.Player.Core
         bool Enabled { get; }
 
         List<SupportedFormat> SupportedFormats { get; }
-
-        IClip ClipFromPath(string path, out Error error);
     }
 }

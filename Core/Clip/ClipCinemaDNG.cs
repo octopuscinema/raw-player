@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Octopus.Player.Core.Playback;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -220,6 +221,11 @@ namespace Octopus.Player.Core
                 Trace.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
                 return Error.BadPath;
             }
+        }
+
+        public override IPlayback CreatePlayback(IPlayerWindow window, GPU.Compute.IContext computeContext, GPU.Render.IContext renderContext)
+        {
+            return new Core.Playback.PlaybackCinemaDNG(window, computeContext, renderContext);
         }
     }
 }
