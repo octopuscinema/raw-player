@@ -15,7 +15,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Octopus.Player.UI
 {
-    public class PlayerApplication : IDisposable
+    public class PlayerApplication : Core.IPlayerApplication
     {
         private class WebClientWithTimeout : System.Net.WebClient
         {
@@ -284,7 +284,7 @@ namespace Octopus.Player.UI
             }
         }
 
-        public void CheckForUpdates(PlayerWindow window, bool interactive = false)
+        public void CheckForUpdates(Core.IPlayerWindow window, bool interactive = false)
         {
             Version latestVersion;
             string downloadPageUrl;

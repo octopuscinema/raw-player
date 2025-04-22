@@ -3,6 +3,7 @@ using Octopus.Player.Core.Playback;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.NetworkInformation;
@@ -44,6 +45,8 @@ namespace Octopus.Player.UI
             }
         }
 
+        public ILicense License {get; private set;}
+
         private DateTime lastInteraction;
         private float playhead;
         public event IPlayerWindow.ClipOpenedEventHandler ClipOpened;
@@ -51,6 +54,7 @@ namespace Octopus.Player.UI
 
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
+            License = new Core.Pro.License();
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             lastInteraction = DateTime.Now;
@@ -124,6 +128,8 @@ namespace Octopus.Player.UI
             if (NetworkInterface.GetIsNetworkAvailable())
                 NativeWindow.PlayerApplication.CheckForUpdatesAsync(this);
 #endif
+
+            License.OnWindowLoad(this);
         }
 
         public void OnReady()
@@ -1000,6 +1006,16 @@ namespace Octopus.Player.UI
             return error;
         }
 
+        public Error Open(string path)
+        {
+            Error error;
+            var clip = Clip.FromPath(path, License.SupportedFormats, out error);
+            if (error != Error.None)
+                return error;
+
+            return OpenClip(clip);
+        }
+
         private Error OpenCinemaDNG(string dngPath)
         {
             return OpenClip(new ClipCinemaDNG(dngPath));
@@ -1007,9 +1023,9 @@ namespace Octopus.Player.UI
 
         private Error OpenClip(IClip clip)
         {
-            var dngValidity = clip.Validate();
-            if (dngValidity != Error.None)
-                return dngValidity;
+            var validity = clip.Validate();
+            if (validity != Error.None)
+                return validity;
 
             // Current playback instance doesn't support this clip, shut it down
             if (Playback != null && !Playback.SupportsClip(clip))
@@ -1031,16 +1047,7 @@ namespace Octopus.Player.UI
             // Create the playback instance if necessary
             if (Playback == null)
             {
-                switch (clip)
-                {
-                    case ClipCinemaDNG dngSequenceClip:
-                        Playback = new Core.Playback.PlaybackCinemaDNG(this, ComputeContext, RenderContext);
-                        break;
-                    default:
-                        Debug.Assert(false);
-                        return Error.NotImplmeneted;
-                }
-
+                Playback = clip.CreatePlayback(this, ComputeContext, RenderContext);
                 Playback.ClipOpened += OnClipOpened;
                 Playback.ClipClosed += OnClipClosed;
                 Playback.StateChanged += OnPlaybackStateChanged;

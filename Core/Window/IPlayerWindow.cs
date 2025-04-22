@@ -7,6 +7,8 @@ namespace Octopus.Player.Core
     {
         public Audio.IContext AudioContext { get; }
 
+        public UI.INativeWindow NativeWindow { get; }
+
         void OnLoad();
         void InvokeOnUIThread(Action action, bool async = true);
 

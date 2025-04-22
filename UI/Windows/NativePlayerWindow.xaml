@@ -295,7 +295,7 @@
         </Border>
 
         <Menu VerticalAlignment="Top" IsMainMenu="True" x:Name="PlayerMenu" Grid.Row="0" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" MouseMove="GLControl_MouseMove">
-            <MenuItem Header="_File" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+            <MenuItem Header="_File" Name="file" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
                 <MenuItem Header="_Open CinemaDNG Sequence..." Name="openCinemaDNG" InputGestureText="Ctrl+O" Click="MenuItem_Click"/>
                 <MenuItem Header="_Open Recent" Name="openRecent" IsEnabled="False">
                     <MenuItem Header="_Clear Recent List" Name="clearRecent" Click="MenuItem_Click"/>

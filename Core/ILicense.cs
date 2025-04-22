@@ -17,5 +17,7 @@ namespace Octopus.Player.Core
         bool Enabled { get; }
 
         List<SupportedFormat> SupportedFormats { get; }
+
+        void OnWindowLoad(IPlayerWindow window);
     }
 }

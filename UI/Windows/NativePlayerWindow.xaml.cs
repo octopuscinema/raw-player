@@ -85,7 +85,7 @@ namespace Octopus.Player.UI.Windows
         public bool MouseInsidePlaybackControls { get; private set; }
         private ITheme Theme { get { return PlayerWindow.Theme; } }
 
-        public PlayerApplication PlayerApplication { get { return ((App)Application.Current).PlayerApplication; } }
+        public IPlayerApplication PlayerApplication { get { return ((App)Application.Current).PlayerApplication; } }
 
         public bool DropAreaVisible
         {
