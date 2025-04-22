@@ -22,7 +22,7 @@ namespace Octopus.Player.Core
         public abstract Error ReadMetadata(uint? frame = null);
         public abstract Error Validate();
 
-        static IClip FromPath(string path, IList<SupportedFormat> supportedFormats, out Error error)
+        public static IClip FromPath(string path, IList<SupportedFormat> supportedFormats, out Error error)
         {
             error = Error.None;
 
