@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Player.Core.csproj" />
-	<ProjectReference Include="$(SolutionDir)Core.Pro\Player.Core.Pro.csproj" />
+	<ProjectReference Include="$(SolutionDir)License\Player.License.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Newtonsoft.Json" />

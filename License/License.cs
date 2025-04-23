@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Octopus.Player.Core.Pro
+namespace Octopus.Player.Core
 {
     public class License : ILicense
     {
@@ -24,6 +24,11 @@ namespace Octopus.Player.Core.Pro
 
                 return formats;
             }
+        }
+
+        public void OnWindowLoad(IPlayerWindow window)
+        {
+            
         }
     }
 }

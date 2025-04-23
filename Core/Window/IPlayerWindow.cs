@@ -9,6 +9,8 @@ namespace Octopus.Player.Core
 
         public UI.INativeWindow NativeWindow { get; }
 
+        public Error Open(string path);
+
         void OnLoad();
         void InvokeOnUIThread(Action action, bool async = true);
 

@@ -54,7 +54,7 @@ namespace Octopus.Player.UI
 
         public PlayerWindow(INativeWindow nativeWindow, ITheme theme = null)
         {
-            License = new Core.Pro.License();
+            License = new Core.License();
             NativeWindow = nativeWindow;
             Theme = theme != null ? theme : new DefaultTheme();
             lastInteraction = DateTime.Now;
