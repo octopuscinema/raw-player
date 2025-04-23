@@ -8,7 +8,9 @@ namespace Octopus.Player.Core
 		Essence Essence { get; }
 		bool Valid { get; }
 
-		Error Validate();
+		Container Container { get; }
+
+        Error Validate();
 
 		Error ReadMetadata(uint? frame = null);
 		IO.IMetadata Metadata { get; }

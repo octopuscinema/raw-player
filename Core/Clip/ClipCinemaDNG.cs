@@ -13,6 +13,7 @@ namespace Octopus.Player.Core
         public override Essence Essence { get { return Essence.Sequence; } }
         public override Audio.Codec AudioCodec { get { return Audio.Codec.Wav; } }
 
+        public override Container Container { get { return Container.Dng; } }
         public override IClip NextClip
         {
             get
@@ -179,6 +180,9 @@ namespace Octopus.Player.Core
         
         public override Error Validate()
         {
+            if (Valid)
+                return Error.None;
+
             // Check path is a folder
             if (!System.IO.Directory.Exists(Path))
                 return Error.BadPath;
