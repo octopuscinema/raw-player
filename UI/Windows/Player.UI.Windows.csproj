@@ -12,7 +12,9 @@
     <Version>1.0.0</Version>
     <Copyright>© 2025 OCTOPUSCINEMA</Copyright>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <BaseOutputPath>$(SolutionDir)UI\Windows\bin\</BaseOutputPath>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\Player.props" Condition="Exists('$(SolutionDir)\Player.props')" />
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
