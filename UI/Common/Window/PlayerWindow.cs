@@ -64,6 +64,7 @@ namespace Octopus.Player.UI
 
         public void OnLoad()
         {
+            NativeWindow.SetWindowTitle(NativeWindow.PlayerApplication.ProductName);
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.EnableMenuItem("exportFrame", false);
             NativeWindow.SetLabelContent("timeCodeLabel", "", null, true);
@@ -1193,7 +1194,7 @@ namespace Octopus.Player.UI
             NativeWindow.SetLabelContent("durationLabel", "");
             NativeWindow.EnableMenuItem("clip", false);
             NativeWindow.EnableMenuItem("exportFrame", false);
-            NativeWindow.SetWindowTitle("OCTOPUS RAW Player");
+            NativeWindow.SetWindowTitle(NativeWindow.PlayerApplication.ProductName);
             RenderContext.BackgroundColor = Theme.EmptyBackground;
             RenderContext.RedrawBackground = GPU.Render.RedrawBackground.Once;
             NativeWindow.DropAreaVisible = true;
