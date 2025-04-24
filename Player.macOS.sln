@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Audio", "Audio\Commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Audio.macOS", "Audio\macOS\Player.Audio.macOS.csproj", "{ED9B36C3-6E5F-495F-86A3-655446AD74E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Core.Pro", "Core.Pro\Player.Core.Pro.csproj", "{71B23E42-9F50-4B07-B93B-44DB9834348A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.License", "License\Player.License.csproj", "{C58ABC83-CEED-4F28-956A-2DC3124421A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,10 +65,10 @@ Global
 		{ED9B36C3-6E5F-495F-86A3-655446AD74E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED9B36C3-6E5F-495F-86A3-655446AD74E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED9B36C3-6E5F-495F-86A3-655446AD74E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{71B23E42-9F50-4B07-B93B-44DB9834348A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{71B23E42-9F50-4B07-B93B-44DB9834348A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{71B23E42-9F50-4B07-B93B-44DB9834348A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{71B23E42-9F50-4B07-B93B-44DB9834348A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C58ABC83-CEED-4F28-956A-2DC3124421A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58ABC83-CEED-4F28-956A-2DC3124421A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58ABC83-CEED-4F28-956A-2DC3124421A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58ABC83-CEED-4F28-956A-2DC3124421A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
