@@ -28,5 +28,6 @@ namespace Octopus.Player.Core
         public string[] OpenOnStart { get; set; }
 
         void CheckForUpdates(IPlayerWindow window, bool interactive = false);
+        void CheckForUpdatesAsync(IPlayerWindow window);
     }
 }

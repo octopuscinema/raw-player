@@ -205,7 +205,7 @@ namespace Octopus.Player.UI
             return firstPart + ellipsisChars + lastPart;
         }
 
-        public void CheckForUpdatesAsync(PlayerWindow window)
+        public void CheckForUpdatesAsync(Core.IPlayerWindow window)
         {
             Action<string> processVersionInfo = (versionInfo) =>
             {

@@ -82,25 +82,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>Jpeg</TargetName>
-    <OutDir>$(SolutionDir)UI\Windows\bin\$(Configuration)\net6.0-windows\runtimes\win-$(Platform)\native\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)libjpeg-turbo;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)libjpeg-turbo</LibraryPath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>Jpeg</TargetName>
-    <OutDir>$(SolutionDir)UI\Windows\bin\$(Configuration)\net6.0-windows\runtimes\win-$(Platform)\native\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)libjpeg-turbo;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)libjpeg-turbo</LibraryPath>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Jpeg</TargetName>
-    <OutDir>$(SolutionDir)UI\Windows\bin\$(Configuration)\net6.0-windows\runtimes\win-$(Platform)\native\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)libjpeg-turbo;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)libjpeg-turbo</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Jpeg</TargetName>
-    <OutDir>$(SolutionDir)UI\Windows\bin\$(Configuration)\net6.0-windows\runtimes\win-$(Platform)\native\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)libjpeg-turbo;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)libjpeg-turbo</LibraryPath>
   </PropertyGroup>
