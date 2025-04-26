@@ -34,6 +34,8 @@ namespace Octopus::Player::Core
         SeekRequestAlreadyActive,
         ComputeError,
         InvalidLutFile,
-        LutNotFound
+        LutNotFound,
+        DecompressInitError,
+        DecompressError
     };
 }
