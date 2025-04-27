@@ -36,6 +36,11 @@ namespace Octopus::Player::Core
         InvalidLutFile,
         LutNotFound,
         DecompressInitError,
-        DecompressError
+        DecompressError,
+        InvalidFrame,
+        BadAudioSample,
+        InvalidStream,
+        NoAudioStream,
+        BadBufferSize
     };
 }
