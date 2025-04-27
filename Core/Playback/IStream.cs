@@ -24,7 +24,7 @@ namespace Octopus.Player.Core.Playback
         GpuCompute
     }
 
-    public interface ISequenceStream : IDisposable
+    public interface IStream : IDisposable
     {
         GPU.Format Format { get; }
 

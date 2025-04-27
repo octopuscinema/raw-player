@@ -15,7 +15,6 @@ namespace Octopus.Player.Core.Playback
 {
     public class PlaybackCinemaDNG : Playback
     {
-        private static readonly uint nativeMemoryBufferSize = 0;
         private static readonly uint bufferDurationFrames = 6;
         private static readonly uint bufferSizeFrames = 12;
         private static readonly List<string> pipelineKernels = new List<string> { "ProcessBayer", "ProcessBayerLUT", "Process", "ProcessLUT" };
@@ -27,7 +26,7 @@ namespace Octopus.Player.Core.Playback
 
         private SequenceFrameDNG PauseFrame { get; set; }
 
-        private ISequenceStream SequenceStream { get; set; }
+        private IStream SequenceStream { get; set; }
         private IProgram GpuPipelineComputeProgram { get; set; }
 
         private IImage1D LinearizeTable { get; set; }
@@ -184,7 +183,7 @@ namespace Octopus.Player.Core.Playback
 
             // Create the sequence stream
             Debug.Assert(SequenceStream == null);
-            SequenceStream = new SequenceStream<SequenceFrameDNG>(ComputeContext, (ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames, nativeMemoryBufferSize);
+            SequenceStream = new Stream<SequenceFrameDNG>(ComputeContext, (ClipCinemaDNG)clip, gpuFormat, bufferSizeFrames);
 
             // Create linearization table texture
             if (cinemaDNGMetadata.LinearizationTable != null && cinemaDNGMetadata.LinearizationTable.Length > 0)
@@ -231,7 +230,7 @@ namespace Octopus.Player.Core.Playback
                 SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
 
             // Decode seek frame processing
-            Func<byte[],Error> decodeSeekFrame = (byte[] workingBuffer) =>
+            Func<Error> decodeSeekFrame = () =>
             {
                 if (!ActiveSeekRequest.HasValue)
                     return Error.None;

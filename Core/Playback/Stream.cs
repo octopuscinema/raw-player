@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Octopus.Player.Core.Playback
 {
-    public class SequenceStream<T> : ISequenceStream where T : SequenceFrame
+    public class Stream<T> : IStream where T : SequenceFrame
     {
         public IClip Clip { get; protected set; }
 
@@ -23,7 +23,7 @@ namespace Octopus.Player.Core.Playback
 
         List<Worker<FrameRequestResult>> Workers { get; set; }
 
-        public SequenceStream(GPU.Compute.IContext computeContext, IClip clip, GPU.Format format, uint bufferDurationFrames, uint workerThreadBufferSize = 0, uint? workerThreadCount = null)
+        public Stream(GPU.Compute.IContext computeContext, IClip clip, GPU.Format format, uint bufferDurationFrames, uint? workerThreadCount = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
@@ -36,7 +36,7 @@ namespace Octopus.Player.Core.Playback
             FrameRequestsMutex = new Mutex();
 
             // Create work for workers
-            Func<byte[],FrameRequestResult> processFrameRequests = (byte[] workingBuffer) =>
+            Func<FrameRequestResult> processFrameRequests = () =>
             {
                 // Get the next frame requested
                 uint? frameNumber = null;
@@ -61,7 +61,7 @@ namespace Octopus.Player.Core.Playback
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
                 frame.timeCode = null;
-                var decodeResult = frame.Decode(Clip, workingBuffer);
+                var decodeResult = frame.Decode(Clip);
 
                 // Frame ready to be displayed
                 if (!DisplayFrames.TryAdd(frame.frameNumber, frame))

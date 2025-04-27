@@ -222,6 +222,7 @@ namespace Octopus.Player.Core
             }
             catch (Exception e)
             {
+                Valid = false;
                 Trace.WriteLine("Failed to validate CinemaDNG sequence path: " + Path + "\n" + e.Message);
                 return Error.BadPath;
             }

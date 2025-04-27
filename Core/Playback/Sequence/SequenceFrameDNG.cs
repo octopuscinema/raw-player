@@ -18,7 +18,7 @@ namespace Octopus.Player.Core.Playback
 
         }
 
-        Error TryDecode(IClip clip, byte[] workingBuffer = null)
+        Error TryDecode(IClip clip)
         {
             // Cast to DNG clip/metadata
             var dngClip = (ClipCinemaDNG)clip;
@@ -98,9 +98,9 @@ namespace Octopus.Player.Core.Playback
             return decodeDataError;
         }
 
-        public override Error Decode(IClip clip, byte[] workingBuffer = null)
+        public override Error Decode(IClip clip)
         {
-            var result = TryDecode(clip, workingBuffer);
+            var result = TryDecode(clip);
 
             // Blank data if we didn't decode properly
             if (result != Error.None)

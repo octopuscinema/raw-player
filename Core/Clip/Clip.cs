@@ -49,7 +49,7 @@ namespace Octopus.Player.Core
                 {
                     // Video essence should always be a regular file and match the format extension
                     case Essence.Video:
-                        if (isRegularFile && formatExtension == pathExtension)
+                        if (isRegularFile && string.Equals(formatExtension,pathExtension, StringComparison.OrdinalIgnoreCase))
                         {
                             var clip = format.ClipFactory(path);
                             if (clip != null)
@@ -64,7 +64,7 @@ namespace Octopus.Player.Core
                     case Essence.Sequence:
 
                         // Sequence essence and the supplied path is a regular file matching the container extension
-                        if (!isDir && isRegularFile && formatExtension == pathExtension)
+                        if (!isDir && isRegularFile && string.Equals(formatExtension, pathExtension, StringComparison.OrdinalIgnoreCase))
                         {
                             var folder = System.IO.Directory.GetParent(path).FullName;
                             var clip = format.ClipFactory(folder);
