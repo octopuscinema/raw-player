@@ -41,6 +41,6 @@ namespace Octopus.Player.Core.Playback
 
         List<uint> ReadyFrames();
         bool FrameReady(uint frameNumber);
-        SequenceFrame RetrieveFrame(uint frameNumber);
+        Frame RetrieveFrame(uint frameNumber);
     }
 }

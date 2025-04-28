@@ -342,6 +342,6 @@ namespace Octopus.Player.Core.Playback
         public abstract Error ApplyLUT(string resourceName);
         public abstract Error ApplyLUT(Uri path);
         public abstract void RemoveLUT();
-        public abstract Error ExportFrame(out ExportedFrame frame, uint? frameNumber = null);
+        public abstract Error ExportFrame(ref ExportedFrame frame, uint? frameNumber = null);
     }
 }

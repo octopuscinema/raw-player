@@ -111,7 +111,7 @@ namespace Octopus.Player.Core.Playback
 		event EventHandler ClipClosed;
 
         // Export
-        Error ExportFrame(out ExportedFrame frame, uint? frameNumber = null);
+        Error ExportFrame(ref ExportedFrame frame, uint? frameNumber = null);
 
         void OnRenderFrame(double timeInterval);
 	}

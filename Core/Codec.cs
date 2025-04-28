@@ -10,6 +10,7 @@ namespace Octopus.Player.Core
         Dng,
         ProResRAW,
         ProResRAWHQ,
+        TicoRAW
     }
 
     public enum Container

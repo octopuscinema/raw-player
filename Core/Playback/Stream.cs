@@ -8,14 +8,14 @@ using System.Threading;
 
 namespace Octopus.Player.Core.Playback
 {
-    public class Stream<T> : IStream where T : SequenceFrame
+    public class Stream<T> : IStream where T : Frame
     {
         public IClip Clip { get; protected set; }
 
         public GPU.Format Format { get; protected set; }
 
-        ConcurrentBag<SequenceFrame> Pool { get; set; }
-        ConcurrentDictionary<uint,SequenceFrame> DisplayFrames { get; set; }
+        ConcurrentBag<Frame> Pool { get; set; }
+        ConcurrentDictionary<uint,Frame> DisplayFrames { get; set; }
         List<uint> FrameRequests { get; set; }
         Mutex FrameRequestsMutex { get; set; }
 
@@ -30,13 +30,13 @@ namespace Octopus.Player.Core.Playback
             Format = format;
             BufferDurationFrames = bufferDurationFrames;
 
-            Pool = new ConcurrentBag<SequenceFrame>();
+            Pool = new ConcurrentBag<Frame>();
             FrameRequests = new List<uint>();
-            DisplayFrames = new ConcurrentDictionary<uint, SequenceFrame>();
+            DisplayFrames = new ConcurrentDictionary<uint, Frame>();
             FrameRequestsMutex = new Mutex();
 
             // Create work for workers
-            Func<FrameRequestResult> processFrameRequests = () =>
+            Func<IVideoDecompressionSession,FrameRequestResult> processFrameRequests = (IVideoDecompressionSession decompressionSession) =>
             {
                 // Get the next frame requested
                 uint? frameNumber = null;
@@ -54,15 +54,27 @@ namespace Octopus.Player.Core.Playback
                 }
 
                 // Attempt to get a preallocated frame from the pool
-                SequenceFrame frame;
+                Frame frame;
                 if (!Pool.TryTake(out frame))
                     return FrameRequestResult.ErrorBufferFull;
 
                 // Decode the frame
                 frame.frameNumber = frameNumber.Value;
                 frame.timeCode = null;
-                var decodeResult = frame.Decode(Clip);
-
+                Error decodeResult = Error.None;
+                switch (frame)
+                {
+                    case SequenceFrame sequenceFrame:
+                        decodeResult = sequenceFrame.Decode(Clip);
+                        break;
+                    case VideoFrame videoFrame:
+                        decodeResult = videoFrame.Decode(Clip, decompressionSession);
+                        break;
+                    default:
+                        Debug.Assert(false, "Unhandled frame type");
+                        break;
+                }
+                
                 // Frame ready to be displayed
                 if (!DisplayFrames.TryAdd(frame.frameNumber, frame))
                 {
@@ -114,7 +126,7 @@ namespace Octopus.Player.Core.Playback
         public void ReclaimReadyFrames()
         {
             Workers.ForEach(i => i.Stop());
-            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            var displayFramesCopy = new ConcurrentDictionary<uint, Frame>(DisplayFrames);
             foreach(var frame in displayFramesCopy)
                 OnFrameDisplayed(frame.Key);
             Debug.Assert(DisplayFrames.IsEmpty);
@@ -123,7 +135,7 @@ namespace Octopus.Player.Core.Playback
 
         public void ReclaimReadyFramesUpTo(uint upToFrame)
         {
-            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            var displayFramesCopy = new ConcurrentDictionary<uint, Frame>(DisplayFrames);
             foreach (var frame in displayFramesCopy)
             {
                 if ( frame.Key <= upToFrame)
@@ -133,7 +145,7 @@ namespace Octopus.Player.Core.Playback
 
         public void ReclaimReadyFramesFrom(uint fromFrame)
         {
-            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            var displayFramesCopy = new ConcurrentDictionary<uint, Frame>(DisplayFrames);
             foreach (var frame in displayFramesCopy)
             {
                 if (frame.Key >= fromFrame)
@@ -198,7 +210,7 @@ namespace Octopus.Player.Core.Playback
         public List<uint> ReadyFrames()
         {
             List<uint> frames = new List<uint>();
-            var displayFramesCopy = new ConcurrentDictionary<uint, SequenceFrame>(DisplayFrames);
+            var displayFramesCopy = new ConcurrentDictionary<uint, Frame>(DisplayFrames);
             foreach (var frame in displayFramesCopy)
                 frames.Add(frame.Key);
             return frames;
@@ -229,16 +241,16 @@ namespace Octopus.Player.Core.Playback
             return FrameRequestResult.Success;
         }
 
-        public SequenceFrame RetrieveFrame(uint frameNumber)
+        public Frame RetrieveFrame(uint frameNumber)
         {
-            SequenceFrame frame;
+            Frame frame;
             return DisplayFrames.TryGetValue(frameNumber, out frame) ? frame : null;
         }
 
         public void OnFrameDisplayed(uint frameNumber)
         {
             // Remove from ready frames and return to pool
-            SequenceFrame frame;
+            Frame frame;
             bool foundFrame = DisplayFrames.TryRemove(frameNumber, out frame);
             Debug.Assert(foundFrame);
             Pool.Add(frame);

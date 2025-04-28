@@ -7,9 +7,9 @@ namespace Octopus::Player::Decoders
 {
     enum class eCodec
     {
-        Invalid = -3,
-        Unknown = -2,
-        Unset = -1,
+        Invalid,
+        Unknown,
+        Unset,
         Dng,
         ProResRAW,
         ProResRAWHQ,

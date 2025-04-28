@@ -561,7 +561,8 @@ namespace Octopus.Player.UI
 
             if (savePath != null)
             {
-                var exportResult = Playback.ExportFrame(out ExportedFrame frame);
+                ExportedFrame frame = new ExportedFrame();
+                var exportResult = Playback.ExportFrame(ref frame);
 
                 if (exportResult == Error.None)
                 {

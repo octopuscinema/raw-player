@@ -230,7 +230,7 @@ namespace Octopus.Player.Core.Playback
                 SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
 
             // Decode seek frame processing
-            Func<Error> decodeSeekFrame = () =>
+            Func<IVideoDecompressionSession,Error> decodeSeekFrame = (IVideoDecompressionSession decompressionSession) =>
             {
                 if (!ActiveSeekRequest.HasValue)
                     return Error.None;
@@ -612,10 +612,8 @@ namespace Octopus.Player.Core.Playback
             }
         }
 
-        public override Error ExportFrame(out ExportedFrame frame, uint? frameNumber = null)
+        public override Error ExportFrame(ref ExportedFrame frame, uint? frameNumber = null)
         {
-            frame = new ExportedFrame();
-
             using var frameIn = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
             using var frameOut = ComputeContext.CreateImage(displayFrameCompute.Dimensions, exportFrameFormat, MemoryDeviceAccess.WriteOnly, MemoryHostAccess.ReadOnly);
 
