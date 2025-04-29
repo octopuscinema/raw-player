@@ -8,16 +8,6 @@ using System.Text.RegularExpressions;
 
 namespace Octopus.Player.Core.IO
 {
-    public enum CFAPattern
-    {
-        None,
-        RGGB,
-        BGGR,
-        GBRG,
-        GRBG,
-        Unknown
-    }
-
     public abstract class Metadata : IMetadata
     {
         public string Title { get; protected set; }

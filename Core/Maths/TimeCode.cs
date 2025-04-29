@@ -15,6 +15,16 @@ namespace Octopus.Player.Core.Maths
 
         public bool DropFrame { get; private set; }
 
+        public TimeCode(ushort frame, ushort second, uint minute, ushort? hour = null, bool dropFrame = false)
+            : this()
+        {
+            Frame = frame;
+            Second = second;
+            Minute = minute;
+            Hour = hour;
+            DropFrame = dropFrame;
+        }
+
         public TimeCode(ulong frames, uint framerate, bool dropFrame = false, bool useHours = false)
             : this()
         {
