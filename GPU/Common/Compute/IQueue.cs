@@ -11,7 +11,8 @@ namespace Octopus.Player.GPU.Compute
     {
         string Name { get; }
 
-        void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0);
+        void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0, uint? stride = null);
+        unsafe void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte* imageData, uint imageDataOffset = 0, uint? stride = null);
         byte[] ReadImage(IImage2D image);
         void Memset(IImage2D image, in Vector4 color);
 

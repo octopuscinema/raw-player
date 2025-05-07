@@ -104,6 +104,37 @@ namespace Octopus.Player.Core
                     return Matrix.XYZToRec709D50();
             }
         }
+
+        public static Matrix3 ColourSpaceTransformD65(this GammaSpace gamma)
+        {
+            switch (gamma)
+            {
+                case GammaSpace.Rec709:
+                case GammaSpace.sRGB:
+                    return Matrix.XYZToRec709D65();
+                case GammaSpace.LogC3:
+                    return Matrix.XYZtoAlexaWideGamutD65();
+                case GammaSpace.Log3G10:
+                    return Matrix.XYZtoRedWideGamutD65();
+                case GammaSpace.FilmGen5:
+                    return Matrix.XYZtoBlackmagicWideGamutD65();
+                default:
+                    return Matrix.XYZToRec709D65();
+            }
+        }
+
+        public static Matrix3 ColourSpaceTransform(this GammaSpace gamma, WhitePoint whitePoint)
+        {
+            switch (whitePoint)
+            {
+                case WhitePoint.D50:
+                    return gamma.ColourSpaceTransformD50();
+                case WhitePoint.D65:
+                    return gamma.ColourSpaceTransformD65();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(whitePoint), whitePoint, null);
+            }
+        }
     }
 
     public struct RawParameters

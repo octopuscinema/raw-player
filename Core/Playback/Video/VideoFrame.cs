@@ -13,6 +13,6 @@ namespace Octopus.Player.Core.Playback
 
         }
 
-        public abstract Error Decode(IClip clip, IVideoDecompressionSession decompressionSession);
+        public abstract Error Decode(IClip clip, IDecompressionSession decompressionSession);
     }
 }

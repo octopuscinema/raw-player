@@ -102,7 +102,7 @@ namespace Octopus.Player.Core.IO.DNG
             WhiteLevel = reader.WhiteLevel;
             Monochrome = reader.Monochrome;
             if (!reader.Monochrome)
-                ColorProfile = new Maths.Color.Profile(reader);
+                ColorProfile = new Maths.Color.ProfileDNG(reader);
             ExposureValue = reader.BaselineExposure;
             UniqueCameraModel = reader.UniqueCameraModel;
             if (reader.ContainsTimeCode)

@@ -342,19 +342,10 @@ namespace Octopus.Player.UI
         {
             if (Playback != null && Playback.Clip != null && Playback.Clip.RawParameters.HasValue)
             {
-                var whiteBalancePresets = new Dictionary<string, Tuple<float, float>>()
-                {
-                    { "whiteBalanceAsShot", null },
-                    { "whiteBalanceShade", new Tuple<float, float>(     7500.0f, 10.0f) },
-                    { "whiteBalanceCloud", new Tuple<float, float>(     6500.0f, 10.0f) },
-                    { "whiteBalanceDaylight", new Tuple<float, float>(  5500.0f, 10.0f) },
-                    { "whiteBalanceFluorescent", new Tuple<float,float>(3800.0f, 21.0f) },
-                    { "whiteBalanceTungsten", new Tuple<float, float>(  3200.0f, 0.0f) }
-                };
-                Debug.Assert(whiteBalancePresets.ContainsKey(whiteBalanceMenuId));
+                Debug.Assert(Core.Maths.Color.WhiteBalance.Presets.ContainsKey(whiteBalanceMenuId));
 
                 var rawParameters = Playback.Clip.RawParameters.Value;
-                rawParameters.whiteBalance = whiteBalancePresets[whiteBalanceMenuId];
+                rawParameters.whiteBalance = Core.Maths.Color.WhiteBalance.Presets[whiteBalanceMenuId];
                 Playback.Clip.RawParameters = rawParameters;
                 NativeWindow.CheckMenuItem(whiteBalanceMenuId);
                 if (fireEvents)
@@ -451,7 +442,7 @@ namespace Octopus.Player.UI
             if (Playback == null || Playback.Clip == null )
                 return;
 
-            bool isColour = Playback.Clip.Metadata.ColorProfile.HasValue;
+            bool isColour = Playback.Clip.Metadata.ColorProfile != null;
 
             // Disable tone-map, gamut compression, rolloff for log gamma
             // Enable LUTs for log gamma
@@ -1274,12 +1265,12 @@ namespace Octopus.Player.UI
                 NativeWindow.SetMenuItemTitle("exposurePlusOne", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) + 1).ToString("+#;-#;0"));
                 NativeWindow.SetMenuItemTitle("exposurePlusTwo", ((int)Math.Round(Playback.Clip.Metadata.ExposureValue) + 2).ToString("+#;-#;0"));
 
-                if (Playback.Clip.Metadata.ColorProfile.HasValue)
+                if (Playback.Clip.Metadata.ColorProfile != null)
                 {
                     isColour = true;
-                    if (Playback.Clip.Metadata.ColorProfile.Value.asShotWhiteXY.HasValue)
+                    if (Playback.Clip.Metadata.ColorProfile.HasAsShotMetadata)
                     {
-                        var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.Value.AsShotWhiteBalance();
+                        var asShotWhiteBalance = Playback.Clip.Metadata.ColorProfile.AsShotWhiteBalance;
                         if (asShotWhiteBalance.Item2 == 0.0)
                             NativeWindow.SetMenuItemTitle("whiteBalanceAsShot", "As Shot (" + asShotWhiteBalance.Item1.ToString("0") + "K)");
                         else

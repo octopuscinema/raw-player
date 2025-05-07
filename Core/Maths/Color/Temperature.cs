@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 
 namespace Octopus.Player.Core.Maths.Color
@@ -85,7 +86,12 @@ namespace Octopus.Player.Core.Maths.Color
 			return new Vector2(0.3457f, 0.3585f);
 		}
 
-		public static Vector3 D50ChromaticityXYZ()
+        public static Vector2 D65ChromaticityXY()
+		{
+            return new Vector2(0.31271f, 0.32902f);
+        }
+
+        public static Vector3 D50ChromaticityXYZ()
 		{
 			return ChromaticityXYtoXYZ(D50ChromaticityXY());
 		}
@@ -99,7 +105,7 @@ namespace Octopus.Player.Core.Maths.Color
 		{
 			return new Vector3(0.31271f, 0.32902f, 0.35827f);
 		}
-
+        /*
 		public static Vector2 PCStoXY()
 		{
 			return D50ChromaticityXY();
@@ -109,22 +115,49 @@ namespace Octopus.Player.Core.Maths.Color
 		{
 			return ChromaticityXYtoXYZ(PCStoXY());
 		}
+		*/
 
-		public static Vector2 XYZtoChromaticityXY(Vector3 coord)
+        public static Vector2 PCStoXYD50()
+	    {
+            return D50ChromaticityXY();
+        }
+
+        public static Vector2 PCStoXYD65()
+        {
+            return D65ChromaticityXY();
+        }
+
+        public static Vector3 PCStoXYZD50()
+        {
+            return ChromaticityXYtoXYZ(PCStoXYD50());
+        }
+
+        public static Vector3 PCStoXYZD65()
+        {
+            return ChromaticityXYtoXYZ(PCStoXYD65());
+        }
+
+        public static Vector2? XYZtoChromaticityXY(Vector3 coord)
 		{
-			var X = coord[0];
-			var Y = coord[1];
-			var Z = coord[2];
+			var total = coord.X + coord.Y + coord.Z;
 
-			var total = X + Y + Z;
+			if (total > 0.0f)
+				return new Vector2(coord.X / total, coord.Y / total);
 
-			if (total > 0.0)
-				return new Vector2(X / total, Y / total);
-
-			return D50ChromaticityXY();
+			return null;
 		}
 
-		public static uint ChromaticityToColourTemperature(Vector2 chromaticity)
+        public static Vector2 XYZtoChromaticityXYD50(Vector3 coord)
+		{
+			return XYZtoChromaticityXY(coord).GetValueOrDefault(D50ChromaticityXY());
+		}
+
+		public static Vector2 XYZtoChromaticityXYD65(Vector3 coord)
+        {
+            return XYZtoChromaticityXY(coord).GetValueOrDefault(D65ChromaticityXY());
+        }
+
+        public static uint ChromaticityToColourTemperature(Vector2 chromaticity)
 		{
 			const float x_e = 0.3366f;
 			const float y_e = 0.1735f;
@@ -144,7 +177,7 @@ namespace Octopus.Player.Core.Maths.Color
 			return (uint)Math.Floor(CCT + 0.5f);
 		}
 
-		public static Tuple<double,double> ChromaticityToTemperatureTint(Vector2 chromaticityXY)
+		public static Tuple<float,float> ChromaticityToTemperatureTint(Vector2 chromaticityXY)
 		{
 			ValueTuple<double, double> TemperatureTint = new ValueTuple<double, double>();
 
@@ -243,7 +276,7 @@ namespace Octopus.Player.Core.Maths.Color
 
 			}
 
-			return TemperatureTint.ToTuple();
+			return new Tuple<float, float>((float)TemperatureTint.Item1, (float)TemperatureTint.Item2);
 		}
 
 		public static Vector2 ColourTemperatureToChromaticity(double temperatureKelvin, double tint = 0.0)

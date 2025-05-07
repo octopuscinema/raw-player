@@ -21,6 +21,18 @@ namespace Octopus.Player.Core.Maths
 			return result;
         }
 
+        public static Matrix3 InterpolateColor(this Matrix3 matrix, in Matrix3 to, float lerp)
+        {
+            // Check for identity interpolations
+            if (lerp <= 0.0f)
+                return matrix;
+            if (lerp >= 1.0f)
+                return to;
+
+            // Just do a linear interpolation between two known settings
+            return matrix.LinearInterpolate(to, lerp);
+        }
+
         public static float[] ToArray(this Matrix3 matrix)
         {
             return new float[] { matrix.Row0[0], matrix.Row0[1], matrix.Row0[2],

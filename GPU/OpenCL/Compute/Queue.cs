@@ -46,7 +46,7 @@ namespace Octopus.Player.GPU.OpenCL.Compute
             Debug.CheckError(Context.Handle.Flush(NativeHandle));
         }
 
-        public void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0)
+        public void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte[] imageData, uint imageDataOffset = 0, uint? stride = null)
         {
             var imageCL = (Image2D)image;
             if (imageCL == null)
@@ -61,9 +61,24 @@ namespace Octopus.Player.GPU.OpenCL.Compute
                 {
                     fixed (byte* pImageData = imageData)
                     {
-                        Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, 0, 0, pImageData + imageDataOffset, 0, null, null));
+                        Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, stride.HasValue ? stride.Value : 0, 0, pImageData + imageDataOffset, 0, null, null));
                     }
                 }
+            }
+        }
+
+        public unsafe void ModifyImage(IImage2D image, Vector2i origin, Vector2i size, byte* imageData, uint imageDataOffset = 0, uint? stride = null)
+        {
+            var imageCL = (Image2D)image;
+            if (imageCL == null)
+                throw new ArgumentException("Invalid image object");
+
+            var originArray = new nuint[] { (nuint)origin.X, (nuint)origin.Y, 0 };
+            var sizeArray = new nuint[] { (nuint)size.X, (nuint)size.Y, 1 };
+
+            fixed (nuint* pOrigin = originArray, pSize = sizeArray)
+            {
+                Debug.CheckError(Context.Handle.EnqueueWriteImage(NativeHandle, imageCL.NativeHandle, true, pOrigin, pSize, stride.HasValue ? stride.Value : 0, 0, imageData + imageDataOffset, 0, null, null));
             }
         }
 

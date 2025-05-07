@@ -170,14 +170,14 @@ namespace Octopus.Player.Core.Playback
                 program.SetArgument(kernel, argumentIndex++, output);
 
                 // Colour only options
-                if (metadata.ColorProfile.HasValue)
+                if (metadata.ColorProfile != null)
                 {
                     program.SetArgument(kernel, argumentIndex++, (int)clip.RawParameters.Value.highlightRecovery.GetValueOrDefault(HighlightRecovery.On));
 
                     // Combine camera to xyz/xyz to display colour matrices
-                    var cameraToXYZD50Matrix = metadata.ColorProfile.Value.CalculateCameraToXYZD50(clip.RawParameters.Value.whiteBalance);
-                    var xyzToDisplayColourMatrix = gammaSpace.ColourSpaceTransformD50();
-                    var cameraToDisplayColourMatrix = Maths.Color.Matrix.NormalizeColourMatrix(xyzToDisplayColourMatrix) * cameraToXYZD50Matrix;
+                    var cameraToXYZMatrix = metadata.ColorProfile.CalculateCameraToXYZ(clip.RawParameters.Value.whiteBalance);
+                    var xyzToDisplayColourMatrix = gammaSpace.ColourSpaceTransform(metadata.ColorProfile.WhitePoint);
+                    var cameraToDisplayColourMatrix = xyzToDisplayColourMatrix * cameraToXYZMatrix;
 
                     // Calculate camera white in RAW space
                     var cameraToDisplayInv = Matrix3.Invert(cameraToDisplayColourMatrix);
@@ -236,7 +236,7 @@ namespace Octopus.Player.Core.Playback
         private string ComputeKernelForClip(IO.DNG.MetadataCinemaDNG metadata, bool useLut)
         {
             string kernel = "Process";
-            if (metadata.ColorProfile.HasValue)
+            if (metadata.ColorProfile != null)
                 kernel += "Bayer";
 
             if (useLut)

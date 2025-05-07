@@ -8,19 +8,19 @@ namespace Octopus.Player.Core.Maths.Color
 {
     public static class Matrix
     {
-        public static Matrix3 NormalizeForwardMatrix(in Matrix3 ForwardMatrix)
+        public static Matrix3 NormalizeForwardMatrixD50(in Matrix3 ForwardMatrix)
         {
             var CameraOne = Vector3.One;
             var XYZ = ForwardMatrix * CameraOne;
 
-            return CreateMatrix3.Diagonal(Temperature.PCStoXYZ()) *
+            return CreateMatrix3.Diagonal(Temperature.PCStoXYZD50()) *
                 Matrix3.Invert(CreateMatrix3.Diagonal(XYZ)) * ForwardMatrix;
         }
 
-        public static Matrix3 NormalizeColourMatrix(in Matrix3 ColourMatrix)
+        public static Matrix3 NormalizeColourMatrixD50(in Matrix3 ColourMatrix)
         {
             // Find scale factor to normalize the matrix.
-            var Coord = ColourMatrix * Temperature.PCStoXYZ();
+            var Coord = ColourMatrix * Temperature.PCStoXYZD50();
 
             var MaxCoord = Coord.MaxEntry();
 

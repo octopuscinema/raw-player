@@ -22,6 +22,6 @@ namespace Octopus.Player.Core.IO
         uint BitDepth { get; }
         uint DecodedBitDepth { get; }
         float ExposureValue { get; }
-        Core.Maths.Color.Profile? ColorProfile { get; }
+        Core.Maths.Color.ProfileDNG? ColorProfile { get; }
     }
 }

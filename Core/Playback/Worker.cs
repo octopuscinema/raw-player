@@ -11,16 +11,16 @@ namespace Octopus.Player.Core.Playback
         public bool IsSleeping { get { return !Sleep.WaitOne(0); } }
         public bool IsBusy { get { return !IsSleeping || !Busy.WaitOne(0); } }
 
-        private IVideoDecompressionSession DecompressionSession { get; set; }
+        private IDecompressionSession DecompressionSession { get; set; }
 
         private Thread Thread { get; set; }
-        private Func<IVideoDecompressionSession,T> Work { get; set; }
+        private Func<IDecompressionSession,T> Work { get; set; }
         private AutoResetEvent Sleep { get; set; }
         private ManualResetEvent Busy { get; set; }
         private volatile bool terminate = false;
         private volatile bool terminateImmediate = false;
 
-        public Worker(Func<IVideoDecompressionSession,T> work, bool paused = true, IVideoDecompressionSession decompressionSession = null)
+        public Worker(Func<IDecompressionSession,T> work, bool paused = true, IDecompressionSession decompressionSession = null)
         {
             DecompressionSession = decompressionSession;
             Work = work;

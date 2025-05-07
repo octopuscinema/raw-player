@@ -23,7 +23,8 @@ namespace Octopus.Player.Core.Playback
 
         List<Worker<FrameRequestResult>> Workers { get; set; }
 
-        public Stream(GPU.Compute.IContext computeContext, IClip clip, GPU.Format format, uint bufferDurationFrames, uint? workerThreadCount = null)
+        public Stream(GPU.Compute.IContext computeContext, IClip clip, GPU.Format format, uint bufferDurationFrames, uint? workerThreadCount = null, 
+            Func<IDecompressionSession> decompressionSessionProvider = null)
         {
             Debug.Assert(clip.Metadata != null, "Cannot create sequence stream for clip without clip metadata");
             Clip = clip;
@@ -36,7 +37,7 @@ namespace Octopus.Player.Core.Playback
             FrameRequestsMutex = new Mutex();
 
             // Create work for workers
-            Func<IVideoDecompressionSession,FrameRequestResult> processFrameRequests = (IVideoDecompressionSession decompressionSession) =>
+            Func<IDecompressionSession,FrameRequestResult> processFrameRequests = (IDecompressionSession decompressionSession) =>
             {
                 // Get the next frame requested
                 uint? frameNumber = null;
@@ -90,14 +91,14 @@ namespace Octopus.Player.Core.Playback
                 workerThreadCount = Math.Min(bufferDurationFrames, (uint)Environment.ProcessorCount);
             Workers = new List<Worker<FrameRequestResult>>((int)workerThreadCount.Value);
             for (uint i = 0; i < workerThreadCount.Value; i++)
-                Workers.Add(new Worker<FrameRequestResult>(processFrameRequests));
+                Workers.Add(new Worker<FrameRequestResult>(processFrameRequests, true, decompressionSessionProvider != null ? decompressionSessionProvider() : null));
 
             // Allocate frame pool
             for (int i = 0; i < bufferDurationFrames; i++)
                 Pool.Add(Activator.CreateInstance(typeof(T), computeContext, computeContext.DefaultQueue, clip, format) as T);
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             CancelAllRequests();
 

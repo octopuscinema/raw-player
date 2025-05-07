@@ -230,7 +230,7 @@ namespace Octopus.Player.Core.Playback
                 SeekFrame = new SequenceFrameDNG(ComputeContext, ComputeContext.DefaultQueue, Clip, SequenceStream.Format);
 
             // Decode seek frame processing
-            Func<IVideoDecompressionSession,Error> decodeSeekFrame = (IVideoDecompressionSession decompressionSession) =>
+            Func<IDecompressionSession,Error> decodeSeekFrame = (IDecompressionSession decompressionSession) =>
             {
                 if (!ActiveSeekRequest.HasValue)
                     return Error.None;
