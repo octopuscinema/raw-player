@@ -22,7 +22,7 @@ namespace Octopus.Player.Core.IO
         public uint BitDepth { get; protected set; }
         public uint DecodedBitDepth { get; protected set; }
         public float ExposureValue { get; protected set; }
-        public Core.Maths.Color.ProfileDNG ColorProfile { get; protected set; }
+        public Core.Maths.Color.IProfile ColorProfile { get; protected set; }
 
         public override string ToString()
         {
@@ -35,7 +35,7 @@ namespace Octopus.Player.Core.IO
                 {
                     case "ColorProfile":
                         if (ColorProfile != null)
-                            text += "\n-------------\nColor Profile\n-------------" + ColorProfile;
+                            text += "\n-------------\nColor Profile\n-------------\n" + ColorProfile.ToString();
                         break;
                     default:
                         text += Regex.Replace(property.Name, "(\\B[A-Z])", " $1") + ": " + property.GetValue(this, null) + "\n";

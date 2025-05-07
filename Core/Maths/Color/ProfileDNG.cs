@@ -231,7 +231,7 @@ namespace Octopus.Player.Core.Maths.Color
             }
         }
 
-        public Matrix3 CalculateCameraToXYZ(Tuple<float, float>? whiteBalance)
+        public Matrix3 CalculateCameraToXYZ(Tuple<float, float> whiteBalance)
         {
             return (whiteBalance != null) ? CalculateCameraToXYZ(Temperature.ColourTemperatureToChromaticity(whiteBalance.Item1, whiteBalance.Item2)) :
                 CalculateCameraToXYZ();
@@ -274,6 +274,25 @@ namespace Octopus.Player.Core.Maths.Color
                 PCSToCamera.Scale(scale);
                 return PCSToCamera.Inverted();
             }
+        }
+
+        public override string ToString()
+        {
+            string text = "";
+            text += "AsShotWhiteXY: " + AsShotWhiteXY + "\n";
+            text += "CalibrationIlluminant1: " + CalibrationIlluminant1 + "\n";
+            if (IsDualIlluminant)
+                text += "CalibrationIlluminant2: " + CalibrationIlluminant2 + "\n";
+            text += "ColorMatrix1: " + ColorMatrix1 + "\n";
+            if (IsDualIlluminant)
+                text += "ColorMatrix2: " + ColorMatrix2 + "\n";
+            if (HasForwardMatrix)
+            {
+                text += "ForwardMatrix1: " + ForwardMatrix1 + "\n";
+                if (IsDualIlluminant)
+                    text += "ForwardMatrix2: " + ForwardMatrix2 + "\n";
+            }
+            return text;
         }
     }
 }

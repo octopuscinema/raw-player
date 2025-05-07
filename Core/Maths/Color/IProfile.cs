@@ -14,7 +14,7 @@ namespace Octopus.Player.Core.Maths.Color
         Tuple<float, float> AsShotWhiteBalance { get; }
         bool HasAsShotMetadata { get; }
         WhitePoint WhitePoint { get; }
-        Matrix3 CalculateCameraToXYZ(Tuple<float, float>? whiteBalance);
+        Matrix3 CalculateCameraToXYZ(Tuple<float, float> whiteBalance);
         Matrix3 CalculateCameraToXYZ(Vector2? whiteXY = null);
     }
 }
