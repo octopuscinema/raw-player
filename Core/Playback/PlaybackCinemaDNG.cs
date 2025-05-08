@@ -470,7 +470,7 @@ namespace Octopus.Player.Core.Playback
             return (uint)Math.Abs((int)frame1 - (int)frame2);
         }
 
-        public override Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode, PlaybackVelocity playbackVelocity)
+        public override Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out Timecode? actualTimeCode, PlaybackVelocity playbackVelocity)
         {
             actualFrameNumber = frameNumber;
             actualTimeCode = null;

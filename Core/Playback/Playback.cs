@@ -209,22 +209,22 @@ namespace Octopus.Player.Core.Playback
             });
         }
 
-        private TimeCode GenerateTimeCode(uint frameNumber)
+        private Timecode GenerateTimeCode(uint frameNumber)
         {
             ulong globalFrameNumber = frameNumber - FirstFrame;
             bool? dropFrame = null;
 
             if (Clip.Metadata.StartTimeCode.HasValue)
             {
-                var startTC = new TimeCode(Clip.Metadata.StartTimeCode.Value);
+                var startTC = new Timecode(Clip.Metadata.StartTimeCode.Value);
                 globalFrameNumber += startTC.TotalFrames(Framerate);
                 dropFrame = startTC.DropFrame;
             }
 
-            return new TimeCode(globalFrameNumber, Framerate, dropFrame, true);
+            return new Timecode(globalFrameNumber, Framerate, dropFrame, true);
         }
 
-        protected void OnSeekFrameDisplay(Error frameDecodeResult, TimeCode? frameTimeCode)
+        protected void OnSeekFrameDisplay(Error frameDecodeResult, Timecode? frameTimeCode)
         {
             if (!frameTimeCode.HasValue)
                 frameTimeCode = GenerateTimeCode((uint)displayFrame.Value);
@@ -251,7 +251,7 @@ namespace Octopus.Player.Core.Playback
                     return;
 
                 uint frameDisplayed;
-                TimeCode? frameTimeCode;
+                Timecode? frameTimeCode;
                 var displayFrameResult = DisplayFrame((uint)displayFrame.Value, out frameDisplayed, out frameTimeCode, Velocity);
                 if (!frameTimeCode.HasValue)
                     frameTimeCode = GenerateTimeCode(frameDisplayed);
@@ -329,7 +329,7 @@ namespace Octopus.Player.Core.Playback
 
         public abstract Error RequestFrame(uint frameNumber);
 
-        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out TimeCode? actualTimeCode, PlaybackVelocity playbackVelocity);
+        public abstract Error DisplayFrame(uint frameNumber, out uint actualFrameNumber, out Timecode? actualTimeCode, PlaybackVelocity playbackVelocity);
 
         public abstract void OnRenderFrame(double timeInterval);
 

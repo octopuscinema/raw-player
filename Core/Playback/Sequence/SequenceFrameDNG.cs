@@ -51,7 +51,7 @@ namespace Octopus.Player.Core.Playback
 
             // Read timecode
             if ( DNGReader.ContainsTimeCode )
-                timeCode = new TimeCode(DNGReader.TimeCode);
+                timeCode = new Timecode(DNGReader.TimeCode);
 
             // Read/decode the data
             var decodeDataError = Error.None;

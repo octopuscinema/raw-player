@@ -1103,32 +1103,32 @@ namespace Octopus.Player.UI
             }
         }
 
-        public void OnFrameDisplayed(uint frame, in Core.Maths.TimeCode timeCode)
+        public void OnFrameDisplayed(uint frame, in Core.Maths.Timecode timeCode)
         {
             UpdateFrameUI(frame, timeCode, Theme.LabelColour);
         }
 
-        public void OnFrameSkipped(uint frameRequested, uint frameDisplayed, in Core.Maths.TimeCode synthesisedTimeCode)
+        public void OnFrameSkipped(uint frameRequested, uint frameDisplayed, in Core.Maths.Timecode synthesisedTimeCode)
         {
             UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.SkippedFrameColour);
         }
 
-        public void OnFrameMissing(uint frameRequested, in Core.Maths.TimeCode synthesisedTimeCode)
+        public void OnFrameMissing(uint frameRequested, in Core.Maths.Timecode synthesisedTimeCode)
         {
             UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.MissingFrameColour);
         }
 
-        public void OnSeekFrameDisplayed(uint frame, in Core.Maths.TimeCode timeCode)
+        public void OnSeekFrameDisplayed(uint frame, in Core.Maths.Timecode timeCode)
         {
             UpdateFrameUI(frame, timeCode, Theme.LabelColour, false);
         }
 
-        public void OnSeekFrameMissing(uint frameRequested, in Core.Maths.TimeCode synthesisedTimeCode)
+        public void OnSeekFrameMissing(uint frameRequested, in Core.Maths.Timecode synthesisedTimeCode)
         {
             UpdateFrameUI(frameRequested, synthesisedTimeCode, Theme.MissingFrameColour, false);
         }
 
-        private void UpdateFrameUI(uint frame, in Core.Maths.TimeCode timeCode, in Vector3 timeCodeLabelColour, bool updateSeekBar = true)
+        private void UpdateFrameUI(uint frame, in Core.Maths.Timecode timeCode, in Vector3 timeCodeLabelColour, bool updateSeekBar = true)
         {
             // Update seek bar
             playhead = (Playback.LastFrame == Playback.FirstFrame) ? 1.0f : (float)(frame - Playback.FirstFrame) / (float)(Playback.LastFrame - Playback.FirstFrame);
@@ -1245,13 +1245,13 @@ namespace Octopus.Player.UI
                     NativeWindow.Alert(AlertType.Warning, "Clip is missing framerate metadata.\nPlayback framerate will default to: " + Playback.Framerate.ToString(true) + "fps.", "Missing framerate information");
 
                 // Set start time code label
-                var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.TimeCode(Playback.Clip.Metadata.StartTimeCode.Value)
-                    : new Core.Maths.TimeCode(0, Playback.Framerate);
+                var startTimeCode = Playback.Clip.Metadata.StartTimeCode.HasValue ? new Core.Maths.Timecode(Playback.Clip.Metadata.StartTimeCode.Value)
+                    : new Core.Maths.Timecode(0, Playback.Framerate);
                 NativeWindow.SetLabelContent("timeCodeLabel", startTimeCode.ToString(), Theme.LabelColour);
 
                 // Set duration label
                 bool? dropFrame = Playback.Clip.Metadata.StartTimeCode.HasValue ? Playback.Clip.Metadata.StartTimeCode.Value.DropFlag : (bool?)null;
-                var duration = new Core.Maths.TimeCode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate, dropFrame);
+                var duration = new Core.Maths.Timecode(Playback.Clip.Metadata.DurationFrames, Playback.Framerate, dropFrame);
                 NativeWindow.SetLabelContent("durationLabel", duration.ToString());
 
                 // Show as shot exposure text for menu

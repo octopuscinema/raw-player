@@ -10,7 +10,7 @@ namespace Octopus.Player.Core.Playback
 		public Error LastError { get; protected set; }
 		public volatile uint frameNumber;
 		public GPU.Compute.IImage2D decodedImageGpu;
-		public TimeCode? timeCode;
+		public Timecode? timeCode;
 
 		protected GPU.Compute.IQueue ComputeQueue { get; private set; }
 
@@ -28,7 +28,7 @@ namespace Octopus.Player.Core.Playback
 #endif
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
 			if (decodedImageGpu != null)
 			{

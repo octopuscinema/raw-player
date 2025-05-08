@@ -83,9 +83,9 @@ namespace Octopus.Player.Core.Playback
 		PlaybackVelocity Velocity { get; set; }
 		event EventHandler VelocityChanged;
 
-		public delegate void FrameDisplayedEventHandler(uint frame, in Maths.TimeCode timeCode);
-		public delegate void FrameSkippedEventHandler(uint requestedFrame, uint displayedFrame, in Maths.TimeCode synthesisedTimeCode);
-		public delegate void FrameMissingEventHandler(uint requestedFrame, in Maths.TimeCode synthesisedTimeCode);
+		public delegate void FrameDisplayedEventHandler(uint frame, in Maths.Timecode timeCode);
+		public delegate void FrameSkippedEventHandler(uint requestedFrame, uint displayedFrame, in Maths.Timecode synthesisedTimeCode);
+		public delegate void FrameMissingEventHandler(uint requestedFrame, in Maths.Timecode synthesisedTimeCode);
 		event FrameDisplayedEventHandler FrameDisplayed;
 		event FrameSkippedEventHandler FrameSkipped;
 		event FrameMissingEventHandler FrameMissing;

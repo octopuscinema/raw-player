@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Octopus.Player.Core.Maths
 {
-    public struct TimeCode
+    public struct Timecode
     {
         public ushort Frame { get; private set; }
         public ushort Second { get; private set; }
@@ -15,7 +15,7 @@ namespace Octopus.Player.Core.Maths
 
         public bool DropFrame { get; private set; }
 
-        public TimeCode(ushort frame, ushort second, uint minute, ushort? hour = null, bool dropFrame = false)
+        public Timecode(ushort frame, ushort second, uint minute, ushort? hour = null, bool dropFrame = false)
             : this()
         {
             Frame = frame;
@@ -25,7 +25,7 @@ namespace Octopus.Player.Core.Maths
             DropFrame = dropFrame;
         }
 
-        public TimeCode(ulong frames, uint framerate, bool dropFrame = false, bool useHours = false)
+        public Timecode(ulong frames, uint framerate, bool dropFrame = false, bool useHours = false)
             : this()
         {
             Debug.Assert(framerate != 0);
@@ -44,7 +44,7 @@ namespace Octopus.Player.Core.Maths
             DropFrame = dropFrame;
         }
 
-        public TimeCode(in IO.SMPTETimeCode timeCode)
+        public Timecode(in IO.SMPTETimeCode timeCode)
             : this()
         {
             Frame = (ushort)((timeCode.FrameTens * 10) + timeCode.FrameUnits);
@@ -54,7 +54,7 @@ namespace Octopus.Player.Core.Maths
             DropFrame = timeCode.DropFlag;
         }
 
-        public TimeCode(ulong frames, in Rational framerate, bool? dropFrame = null, bool useHours = false)
+        public Timecode(ulong frames, in Rational framerate, bool? dropFrame = null, bool useHours = false)
             : this()
         {
             Debug.Assert(!framerate.IsInfinity && !framerate.IsZero);
