@@ -14,7 +14,6 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <BaseOutputPath>$(SolutionDir)UI\Windows\bin\</BaseOutputPath>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\Player.props" Condition="Exists('$(SolutionDir)\Player.props')" />
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
