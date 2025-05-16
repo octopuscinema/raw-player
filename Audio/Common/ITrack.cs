@@ -7,6 +7,7 @@ namespace Octopus.Player.Audio
         uint ChannelCount { get; }
         uint BitDepth { get; }
         uint SampleRate { get; }
+        uint StreamIndex { get; }
         Format Format { get; }
         UInt64 DurationFrames { get; }
     }
