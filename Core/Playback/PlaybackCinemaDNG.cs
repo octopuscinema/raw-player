@@ -348,7 +348,7 @@ namespace Octopus.Player.Core.Playback
             {
                 foreach (var track in AudioTracks)
                 {
-                    if ( track.Playing )
+                    if ( track.State == Audio.State.Playing )
                         track.Pause();
                 }
             }
@@ -542,7 +542,7 @@ namespace Octopus.Player.Core.Playback
                 {
                     if ((int)Velocity < 0)
                         track.Position = audioTime;
-                    if (!track.Playing)
+                    if (track.State != Audio.State.Playing)
                         track.Play(audioTime, Math.Abs((float)Velocity));
                 }
             }

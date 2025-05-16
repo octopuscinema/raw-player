@@ -21,7 +21,7 @@ namespace Octopus.Player.Audio.Windows
             set { Player.Volume = value; }
         }
 
-        public bool Playing { get; private set; }
+        public State State { get; private set; }
 
         private MediaPlayer Player { get; set; }
         public bool Muted 
@@ -32,7 +32,7 @@ namespace Octopus.Player.Audio.Windows
 
         public event EventHandler ActiveChanged;
 
-        public bool Active { get { return Playing; } }
+        public bool Active { get { return State == State.Playing; } }
 
         public double Time { get { return Position; } }
 
@@ -45,7 +45,7 @@ namespace Octopus.Player.Audio.Windows
 
         public void Dispose()
         {
-            if (Playing)
+            if (State != State.Stopped)
                 Player.Stop();
             Player.Close();
         }
@@ -53,7 +53,7 @@ namespace Octopus.Player.Audio.Windows
         public void Pause()
         {
             Player.Pause();
-            Playing = false;
+            State = State.Paused;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -61,7 +61,7 @@ namespace Octopus.Player.Audio.Windows
         {
             Player.SpeedRatio = speed;
             Player.Play();
-            Playing = true;
+            State = State.Playing;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -72,7 +72,7 @@ namespace Octopus.Player.Audio.Windows
                 Position = position;
                 Player.SpeedRatio = speed;
                 Player.Play();
-                Playing = true;
+                State = State.Playing;
                 ActiveChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -80,7 +80,7 @@ namespace Octopus.Player.Audio.Windows
         public void Stop()
         {
             Player.Stop();
-            Playing = false;
+            State = State.Stopped;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
             Position = 0;
         }

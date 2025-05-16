@@ -1,5 +1,6 @@
 #pragma once
 
+#define DECODER_EXPORT_DEFINITION extern "C"
 #ifdef __GNUC__
 #define DECODER_EXPORT extern "C"
 #define DECODER_EXPORT_BEGIN _Pragma("GCC visibility push(default)")
