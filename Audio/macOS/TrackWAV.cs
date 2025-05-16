@@ -24,7 +24,7 @@ namespace Octopus.Player.Audio.macOS
             set { Player.Volume = value; }
         }
 
-        public bool Playing { get { return Player.Playing; } }
+        public State State { get; private set; }
 
         public bool Muted
         {
@@ -50,7 +50,7 @@ namespace Octopus.Player.Audio.macOS
 
         public event EventHandler ActiveChanged;
 
-        public bool Active { get { return Playing; } }
+        public bool Active { get { return State == State.Playing; } }
 
         public double Time { get { return Position; } }
 
@@ -75,6 +75,7 @@ namespace Octopus.Player.Audio.macOS
         public void Pause()
         {
             Player.Pause();
+            State = State.Paused;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -82,6 +83,7 @@ namespace Octopus.Player.Audio.macOS
         {
             Player.Rate = speed;
             Player.Play();
+            State = State.Playing;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -92,6 +94,7 @@ namespace Octopus.Player.Audio.macOS
                 Position = position;
                 Player.Rate = speed;
                 Player.Play();
+                State = State.Playing;
                 ActiveChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -99,13 +102,14 @@ namespace Octopus.Player.Audio.macOS
         public void Stop()
         {
             Player.Stop();
+            State = State.Stopped;
             Position = 0;
             ActiveChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnFinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            if (Playing)
+            if (State == State.Playing)
                 Stop();
         }
     }
